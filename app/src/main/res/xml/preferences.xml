@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/setting_category_map">
+
+        <!--<SwitchPreferenceCompat-->
+            <!--android:defaultValue="false"-->
+            <!--android:key="distance_indicator"-->
+            <!--android:title="@string/setting_distance_indicator" />-->
+
+        <!--<SwitchPreferenceCompat-->
+            <!--android:defaultValue="false"-->
+            <!--android:key="fog"-->
+            <!--android:title="@string/setting_fog" />-->
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="checkin"
+            android:title="@string/setting_checkin" />
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="spot"
+            android:title="@string/setting_spot" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_account"
+        android:title="@string/setting_category_account">
+
+        <Preference
+            android:key="logout"
+            android:title="@string/setting_logout" />
+
+        <Preference
+            android:key="register"
+            android:title="@string/setting_register" />
+
+        <Preference
+            android:key="about"
+            android:title="@string/setting_about"
+            android:summary="@string/setting_copyright"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parent_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/touristmap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/gps_marker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/gps_marker_padding"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="@dimen/gps_direction_width"
+            android:layout_height="@dimen/gps_direction_height"
+            android:background="@drawable/triangle" />
+
+        <View
+            android:layout_width="@dimen/gps_marker_width"
+            android:layout_height="@dimen/gps_marker_height"
+            android:background="@drawable/circle_gps"
+            android:elevation="@dimen/elevation_default" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/checkin_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="30px"
+            android:layout_height="30px"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="28px"
+            android:background="@drawable/circle_btn_white" />
+
+        <View
+            android:layout_width="108px"
+            android:layout_height="108px"
+            android:layout_centerInParent="true"
+            android:background="@drawable/ic_location_on_white_36dp" />
+
+        <View
+            android:layout_width="96px"
+            android:layout_height="96px"
+            android:layout_centerInParent="true"
+            android:background="@drawable/ic_location_on_red_600_36dp" />
+
+    </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btn_gps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_gps_fixed_black_24dp"
+        app:backgroundTint="@color/md_white_1000" />
+
+    <FrameLayout
+        android:id="@+id/layout_et_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:paddingBottom="4dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chips_white"
+            android:elevation="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:src="@drawable/ic_location_on_black_24dp" />
+
+            <AutoCompleteTextView
+                android:id="@+id/et_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:hint="地點"
+                android:singleLine="true" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</RelativeLayout>
