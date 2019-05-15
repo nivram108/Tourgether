@@ -16,20 +16,23 @@ public class LikeNotification {
     public String likeUserName;
     public String likedUid;
     public String likedCheckinKey;
+    public String likedCheckinDescription;
     public long timestamp;
 
     public LikeNotification() {
     }
 
     public LikeNotification(String likeUid,
-                               String likeUserName,
-                               String likedUid,
-                               String likedCheckinKey,
-                               long timestamp) {
+                                String likeUserName,
+                                String likedUid,
+                                String likedCheckinKey,
+                                String likedCheckinDescription,
+                                long timestamp) {
         this.likeUid = likeUid;
         this.likeUserName = likeUserName;
         this.likedUid = likedUid;
         this.likedCheckinKey = likedCheckinKey;
+        this.likedCheckinDescription = likedCheckinDescription;
         this.timestamp = timestamp;
     }
 
@@ -40,6 +43,7 @@ public class LikeNotification {
         result.put("likeUserName", likeUserName);
         result.put("likedUid", likedUid);
         result.put("likedCheckinKey", likedCheckinKey);
+        result.put("likedCheckinDescription", likedCheckinDescription);
         result.put("timestamp", timestamp);
         return result;
     }

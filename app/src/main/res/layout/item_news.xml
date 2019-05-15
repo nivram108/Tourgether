@@ -23,10 +23,10 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Title"
-            android:maxLines="1"
+            android:text="在你的貼文下留言"
             android:textColor="@color/primary_text"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:maxEms="12"/>
 
         <TextView
             android:id="@+id/tv_msg"

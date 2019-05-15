@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by lobZter on 2017/12/25.
  */
 
-public class Notification {
+public class SystemNotification {
 
     public String postId;
     public String uid;
@@ -22,19 +22,19 @@ public class Notification {
     public String lng;
     public long timestamp;
 
-    public Notification() {
+    public SystemNotification() {
     }
 
-    public Notification(String postId,
-                        String uid,
-                        String targetUid,
-                        String title,
-                        String msg,
-                        String photo,
-                        String location,
-                        String lat,
-                        String lng,
-                        long timestamp) {
+    public SystemNotification(String postId,
+                              String uid,
+                              String targetUid,
+                              String title,
+                              String msg,
+                              String photo,
+                              String location,
+                              String lat,
+                              String lng,
+                              long timestamp) {
         this.postId = postId;
         this.uid = uid;
         this.targetUid = targetUid;

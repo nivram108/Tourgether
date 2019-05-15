@@ -1,7 +1,9 @@
 package nctu.cs.cgv.itour.custom;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +15,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.object.Notification;
+import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.fragment.NewsFragment;
+import nctu.cs.cgv.itour.object.CommentNotification;
+import nctu.cs.cgv.itour.object.LikeNotification;
+import nctu.cs.cgv.itour.object.NotificationType;
 
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 
@@ -26,13 +31,17 @@ import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 
 public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHolder> {
 
+    private static final int DISPLAY_MSG_LENGTH_MAX = 30;
+    private static final int DISPLAY_TITLE_NAME_LENGTH_MAX = 9;
     private static final String TAG = "NewsItemAdapter";
-    private ArrayList<Notification> notifications;
+    private ArrayList<NotificationType> notificationTypes;
     private Context context;
+    private NewsFragment newsFragment;
 
-    public NewsItemAdapter(Context context, ArrayList<Notification> notifications) {
-        this.notifications = notifications;
+    public NewsItemAdapter(Context context, NewsFragment newsFragment) {
+        this.notificationTypes = new ArrayList<NotificationType>();
         this.context = context;
+        this.newsFragment = newsFragment;
     }
 
     private Context getContext() {
@@ -52,11 +61,34 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(NewsItemAdapter.ViewHolder viewHolder, int position) {
-        Notification notification = notifications.get(position);
+        NotificationType notificationType = notificationTypes.get(position);
+        Log.d("NIVRAM", "Show noti:(" + notificationType.type + ", " + notificationType.key + ")");
 
-        viewHolder.title.setText(notification.title);
-        viewHolder.msg.setText(notification.msg);
-        setPhoto(viewHolder, notification.photo);
+        if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
+            CommentNotification commentNotification = newsFragment.commentNotificationMap.get(notificationType.key);
+            viewHolder.title.setText(getStringWithLength(
+                    commentNotification.commentUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "回應了你的貼文。");
+            viewHolder.msg.setText("");
+//        setPhoto(viewHolder, commentNotification.photo);
+
+        } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
+            LikeNotification likeNotification = newsFragment.likeNotificationMap.get(notificationType.key);
+            viewHolder.title.setText(getStringWithLength(
+                    likeNotification.likeUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "說你的貼文讚:");
+
+            viewHolder.msg.setText("「" + getStringWithLength(
+                    likeNotification.likedCheckinDescription, DISPLAY_MSG_LENGTH_MAX) + "」");
+//        setPhoto(viewHolder, likeNotification.photo);
+        }
+
+        if (notificationType.isChecked == false) {
+            viewHolder.view.setBackgroundResource(R.color.notification_not_checked);
+        } else {
+            viewHolder.view.setBackgroundResource(R.color.md_white_1000);
+            Log.d("NIVRAM", "SET TO TRUE");
+
+        }
+
     }
 
     private void setPhoto(final NewsItemAdapter.ViewHolder viewHolder, final String filename) {
@@ -79,35 +111,58 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {
-        return notifications.size();
+        return notificationTypes.size();
     }
 
-    public Notification getItem(int index) {
-        return notifications.get(index);
+    public NotificationType getItem(int index) {
+        return notificationTypes.get(index);
     }
 
-    public void addAll(Collection<Notification> notificationList) {
-        notifications.addAll(notificationList);
+//    public void addAll(Collection<CommentNotification> commentNotificationList) {
+//        notificationTypes.addAll(commentNotificationList);
+//        notifyDataSetChanged();
+//    }
+
+    public void add(CommentNotification commentNotification) {
+
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_COMMENT_NOTIFICATION, commentNotification.commentedCheckinKey);
+        int index = getKeyPosition(notificationType);
+
+        if (index != -1) {
+            // contain notification, remove
+            notificationTypes.remove(index);
+        }
+        notificationType.setNotChecked();
+        insert(notificationType, 0);
         notifyDataSetChanged();
     }
 
-    public void add(Notification notification) {
-        notifications.add(notification);
+    public void add(LikeNotification likeNotification) {
+
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_LIKE_NOTIFICATION, likeNotification.likedCheckinKey);
+        int index = getKeyPosition(notificationType);
+
+        if (index != -1) {
+            // contain notification, remove
+            notificationTypes.remove(index);
+        }
+        notificationType.setNotChecked();
+        insert(notificationType, 0);
         notifyDataSetChanged();
     }
 
     public void clear() {
-        notifications.clear();
+        notificationTypes.clear();
         notifyDataSetChanged();
     }
 
-    public void insert(Notification notification, int index) {
-        notifications.add(index, notification);
+    public void insert(NotificationType notificationType, int index) {
+        notificationTypes.add(index, notificationType);
         notifyItemInserted(index);
     }
 
     public void remove(int index) {
-        notifications.remove(index);
+        notificationTypes.remove(index);
         notifyItemRemoved(index);
     }
 
@@ -116,16 +171,49 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         TextView msg;
         ImageView photo;
         LinearLayout itemLayout;
+        View view;
 
         public ViewHolder(View view) {
             // Stores the itemView in a public final member variable that can be used
             // to access the context from any ViewHolder instance.
             super(view);
-
+            this.view = view;
             title = view.findViewById(R.id.tv_title);
             msg = view.findViewById(R.id.tv_msg);
             photo = view.findViewById(R.id.photo);
             itemLayout = view.findViewById(R.id.layout_item);
         }
+    }
+    private int getKeyPosition(NotificationType notificationType) {
+        for (int i = 0; i < notificationTypes.size(); i++) {
+            if (notificationTypes.get(i).key.equals(notificationType.key) &&
+                    notificationTypes.get(i).type.equals(notificationType.type))
+                return i;
+        }
+        return -1;
+    }
+
+
+    String getStringWithLength(String s, int length) {
+
+        if (s.getBytes().length <= length) {
+            return s;
+        }
+        int index = 0, byteCount = 0;
+
+        while(byteCount < length) {
+            Log.d("NIVRAM", "LOOP, " + byteCount);
+            if(s.substring(index, index + 1).getBytes().length > 1) {
+                // is chinese char
+                byteCount = byteCount + 2;
+                index = index + 1;
+            } else {
+                byteCount = byteCount + 1;
+                index = index + 1;
+            }
+            if(index == s.length()) break;
+
+        }
+        return s.substring(0, index) + "...";
     }
 }

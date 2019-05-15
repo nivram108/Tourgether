@@ -361,36 +361,6 @@ public class CheckinDialogFragment extends DialogFragment {
         super.onDestroyView();
         query.removeEventListener(childEventListener);
     }
-
-    /**
-     * Send a command notification if add command
-     **/
-    private void likeNotification(Checkin checkin) {
-
-        if (checkin.uid == FirebaseAuth.getInstance().getCurrentUser().getUid()) {
-            // user comment self checkin
-            return;
-        }
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        final String pushKey = databaseReference.child("like_notification").child(mapTag).push().getKey();
-        final String commentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final String commentUserName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-        final String commentedUid = checkin.uid;
-        final String commentedCheckinId = checkin.key;
-        long timestamp = System.currentTimeMillis() / 1000;
-        CommentNotification commentNotification = new CommentNotification(commentUid, commentUserName, commentedUid, commentedCheckinId, timestamp);
-        Map<String, Object> commentNotificationValue = commentNotification.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/like_notification/" + mapTag + "/" + pushKey, commentNotificationValue);
-        FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
-                new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
-                        //commentMsg.setText("");
-                        Log.e("NIVRAM", "ERROR GG");
-                    }
-                });
-    }
     /**
      * Send a comment notification if add comment
     **/
@@ -406,8 +376,9 @@ public class CheckinDialogFragment extends DialogFragment {
         final String commentUserName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         final String commentedUid = checkin.uid;
         final String commentedCheckinId = checkin.key;
+        final String commentedCheckinDescription = checkin.description;
         long timestamp = System.currentTimeMillis() / 1000;
-        CommentNotification commentNotification = new CommentNotification(commentUid, commentUserName, commentedUid, commentedCheckinId, timestamp);
+        CommentNotification commentNotification = new CommentNotification(commentUid, commentUserName, commentedUid, commentedCheckinId, commentedCheckinDescription, timestamp);
         Map<String, Object> commentNotificationValue = commentNotification.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/comment_notification/" + mapTag + "/" + pushKey, commentNotificationValue);
@@ -437,8 +408,9 @@ public class CheckinDialogFragment extends DialogFragment {
         final String likeUserName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         final String likedUid = checkin.uid;
         final String likedCheckinId = checkin.key;
+        final String likedCheckinDescription = checkin.description;
         long timestamp = System.currentTimeMillis() / 1000;
-        LikeNotification likeNotification = new LikeNotification(likeUid, likeUserName, likedUid, likedCheckinId, timestamp);
+        LikeNotification likeNotification = new LikeNotification(likeUid, likeUserName, likedUid, likedCheckinId, likedCheckinDescription, timestamp);
         Map<String, Object> likeNotificationValue = likeNotification.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/like_notification/" + mapTag + "/" + pushKey, likeNotificationValue);

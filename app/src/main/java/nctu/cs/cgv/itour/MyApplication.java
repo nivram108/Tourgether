@@ -22,7 +22,7 @@ public class MyApplication extends Application {
     public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
 
 
-    public static final String mapTag = "tamsui_0511";
+    public static final String mapTag = "development";
     //public static final String fileServerURL = "http://140.113.210.17:55555/data/json_maps";
     //public static final String APPServerURL = "http://140.113.210.17:55555";
     public static final String fileServerURL = "http://3.14.193.188:55555/data/json_maps";

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/md_white_1000"
+    android:paddingBottom="36dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="是否要前往此處?"
+        android:textSize="18dp"
+        android:paddingTop="8dp"
+        android:paddingLeft="8dp"
+        android:textColor="@color/md_black_1000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+            <Button
+                android:id="@+id/search_location"
+                android:paddingHorizontal="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="在Google 地圖搜尋"
+                android:textColor="@color/md_white_1000"
+                android:textSize="16dp"
+                android:background="@drawable/search_location_button_background"
+                android:textAllCaps="false"/>
+        </LinearLayout>
+        <Space
+            android:layout_width="16dp"
+            android:layout_height="match_parent" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+            <Button
+                android:id="@+id/navigate_location"
+                android:paddingHorizontal="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="立即導航"
+                android:textSize="16dp"
+                android:textColor="@color/md_white_1000"
+                android:background="@drawable/navigate_location_button_background"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="right">
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="8dp" />
+            <Button
+                android:id="@+id/cancel_search_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="取消"
+                android:textSize="16dp"
+                android:background="@color/md_white_1000"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

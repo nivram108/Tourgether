@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -28,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -816,10 +819,11 @@ public class MapFragment extends Fragment {
         onClusterNodeClick(checkinClusterNode);
     }
 
-    public void onLocateCheckinClick(String postId) {
-        CheckinNode checkinClusterNode = checkinClusterNodeMap.get(postId);
-        CheckinNode checkinNode = checkinNodeMap.get(postId);
+    public void onLocateCheckinClick(Checkin clickedCheckin) {
+        CheckinNode checkinClusterNode = checkinClusterNodeMap.get(clickedCheckin.key);
+        CheckinNode checkinNode = checkinNodeMap.get(clickedCheckin.key);
         onClusterNodeClick(checkinClusterNode, checkinNode.x, checkinNode.y);
+        searchLocationDialog(clickedCheckin);
     }
 
     public void onClusterNodeClick(CheckinNode checkinNode) {
@@ -1023,5 +1027,58 @@ public class MapFragment extends Fragment {
     }
     public String getUid() {
         return uid;
+    }
+
+    public void searchLocationDialog(Checkin checkin) {
+        final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
+        bottomSheetDialog.setContentView(R.layout.search_location_dialog);
+        final Checkin c = checkin;
+        String latLng = c.lat + "," + c.lng;
+        Log.d("NIVRAM", "LATLNG: " + latLng);
+        Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
+        searchLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String latLng = c.lat + "," + c.lng;
+                Log.d("NIVRAM", "LATLNG: " + latLng);
+                searchLocation(latLng);
+            }
+        });
+
+        Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
+        navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String latLng = c.lat + "," + c.lng;
+                Log.d("NIVRAM", "LATLNG: " + latLng);
+                navigateLocation(latLng);
+            }
+        });
+
+        Button cancelSearchLocation = bottomSheetDialog.findViewById(R.id.cancel_search_location);
+        cancelSearchLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+        bottomSheetDialog.show();
+
+    }
+    public void searchLocation(String locationName) {
+        locationName = locationName.replace(' ', '+');
+        Log.d("NIVRAM", "location : " + locationName);
+        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + locationName + "&mode=w");
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
+    }
+
+    public void navigateLocation(String locationName) {
+        locationName = locationName.replace(' ', '+');
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        mapIntent.setPackage("com.google.android.apps.maps");
+        startActivity(mapIntent);
     }
 }

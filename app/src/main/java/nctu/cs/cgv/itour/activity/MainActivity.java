@@ -30,6 +30,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -62,7 +63,7 @@ import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
 import nctu.cs.cgv.itour.object.Mesh;
-import nctu.cs.cgv.itour.object.Notification;
+import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.UserData;
@@ -70,12 +71,9 @@ import nctu.cs.cgv.itour.service.AudioFeedbackService;
 import nctu.cs.cgv.itour.service.CommentNotificationService;
 import nctu.cs.cgv.itour.service.GpsLocationService;
 import nctu.cs.cgv.itour.service.LikeNotificationService;
-import nctu.cs.cgv.itour.service.NotificationListener;
+//import nctu.cs.cgv.itour.service.NotificationListener;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
-import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
-import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_SELF_CHECKIN;
-import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.audioFeedbackFlag;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.edgeNode;
@@ -86,7 +84,6 @@ import static nctu.cs.cgv.itour.MyApplication.screenCaptureFlag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.MyApplication.warpMesh;
 import static nctu.cs.cgv.itour.Utility.notifyCheckin;
-import static nctu.cs.cgv.itour.Utility.notifyComment;
 import static nctu.cs.cgv.itour.Utility.pushNews;
 
 public class MainActivity extends AppCompatActivity implements
@@ -174,15 +171,15 @@ public class MainActivity extends AppCompatActivity implements
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
-        startService(new Intent(this, NotificationListener.class));
+//        startService(new Intent(this, NotificationListener.class));
         setSensors();
         String string = Settings.Secure.getString(getContentResolver(),
                 "enabled_notification_listeners");
-        if (!string.contains(NotificationListener.class.getName())) {
-            startActivity(new Intent(
-                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-        }
-            setBroadcastReceiver();
+//        if (!string.contains(NotificationListener.class.getName())) {
+//            startActivity(new Intent(
+//                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+//        }
+        setBroadcastReceiver();
         setCheckinPreference();
         setView();
         setNotificationManager();
@@ -292,10 +289,10 @@ public class MainActivity extends AppCompatActivity implements
                 Checkin checkin = checkinNode.checkinList.get(checkinNode.checkinList.size() - 1);
                 String title = "就在你附近！有人在" + spotName + "打卡了唷！";
                 String msg = "距離" + String.valueOf((int) minDist) + "公尺";
-                Notification notification = new Notification(checkin.key, checkin.uid, "all",
+                SystemNotification systemNotification = new SystemNotification(checkin.key, checkin.uid, "all",
                         title, msg, checkin.photo, checkin.location, checkin.lat, checkin.lng, System.currentTimeMillis() / 1000);
-                pushNews(notification, "");
-                notifyCheckin(this, notification, notificationManager, notificationChannelId);
+                pushNews(systemNotification, "");
+                notifyCheckin(this, systemNotification, notificationManager, notificationChannelId);
 
                 String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
                 FirebaseDatabase.getInstance().getReference()
@@ -442,6 +439,8 @@ public class MainActivity extends AppCompatActivity implements
         fragmentList.add(personalFragment);
         fragmentList.add(NewsFragment.newInstance());
         fragmentList.add(SettingsFragment.newInstance());
+//        fragmentList.add(NotificationFragment.newInstance());
+        //TODO: add fragment here
 
         viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
@@ -707,7 +706,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onLocateCheckinClick(String postId) {
         bottomBar.selectTabAtPosition(0);
-        mapFragment.onLocateCheckinClick(postId);
+        mapFragment.onLocateCheckinClick(checkinMap.get(postId));
     }
 
     @Override
@@ -803,6 +802,5 @@ public class MainActivity extends AppCompatActivity implements
             checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
         }
     }
-
 
 }

@@ -16,6 +16,7 @@ public class CommentNotification {
     public String commentUserName;
     public String commentedUid;
     public String commentedCheckinKey;
+    public String commentedCheckinDescription;
     public long timestamp;
 
     public CommentNotification() {
@@ -25,11 +26,13 @@ public class CommentNotification {
                         String commentUserName,
                         String commentedUid,
                         String commentedCheckinKey,
+                        String commentedCheckinDescription,
                         long timestamp) {
         this.commentUid = commentUid;
         this.commentUserName = commentUserName;
         this.commentedUid = commentedUid;
         this.commentedCheckinKey = commentedCheckinKey;
+        this.commentedCheckinDescription = commentedCheckinDescription;
         this.timestamp = timestamp;
     }
 
@@ -40,6 +43,7 @@ public class CommentNotification {
         result.put("commentUserName", commentUserName);
         result.put("commentedUid", commentedUid);
         result.put("commentedCheckinKey", commentedCheckinKey);
+        result.put("commentedCheckinDescription", commentedCheckinDescription);
         result.put("timestamp", timestamp);
         return result;
     }

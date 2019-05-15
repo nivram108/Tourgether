@@ -9,7 +9,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.inputmethod.InputMethodManager;
-import android.content.SharedPreferences;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
@@ -32,10 +31,8 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import nctu.cs.cgv.itour.activity.MainActivity;
-import nctu.cs.cgv.itour.fragment.CheckinDialogFragment;
-import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.IdxWeights;
-import nctu.cs.cgv.itour.object.Notification;
+import nctu.cs.cgv.itour.object.SystemNotification;
 
 import static nctu.cs.cgv.itour.MyApplication.APPServerURL;
 import static nctu.cs.cgv.itour.MyApplication.actionLogPath;
@@ -208,7 +205,7 @@ public class Utility {
 //        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
 //        String msg = checkin.location.equals("") ? checkin.description : checkin.location + " | " + checkin.description;
 //        final String notificationKey = databaseReference.child("notification").child(mapTag).push().getKey();
-//        final Notification notification = new Notification(checkin.key,
+//        final SystemNotification notification = new SystemNotification(checkin.key,
 //                checkin.uid,
 //                "all",
 //                checkin.username,
@@ -229,32 +226,32 @@ public class Utility {
 //        });
 //    }
 
-    public static void pushNews(final nctu.cs.cgv.itour.object.Notification notification, String notificationKey) {
+    public static void pushNews(final SystemNotification systemNotification, String notificationKey) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         if (notificationKey.equals(""))
             notificationKey =  databaseReference.child("users").child(uid).child("news").child(mapTag).push().getKey();
-        Map<String, Object> notificationValues = notification.toMap();
+        Map<String, Object> notificationValues = systemNotification.toMap();
         Map<String, Object> notificationUpdates = new HashMap<>();
         notificationUpdates.put("/users/" + uid + "/news/" + mapTag + "/" + notificationKey, notificationValues);
         databaseReference.updateChildren(notificationUpdates, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
-                actionLog("push news", notification.location, notification.postId);
+                actionLog("push news", systemNotification.location, systemNotification.postId);
             }
         });
     }
 
     public static void notifyCheckin(Context context,
-                                     nctu.cs.cgv.itour.object.Notification notification,
+                                     SystemNotification systemNotification,
                                      NotificationManager notificationManager,
                                      String channelId) {
 //        Bitmap icon;
-//        if (!notification.photo.equals("")) {
+//        if (!systemNotification.photo.equals("")) {
 //            try {
 //                icon = Glide.with(getApplicationContext())
 //                        .asBitmap()
-//                        .load(fileDownloadURL + "?filename=" + notification.photo)
+//                        .load(fileDownloadURL + "?filename=" + systemNotification.photo)
 //                        .submit()
 //                        .get();
 //            } catch (InterruptedException e) {
@@ -269,20 +266,20 @@ public class Utility {
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         notificationIntent.putExtra("checkinNotificationIntent", true);
-        notificationIntent.putExtra("lat", notification.lat);
-        notificationIntent.putExtra("lng", notification.lng);
-        notificationIntent.putExtra("key", notification.postId);
-        notificationIntent.putExtra("location", notification.location);
-        notificationIntent.putExtra("title", notification.title);
-        notificationIntent.putExtra("msg", notification.msg);
+        notificationIntent.putExtra("lat", systemNotification.lat);
+        notificationIntent.putExtra("lng", systemNotification.lng);
+        notificationIntent.putExtra("key", systemNotification.postId);
+        notificationIntent.putExtra("location", systemNotification.location);
+        notificationIntent.putExtra("title", systemNotification.title);
+        notificationIntent.putExtra("msg", systemNotification.msg);
         PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
         notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
 //        notificationBuilder.setLargeIcon(icon);
         notificationBuilder.setVibrate(new long[]{0, 300, 300, 300, 300});
-        notificationBuilder.setContentTitle(notification.title);
-        notificationBuilder.setContentText(notification.msg);
+        notificationBuilder.setContentTitle(systemNotification.title);
+        notificationBuilder.setContentText(systemNotification.msg);
         notificationBuilder.setContentIntent(intent);
         notificationBuilder.setChannelId(channelId);
 

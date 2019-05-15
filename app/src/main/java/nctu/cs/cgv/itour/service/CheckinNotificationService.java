@@ -1,43 +1,28 @@
 package nctu.cs.cgv.itour.service;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.UserData;
 
-import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
-import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.notifyCheckin;
 import static nctu.cs.cgv.itour.Utility.pushNews;
-import static nctu.cs.cgv.itour.activity.MainActivity.CHECKIN_NOTIFICATION_REQUEST;
 
 public class CheckinNotificationService extends Service {
     private static final String TAG = "CheckinNotification";
@@ -90,12 +75,12 @@ public class CheckinNotificationService extends Service {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
                     Log.d("NIVRAM", "DATA CHANGED!");
-                    nctu.cs.cgv.itour.object.Notification notification =
-                            dataSnapshot.getValue(nctu.cs.cgv.itour.object.Notification.class);
-                    if (notification == null) return;
-                    if (notification.targetUid.equals("all") || notification.targetUid.equals(uid)) {
-                        notifyCheckin(getApplicationContext(), notification, notificationManager, channelId);
-                        pushNews(notification, dataSnapshot.getKey());
+                    SystemNotification systemNotification =
+                            dataSnapshot.getValue(SystemNotification.class);
+                    if (systemNotification == null) return;
+                    if (systemNotification.targetUid.equals("all") || systemNotification.targetUid.equals(uid)) {
+                        notifyCheckin(getApplicationContext(), systemNotification, notificationManager, channelId);
+                        pushNews(systemNotification, dataSnapshot.getKey());
                     }
                 } catch (Exception ignore) {
 
