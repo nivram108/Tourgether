@@ -28,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -39,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,13 +55,17 @@ import nctu.cs.cgv.itour.activity.CheckinActivity;
 import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.ArrayAdapterSearchView;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
+import nctu.cs.cgv.itour.custom.TogoItemAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.Node;
 import nctu.cs.cgv.itour.object.SpotNode;
+import nctu.cs.cgv.itour.object.TogoData;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static nctu.cs.cgv.itour.MyApplication.CLUSTER_THRESHOLD;
+import static nctu.cs.cgv.itour.MyApplication.MAP_DISPLAY_COMMUNITY;
+import static nctu.cs.cgv.itour.MyApplication.MAP_DISPLAY_PERSONAL;
 import static nctu.cs.cgv.itour.MyApplication.MAX_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.MIN_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.OVERLAP_THRESHOLD;
@@ -106,6 +112,7 @@ public class MapFragment extends Fragment {
     private Bitmap fogBitmap;
     private ActionBar actionBar;
     private View seperator;
+    public String mapDisplayType = MAP_DISPLAY_COMMUNITY;
     // objects
 //    private List<ImageNode> edgeNodeList;
 //    private List<ImageNode> pathEdgeNodeList;
@@ -115,6 +122,8 @@ public class MapFragment extends Fragment {
     private List<CheckinNode> checkinNodeList;
     private Map<String, CheckinNode> checkinClusterNodeMap;
     private List<CheckinNode> checkinClusterNodeList;
+    private Map<String, CheckinNode> togoNodeMap;
+    private List<CheckinNode> togoNodeList;
 
 
     public Map<String, SpotNode> spotNodeMap;
@@ -156,6 +165,7 @@ public class MapFragment extends Fragment {
         checkinNodeList = new ArrayList<>();
         checkinClusterNodeMap = new HashMap<>();
         checkinClusterNodeList = new ArrayList<>();
+        togoNodeList = new ArrayList<>();
         transformMat = new Matrix();
         inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
         translationHandler = new Handler();
@@ -206,17 +216,33 @@ public class MapFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-
+        mapDisplayType = MAP_DISPLAY_COMMUNITY;
         rootLayout = view.findViewById(R.id.parent_layout);
         gpsMarker = view.findViewById(R.id.gps_marker);
         gpsBtn = view.findViewById(R.id.btn_gps);
         addBtn = view.findViewById(R.id.btn_add);
         FrameLayout frameLayout = view.findViewById(R.id.touristmap);
+        Button switchMapBtn = view.findViewById(R.id.btn_switch_map);
+        switchMapBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mapDisplayType == MAP_DISPLAY_COMMUNITY) {
+                    mapDisplayType = MAP_DISPLAY_PERSONAL;
+                    actionBar.setSubtitle("個人地圖");
+                    reRender();
+                } else {
+                    mapDisplayType = MAP_DISPLAY_COMMUNITY;
+                    actionBar.setSubtitle("社群地圖");
+                    reRender();
+                }
+            }
+        });
+
         seperator = view.findViewById(R.id.seperator);
 
         // set subtitle
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionBar.setSubtitle("Map");
+        actionBar.setSubtitle("社群地圖");
 
         // set tourist map
         Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + mapTag + "_distorted_map.png");
@@ -451,10 +477,11 @@ public class MapFragment extends Fragment {
     }
 
     private void reRender() {
-        reRender(true);
+        if (mapDisplayType == MAP_DISPLAY_COMMUNITY) reRenderCommunity(true);
+        else reRenderPersonal(true);
     }
 
-    private void reRender(boolean performMerge) {
+    private void reRenderCommunity(boolean performMerge) {
 
         boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
 
@@ -494,6 +521,9 @@ public class MapFragment extends Fragment {
         gpsMarkTransform.mapPoints(point);
         gpsMarker.setTranslationX(point[0]);
         gpsMarker.setTranslationY(point[1]);
+        for (CheckinNode checkinNode : togoNodeList) {
+            checkinNode.icon.setVisibility(View.GONE);
+        }
 
         // transform nodeImage
 //        if (edgeLengthSwitch) {
@@ -581,6 +611,92 @@ public class MapFragment extends Fragment {
                 checkinClusterNode.icon.setTranslationY(point[1]);
             }
         }
+    }
+
+    private void reRenderPersonal(boolean performMerge) {
+
+
+        boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
+        List<Fragment> fragmentList = getFragmentManager().getFragments();
+        TogoFragment togoFragment = new TogoFragment();
+        for (Fragment fragment: fragmentList) {
+            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+        }
+        List<SpotNode> togoSpotNodeList = new ArrayList<>();
+
+        for (TogoData togoData: togoFragment.togoItemAdapter.togoDataList) {
+            Log.d("NIVRAMM", "togoData:" + togoData.locationName);
+            if(spotList.nodeMap.containsKey(togoData.locationName)) {
+                SpotNode spotNode = spotList.nodeMap.get(togoData.locationName);
+                togoSpotNodeList.add(spotNode);
+            }
+
+        }
+        setTogoNodeList(togoSpotNodeList);
+        Matrix gpsMarkTransform = new Matrix();
+        Matrix spotIconTransform = new Matrix();
+//        Matrix nodeIconTransform = new Matrix();
+        Matrix checkinIconTransform = new Matrix();
+        Matrix mergedCheckinIconTransform = new Matrix();
+        gpsMarkTransform.postTranslate(-gpsMarkerPivotX, -gpsMarkerPivotY);
+        spotIconTransform.postTranslate(-spotIconPivotX, -spotIconPivotY);
+//        nodeIconTransform.postTranslate(-edgeNodeIconPivotX, -edgeNodeIconPivotY);
+        checkinIconTransform.postTranslate(-checkinIconPivotX, -checkinIconPivotY);
+        mergedCheckinIconTransform.postTranslate(-mergedCheckinIconPivotX, -mergedCheckinIconPivotY);
+        float[] point = new float[]{0, 0};
+
+        // transform tourist map (ImageView)
+        transformMat.mapPoints(point);
+        touristMap.setScaleX(scale);
+        touristMap.setScaleY(scale);
+        touristMap.setRotation(rotation);
+        touristMap.setTranslationX(point[0]);
+        touristMap.setTranslationY(point[1]);
+
+        // transform gpsMarker
+        point[0] = gpsDistortedX;
+        point[1] = gpsDistortedY;
+        transformMat.mapPoints(point);
+        gpsMarkTransform.mapPoints(point);
+        gpsMarker.setTranslationX(point[0]);
+        gpsMarker.setTranslationY(point[1]);
+        for (SpotNode spotNode : spotNodeList) {
+            point[0] = spotNode.x;
+            point[1] = spotNode.y;
+            transformMat.mapPoints(point);
+            spotIconTransform.mapPoints(point);
+            spotNode.icon.setTranslationX(point[0]);
+            spotNode.icon.setTranslationY(point[1]);
+        }
+
+        for (CheckinNode checkinNode : checkinNodeList) {
+            checkinNode.icon.setVisibility(View.GONE);
+        }
+
+        for (CheckinNode checkinClusterNode : checkinClusterNodeList) {
+            checkinClusterNode.icon.setVisibility(View.GONE);
+        }
+
+        for (CheckinNode checkinNode : togoNodeList) {
+            point[0] = checkinNode.x;
+            point[1] = checkinNode.y;
+            transformMat.mapPoints(point);
+            checkinIconTransform.mapPoints(point);
+            checkinNode.icon.setTranslationX(point[0]);
+            checkinNode.icon.setTranslationY(point[1]);
+        }
+    }
+
+    private void setTogoNodeList(List<SpotNode> spotNodeList) {
+        for (SpotNode spotNode: spotNodeList) {
+            Checkin checkin = new Checkin();
+            checkin.lat = spotNode.lat;
+            checkin.lng = spotNode.lng;
+            checkin.uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            float[] imgPx = gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+            addTogoIcon(checkin, imgPx[0], imgPx[1]);
+        }
+
     }
 
     private void addSpotNode(final SpotNode spotNode) {
@@ -809,6 +925,56 @@ public class MapFragment extends Fragment {
         }
     }
 
+    // checkins that their icon overlay
+
+    private void addTogoIcon(final Checkin checkin, float x, float y) {
+
+//        // search for exist node
+//        for (final CheckinNode checkinNode : togoNodeList) {
+//            double distance = Math.pow(x - checkinNode.x, 2) + Math.pow(y - checkinNode.y, 2);
+//            if (distance < OVERLAP_THRESHOLD) {
+//                checkinNode.checkinList.add(checkin);
+////                checkinNodeMap.put(checkin.key, checkinNode);
+//                if (checkinNode.checkinList.size() > 1) {
+//                    checkinNode.icon.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+////                            showCheckinListDialog(checkinNode);
+//                        }
+//                    });
+//                }
+//                if (uid.equals(checkin.uid)) {
+//                    ((ImageView) checkinNode.icon).setImageDrawable(
+//                            ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
+//                }
+//                return;
+//            }
+//        }
+
+        // create new node
+        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+        checkinNode.icon = new ImageView(context);
+        checkinNode.icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCheckinDialog(checkin.key);
+            }
+        });
+        checkinNode.icon.setLayoutParams(new RelativeLayout.LayoutParams(checkinIconWidth, checkinIconHeight));
+
+        if (uid.equals(checkin.uid)) {
+            ((ImageView) checkinNode.icon).setImageDrawable(
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
+        } else {
+            ((ImageView) checkinNode.icon).setImageDrawable(
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.checkin_icon_60px, null));
+        }
+        rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
+        checkinNode.checkinList.add(checkin);
+        togoNodeList.add(checkinNode);
+//        checkinNodeMap.put(checkin.key, checkinNode);
+    }
+
     public void onLocateClick(String lat, String lng) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
@@ -880,7 +1046,8 @@ public class MapFragment extends Fragment {
                         transformMat.postTranslate(point[0], point[1]);
                         scale += scaleTo22 / 5;
                     }
-                    reRender(false);
+                    if (mapDisplayType == MAP_DISPLAY_COMMUNITY) reRenderCommunity(false);
+                    else reRenderPersonal(false);
                     translationHandler.postDelayed(this, 5);
                 }
             }
@@ -1001,12 +1168,18 @@ public class MapFragment extends Fragment {
             for (CheckinNode checkinClusterNode : checkinClusterNodeList) {
                 checkinClusterNode.icon.setVisibility(View.VISIBLE);
             }
+            for (CheckinNode checkinNode : togoNodeList) {
+                checkinNode.icon.setVisibility(View.VISIBLE);
+            }
         } else {
             for (CheckinNode checkinNode : checkinNodeList) {
                 checkinNode.icon.setVisibility(View.GONE);
             }
             for (CheckinNode checkinClusterNode : checkinClusterNodeList) {
                 checkinClusterNode.icon.setVisibility(View.GONE);
+            }
+            for (CheckinNode checkinNode : togoNodeList) {
+                checkinNode.icon.setVisibility(View.GONE);
             }
         }
         reRender();
@@ -1032,6 +1205,7 @@ public class MapFragment extends Fragment {
     public void searchLocationDialog(Checkin checkin) {
         final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
+        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         final Checkin c = checkin;
         String latLng = c.lat + "," + c.lng;
         Log.d("NIVRAM", "LATLNG: " + latLng);
@@ -1063,7 +1237,6 @@ public class MapFragment extends Fragment {
             }
         });
         bottomSheetDialog.show();
-
     }
     public void searchLocation(String locationName) {
         locationName = locationName.replace(' ', '+');

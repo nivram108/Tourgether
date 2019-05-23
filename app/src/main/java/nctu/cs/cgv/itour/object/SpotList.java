@@ -1,5 +1,7 @@
 package nctu.cs.cgv.itour.object;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +41,7 @@ public class SpotList {
                 int order = Integer.parseInt(arr[3]);
                 if (order < 3) {
                     nodeMap.put(arr[0], new SpotNode(imgPx[0], imgPx[1], arr[1], arr[2], arr[0], order));
+                    Log.d("NIVRAMM" , "node Map key :" + arr[0]);
                 }
 
             }

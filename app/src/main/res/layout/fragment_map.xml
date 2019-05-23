@@ -51,23 +51,37 @@
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="8dp"
         android:padding="16dp"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:clipToPadding="false">
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btn_gps"
+        <Button
+            android:id="@+id/btn_switch_map"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_gps_fixed_black_24dp"
-            app:backgroundTint="@color/md_white_1000" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btn_add"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="16dp"
+            android:text="切換地圖"
+            android:background="@color/md_white_1000"/>
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:src="@drawable/ic_add_white_24dp"
-            app:backgroundTint="@color/gps_marker_color" />
+            android:orientation="vertical">
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_gps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/ic_gps_fixed_black_24dp"
+                app:backgroundTint="@color/md_white_1000" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/ic_add_white_24dp"
+                app:backgroundTint="@color/gps_marker_color" />
+        </LinearLayout>
+
 
     </LinearLayout>
 

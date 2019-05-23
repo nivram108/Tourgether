@@ -59,19 +59,23 @@ import nctu.cs.cgv.itour.fragment.MapFragment;
 import nctu.cs.cgv.itour.fragment.NewsFragment;
 import nctu.cs.cgv.itour.fragment.PersonalFragment;
 import nctu.cs.cgv.itour.fragment.SettingsFragment;
+import nctu.cs.cgv.itour.fragment.TogoFragment;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
 import nctu.cs.cgv.itour.object.Mesh;
+import nctu.cs.cgv.itour.object.SpotCategory;
 import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.UserData;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
+import nctu.cs.cgv.itour.service.CheckinNotificationService;
 import nctu.cs.cgv.itour.service.CommentNotificationService;
 import nctu.cs.cgv.itour.service.GpsLocationService;
 import nctu.cs.cgv.itour.service.LikeNotificationService;
 //import nctu.cs.cgv.itour.service.NotificationListener;
+import nctu.cs.cgv.itour.service.NotificationListener;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
 import static nctu.cs.cgv.itour.MyApplication.audioFeedbackFlag;
@@ -139,11 +143,12 @@ public class MainActivity extends AppCompatActivity implements
     private String likeNotificationChannelId = "like notification";
     private HandlerThread checkLaunchedByNotificationThread;
     private Handler checkLaunchedByNotificationThreadHandler;
+    public static SpotCategory spotCategory;
     private static boolean activityIsVisible = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        spotCategory = new SpotCategory();
         setContentView(R.layout.activity_main);
         checkPermission();
 //        showCheckinDialog();
@@ -171,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
-//        startService(new Intent(this, NotificationListener.class));
+        startService(new Intent(this, NotificationListener.class));
         setSensors();
         String string = Settings.Secure.getString(getContentResolver(),
                 "enabled_notification_listeners");
@@ -189,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements
         if (logFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             queryUserUngo();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            //startService(new Intent(this, CheckinNotificationService.class));
+            startService(new Intent(this, CheckinNotificationService.class));
             Log.d("NIVRAM", "EXCUSE ME WHAT THe FUCK");
 //            startService(new Intent(this, CommentNotificationService.class));
         }
@@ -438,6 +443,7 @@ public class MainActivity extends AppCompatActivity implements
         fragmentList.add(listFragment);
         fragmentList.add(personalFragment);
         fragmentList.add(NewsFragment.newInstance());
+        fragmentList.add(TogoFragment.newInstance());
         fragmentList.add(SettingsFragment.newInstance());
 //        fragmentList.add(NotificationFragment.newInstance());
         //TODO: add fragment here
@@ -456,8 +462,10 @@ public class MainActivity extends AppCompatActivity implements
         });
         // disable swipe
         viewPager.setPagingEnabled(false);
+
         // set keep all three pages alive
-        viewPager.setOffscreenPageLimit(4);
+        // add one more page
+        viewPager.setOffscreenPageLimit(5);
 
         bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
@@ -482,8 +490,14 @@ public class MainActivity extends AppCompatActivity implements
                             Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
                         }
                         break;
-                    case R.id.tab_settings:
+                    case R.id.tab_togo:
                         viewPager.setCurrentItem(4);
+                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+                    case R.id.tab_settings:
+                        viewPager.setCurrentItem(5);
                         break;
                 }
             }

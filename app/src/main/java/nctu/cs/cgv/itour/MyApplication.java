@@ -25,8 +25,10 @@ public class MyApplication extends Application {
     public static final String mapTag = "development";
     //public static final String fileServerURL = "http://140.113.210.17:55555/data/json_maps";
     //public static final String APPServerURL = "http://140.113.210.17:55555";
-    public static final String fileServerURL = "http://3.14.193.188:55555/data/json_maps";
-    public static final String APPServerURL = "http://3.14.193.188:55555";
+    public static final String fileServerURL = "http://127.0.0.1:55555/data/json_maps";
+    public static final String APPServerURL = "http://127.0.0.1:55555";
+//    public static final String fileServerURL = "http://3.14.193.188:55555/data/json_maps";
+//    public static final String APPServerURL = "http://3.14.193.188:55555";
     public static final String fileUploadURL = APPServerURL + "/uploadPhoto";
     public static final String fileDownloadURL = APPServerURL + "/download";
     public static final String dirPath = Environment.getExternalStorageDirectory().toString() + "/iTour";
@@ -36,6 +38,9 @@ public class MyApplication extends Application {
     public static final String actionLogPath = dirPath + "/actionLog";
     public static final String appLogPath = dirPath + "/appLog";
     private static final String TAG = "MyApplication";
+    public static final String MAP_DISPLAY_COMMUNITY = "MAP_DISPLAY_COMMUNITY";
+    public static final String MAP_DISPLAY_PERSONAL = "MAP_DISPLAY_PERSONAL";
+    public static final String CATEGORY_NOT_FOUND = "CATEGORY_NOT_FOUND";
     public static SpotList spotList;
     public static Mesh realMesh;
     public static Mesh warpMesh;

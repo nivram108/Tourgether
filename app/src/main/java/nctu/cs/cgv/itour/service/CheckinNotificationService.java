@@ -60,7 +60,7 @@ public class CheckinNotificationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Log.d("NIVRAM", "service start");
+        Log.d(TAG, "service start");
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             this.stopSelf();
             return START_NOT_STICKY;
@@ -74,7 +74,7 @@ public class CheckinNotificationService extends Service {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAM", "DATA CHANGED!");
+                    Log.d(TAG, "DATA CHANGED!");
                     SystemNotification systemNotification =
                             dataSnapshot.getValue(SystemNotification.class);
                     if (systemNotification == null) return;

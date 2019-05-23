@@ -14,6 +14,7 @@ public class Checkin {
     public String lng;
     public String lat;
     public String location;
+    public String category;
     public String description;
     public String photo;
     public String uid;
@@ -35,6 +36,7 @@ public class Checkin {
     public Checkin(String lat,
                    String lng,
                    String location,
+                   String category,
                    String description,
                    String photo,
                    String uid,
@@ -45,6 +47,7 @@ public class Checkin {
         this.lat = lat;
         this.location = location;
         this.description = description;
+        this.category = category;
         this.photo = photo;
         this.uid = uid;
         this.username = username;
@@ -64,6 +67,7 @@ public class Checkin {
         result.put("lat", lat);
         result.put("location", location);
         result.put("description", description);
+        result.put("category", category);
         result.put("photo", photo);
         result.put("uid", uid);
         result.put("username", username);

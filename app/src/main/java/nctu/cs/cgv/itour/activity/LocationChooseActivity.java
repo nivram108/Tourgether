@@ -14,6 +14,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -28,6 +29,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -54,6 +56,7 @@ import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.Node;
+import nctu.cs.cgv.itour.object.SpotCategory;
 import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 
@@ -118,16 +121,33 @@ public class LocationChooseActivity extends AppCompatActivity {
     // flags
     private boolean isGpsCurrent = false;
     private boolean isOrientationCurrent = true;
-
+    public SpotCategory spotCategory;
+    public String category;
+    public boolean isCategorySelected;
+    Button foodCategoryBtn;
+    Button religionCategoryBtn;
+    Button historyCategoryBtn;
+    Button transportationCategoryBtn;
+    Button leisureCategoryBtn;
+    Button othersCategoryBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_choose);
-
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             finish();
         }
 
+        isCategorySelected = false;
+        category = "";
+        foodCategoryBtn = findViewById(R.id.food);
+        religionCategoryBtn = findViewById(R.id.religion);
+        historyCategoryBtn = findViewById(R.id.history);
+        transportationCategoryBtn = findViewById(R.id.transportation);
+        leisureCategoryBtn = findViewById(R.id.leisure);
+        othersCategoryBtn = findViewById(R.id.others);
+
+        spotCategory = new SpotCategory();
         // set variables
         Intent intent = getIntent();
         description = intent.getStringExtra("description");
@@ -235,6 +255,8 @@ public class LocationChooseActivity extends AppCompatActivity {
                 checkinIcon.setTranslationY(mapCenterY - 96);
             }
         });
+        setSelectCategory();
+
     }
 
     @Override
@@ -247,7 +269,12 @@ public class LocationChooseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.btn_submit:
-                checkin();
+                if (isCategorySelected == true) {
+                    checkin();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "請選擇類別", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             case android.R.id.home:
                 finish();
@@ -561,7 +588,6 @@ public class LocationChooseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("gpsUpdate");
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, intentFilter);
@@ -633,7 +659,8 @@ public class LocationChooseActivity extends AppCompatActivity {
         final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         final String username = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         long timestamp = System.currentTimeMillis() / 1000;
-        Checkin checkin = new Checkin(lat, lng, location, description, photo, uid, username, timestamp);
+
+        Checkin checkin = new Checkin(lat, lng, location, category, description, photo, uid, username, timestamp);
         Map<String, Object> checkinValues = checkin.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/checkin/" + mapTag + "/" + key, checkinValues);
@@ -690,7 +717,90 @@ public class LocationChooseActivity extends AppCompatActivity {
             }
         });
     }
+    public void setSelectCategory(){
+        foodCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = foodCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(foodCategoryBtn);
+            }
+        });
 
+        religionCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = religionCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(religionCategoryBtn);
+            }
+        });
+
+        historyCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = historyCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(historyCategoryBtn);
+            }
+        });
+
+        transportationCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = transportationCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(transportationCategoryBtn);
+            }
+        });
+
+        leisureCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = leisureCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(leisureCategoryBtn);
+            }
+        });
+
+        othersCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = othersCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(othersCategoryBtn);
+            }
+        });
+    }
+
+    void setCategoryButtonColor(Button selectedButton) {
+//        int paddingLeft = selectedButton.getPaddingLeft();
+//        int paddingTop = selectedButton.getPaddingTop();
+//        int paddingRight = selectedButton.getPaddingRight();
+//        int paddingBottom = selectedButton.getPaddingBottom();
+        foodCategoryBtn.setSelected(false);
+        religionCategoryBtn.setSelected(false);
+        historyCategoryBtn.setSelected(false);
+        transportationCategoryBtn.setSelected(false);
+        leisureCategoryBtn.setSelected(false);
+        othersCategoryBtn.setSelected(false);
+        selectedButton.setSelected(true);
+//        foodCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        foodCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        religionCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        religionCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        historyCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        historyCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        transportationCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        transportationCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        leisureCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        leisureCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        othersCategoryBtn.setBackgroundResource(R.color.default_gray);
+//        othersCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+//        selectedButton.setBackgroundResource(R.color.md_blue_200);
+//        selectedButton.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+
+    }
 
 }
 

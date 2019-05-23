@@ -65,7 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="72dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_gps_fixed_black_24dp"
         app:backgroundTint="@color/md_white_1000" />
@@ -105,6 +105,91 @@
 
         </LinearLayout>
 
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        >
+        <HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:layout_gravity="bottom">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp"
+                android:paddingHorizontal="16dp">
+                <Button
+                    android:id="@+id/food"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="美食"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"/>
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/history"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="歷史"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingHorizontal="8dp"/>
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/religion"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="宗教"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingHorizontal="8dp"/>
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/leisure"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="休閒"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingHorizontal="8dp"/>
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/transportation"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="交通"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingHorizontal="8dp"/>
+                <Space
+                    android:layout_width="8dp"
+                    android:layout_height="match_parent" />
+                <Button
+                    android:id="@+id/others"
+                    android:layout_width="84dp"
+                    android:layout_height="48dp"
+                    android:text="其他"
+                    android:textSize="16dp"
+                    android:background="@drawable/category_button"
+                    android:paddingHorizontal="8dp"/>
+            </LinearLayout>
+
+        </HorizontalScrollView>
     </FrameLayout>
 
 </RelativeLayout>
