@@ -2,7 +2,6 @@ package nctu.cs.cgv.itour.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -17,24 +16,21 @@ import java.util.Map;
 import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.CheckinItemAdapter;
 import nctu.cs.cgv.itour.custom.ItemClickSupport;
 import nctu.cs.cgv.itour.object.Checkin;
 
-import static nctu.cs.cgv.itour.Utility.actionLog;
-import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
-import static nctu.cs.cgv.itour.activity.MainActivity.savedPostId;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 
-public class SavedCheckinFragment extends Fragment {
+public class CollectedCheckinFragment extends Fragment {
 
-    private static final String TAG = "SavedCheckinFragment";
+    private static final String TAG = "CollectedCheckinFragment";
     private SwipeRefreshLayout swipeRefreshLayout;
     public CheckinItemAdapter checkinItemAdapter;
 
-    public static SavedCheckinFragment newInstance() {
-        return new SavedCheckinFragment();
+    public static CollectedCheckinFragment newInstance() {
+        return new CollectedCheckinFragment();
     }
 
     @Override
@@ -81,7 +77,7 @@ public class SavedCheckinFragment extends Fragment {
     public void refresh() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             checkinItemAdapter.clear();
-            for (final Map.Entry<String, Boolean> entry : savedPostId.entrySet()) {
+            for (final Map.Entry<String, Boolean> entry : collectedCheckinKey.entrySet()) {
                 if (entry.getValue()) {
                     String postId = entry.getKey();
                     Checkin checkin = checkinMap.get(postId);

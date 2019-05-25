@@ -2,28 +2,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/parent_layout"
+    android:id="@+id/personal_map_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/mapBackground"
     tools:context="nctu.cs.cgv.itour.fragment.MapFragment">
 
     <FrameLayout
-        android:id="@+id/touristmap"
+        android:id="@+id/prsonal_tourist_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
 
     <View
-        android:id="@+id/seperator"
+        android:id="@+id/personal_seperator"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/transparent"
         android:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/gps_marker"
+        android:id="@+id/personal_gps_marker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipToPadding="false"

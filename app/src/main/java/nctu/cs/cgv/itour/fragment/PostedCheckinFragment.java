@@ -41,8 +41,10 @@ public class PostedCheckinFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>());
+        if (checkinItemAdapter == null) checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>());
+
     }
 
     @Override
@@ -110,6 +112,7 @@ public class PostedCheckinFragment extends Fragment {
 
     public void refresh() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            if (checkinItemAdapter == null) checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>());
             checkinItemAdapter.clear();
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             for (final Checkin checkin : checkinMap.values()) {

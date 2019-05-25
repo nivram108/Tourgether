@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.object.TogoData;
+import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
 public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHolder>{
-    public List<TogoData> togoDataList;
+    public List<TogoPlannedData> togoPlannedDataList;
     @Override
     public TogoItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
@@ -39,18 +39,18 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         return new TogoItemAdapter.ViewHolder(checkinCardView);
     }
 
-    public TogoItemAdapter(List<TogoData> togoDataList) {
+    public TogoItemAdapter(List<TogoPlannedData> togoPlannedDataList) {
 
-        this.togoDataList = new ArrayList<>();
-        for ( TogoData togoData: togoDataList) {
-            addTogo(togoData);
+        this.togoPlannedDataList = new ArrayList<>();
+        for ( TogoPlannedData togoPlannedData : togoPlannedDataList) {
+            addTogo(togoPlannedData);
         }
     }
 
     @Override
     public void onBindViewHolder(TogoItemAdapter.ViewHolder holder, int position) {
-        TogoData togoData = this.togoDataList.get(position);
-        holder.locationName.setText(togoData.locationName);
+        TogoPlannedData togoPlannedData = this.togoPlannedDataList.get(position);
+        holder.locationName.setText(togoPlannedData.locationName);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -67,21 +67,21 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return togoDataList.size();
+        return togoPlannedDataList.size();
     }
 
     public void queryTogoList() {
 
-//        togoDataList.clear();
+//        togoPlannedDataList.clear();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         Query commentNotificationQuery = FirebaseDatabase.getInstance().getReference().child("togo_list").child(mapTag).child(uid);
         commentNotificationQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                TogoData togoData = dataSnapshot.getValue(TogoData.class);
-                Log.d("NIVRAMM", "get togo firebase :" + togoData.locationName);
+                TogoPlannedData togoPlannedData = dataSnapshot.getValue(TogoPlannedData.class);
+                Log.d("NIVRAMM", "get togo firebase :" + togoPlannedData.locationName);
 
-                togoDataList.add(0, togoData);
+                togoPlannedDataList.add(0, togoPlannedData);
                 notifyItemInserted(0);
                 notifyDataSetChanged();
             }
@@ -108,21 +108,24 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         });
     }
 
-    public void removeTogo(TogoData togoData) {
+    public void removeTogo(TogoPlannedData togoPlannedData) {
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("togo_list").child(mapTag).child(uid).child(togoData.locationName);
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("togo_list").child(mapTag).child(uid).child(togoPlannedData.locationName);
         databaseReference.removeValue();
     }
 
-    public void addTogo(TogoData togoData) {
+    public void clear() {
+        togoPlannedDataList.clear();
+    }
+    public void addTogo(TogoPlannedData togoPlannedData) {
         notifyItemInserted(0);
         notifyDataSetChanged();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        final String pushKey = togoData.locationName;
+        final String pushKey = togoPlannedData.locationName;
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/togo_list/" + mapTag + "/" + uid + "/" + pushKey, togoData.toMap());
+        childUpdates.put("/togo_list/" + mapTag + "/" + uid + "/" + pushKey, togoPlannedData.toMap());
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
                 new DatabaseReference.CompletionListener() {
                     @Override

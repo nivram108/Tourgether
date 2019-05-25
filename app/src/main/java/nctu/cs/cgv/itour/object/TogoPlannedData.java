@@ -5,16 +5,16 @@ import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TogoData {
+public class TogoPlannedData {
     public String locationName;
     public boolean isVisited;
-    public TogoData(String locationName,
-                            boolean isVisited) {
+    public TogoPlannedData(String locationName,
+                           boolean isVisited) {
         this.locationName = locationName;
         this.isVisited = isVisited;
     }
-    public TogoData(){};
-    public TogoData(String locationName) {
+    public TogoPlannedData(){};
+    public TogoPlannedData(String locationName) {
         this.locationName = locationName;
         this.isVisited = false;
     }

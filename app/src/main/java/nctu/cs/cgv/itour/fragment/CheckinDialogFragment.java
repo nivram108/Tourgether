@@ -55,7 +55,7 @@ import static nctu.cs.cgv.itour.MyApplication.longitude;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
-import static nctu.cs.cgv.itour.activity.MainActivity.savedPostId;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 
 public class CheckinDialogFragment extends DialogFragment {
 
@@ -223,17 +223,17 @@ public class CheckinDialogFragment extends DialogFragment {
                 @Override
                 public void onClick(View v) {
                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-                    if (savedPostId.containsKey(checkin.key) && savedPostId.get(checkin.key)) {
+                    if (collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                                 R.drawable.ic_bookmark_border_black_24dp, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).removeValue();
-                        savedPostId.remove(checkin.key);
+                        collectedCheckinKey.remove(checkin.key);
                         actionLog("cancel save checkin", checkin.location, checkin.key);
                     } else {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                                 R.drawable.ic_bookmark_blue_24dp, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).setValue(true);
-                        savedPostId.put(checkin.key, true);
+                        collectedCheckinKey.put(checkin.key, true);
                         actionLog("save checkin", checkin.location, checkin.key);
                     }
                 }
@@ -244,7 +244,7 @@ public class CheckinDialogFragment extends DialogFragment {
                         R.drawable.ic_favorite_red_500_24dp, null));
             }
 
-            if (savedPostId.containsKey(checkin.key) && savedPostId.get(checkin.key)) {
+            if (collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
                 saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                         R.drawable.ic_bookmark_blue_24dp, null));
             }

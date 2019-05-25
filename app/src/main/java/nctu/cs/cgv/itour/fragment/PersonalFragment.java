@@ -11,15 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.custom.MyViewPager;
-import nctu.cs.cgv.itour.object.Checkin;
 
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 
@@ -29,8 +26,10 @@ public class PersonalFragment extends Fragment {
     private ActionBar actionBar;
     private MyViewPager viewPager;
     private List<Fragment> fragmentList;
+    public PersonalMapFragment personalMapFragment;
+    private TogoFragment togoFragment;
+    private CollectedCheckinFragment collectedCheckinFragment;
     private PostedCheckinFragment postedCheckinFragment;
-    private SavedCheckinFragment savedCheckinFragment;
 
     public static PersonalFragment newInstance() {
         return new PersonalFragment();
@@ -46,16 +45,21 @@ public class PersonalFragment extends Fragment {
 
         actionBar = ((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar();
 
+        personalMapFragment = PersonalMapFragment.newInstance();
+        togoFragment = TogoFragment.newInstance();
+        collectedCheckinFragment = CollectedCheckinFragment.newInstance();
         postedCheckinFragment = PostedCheckinFragment.newInstance();
-        savedCheckinFragment = SavedCheckinFragment.newInstance();
         fragmentList = new ArrayList<>();
+        fragmentList.add(personalMapFragment);
+        fragmentList.add(togoFragment);
+        fragmentList.add(collectedCheckinFragment);
         fragmentList.add(postedCheckinFragment);
-        fragmentList.add(savedCheckinFragment);
 
         viewPager = view.findViewById(R.id.view_pager);
         viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
 
-            String tabTitles[] = new String[]{"個人發文", "收藏打卡"};
+//            String tabTitles[] = new String[]{"我的地點", "收藏打卡", "個人發文"};
+            String tabTitles[] = new String[]{"我的地圖", "我的地點", "收藏打卡", "個人發文"};
 
             @Override
             public Fragment getItem(int position) {
@@ -89,17 +93,19 @@ public class PersonalFragment extends Fragment {
                 actionBar.setElevation(0);
                 actionBar.setSubtitle(getString(R.string.subtitle_personal));
             }
+            togoFragment.refresh();
+            collectedCheckinFragment.refresh();
             postedCheckinFragment.refresh();
-            savedCheckinFragment.refresh();
         } else {
             if (actionBar != null) {
+//                personalMapFragment.clearMap();
                 actionBar.setElevation(dpToPx(getContext(), 4));
             }
         }
     }
 
-    public void notifySavedCheckinChanged() {
-        savedCheckinFragment.checkinItemAdapter.notifyDataSetChanged();
+    public void notifyCollectedCheckinChanged() {
+        collectedCheckinFragment.checkinItemAdapter.notifyDataSetChanged();
     }
 
     public void notifyPostedCheckinChanged() {

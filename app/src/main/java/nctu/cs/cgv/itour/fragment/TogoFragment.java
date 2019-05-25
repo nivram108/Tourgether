@@ -13,7 +13,6 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,8 +29,7 @@ import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.custom.SwipeController;
 import nctu.cs.cgv.itour.custom.SwipeControllerActions;
 import nctu.cs.cgv.itour.custom.TogoItemAdapter;
-import nctu.cs.cgv.itour.object.Checkin;
-import nctu.cs.cgv.itour.object.TogoData;
+import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 
@@ -84,9 +82,9 @@ public class TogoFragment extends Fragment{
         final SwipeController swipeController = new SwipeController(new SwipeControllerActions() {
             @Override
             public void onRightClicked(int position) {
-                TogoData togoData = togoItemAdapter.togoDataList.get(position);
-                togoItemAdapter.togoDataList.remove(position);
-                togoItemAdapter.removeTogo(togoData);
+                TogoPlannedData togoPlannedData = togoItemAdapter.togoPlannedDataList.get(position);
+                togoItemAdapter.togoPlannedDataList.remove(position);
+                togoItemAdapter.removeTogo(togoPlannedData);
                 togoItemAdapter.notifyItemRemoved(position);
                 togoItemAdapter.notifyItemRangeChanged(position, togoItemAdapter.getItemCount());
             }
@@ -121,7 +119,7 @@ public class TogoFragment extends Fragment{
             public void onClick(View v) {
                 EditText editText = dialog.findViewById(R.id.place_togo);
                 final String togoName = editText.getText().toString();
-                togoItemAdapter.addTogo(new TogoData(togoName));
+                togoItemAdapter.addTogo(new TogoPlannedData(togoName));
                 dialog.dismiss();
             }
         });
@@ -170,14 +168,14 @@ public class TogoFragment extends Fragment{
         }
     }
 
-    public ArrayList<TogoData> setTogoList() {
-        ArrayList<TogoData> togoData = new ArrayList<>();
-        togoData.add(new TogoData("三協成博物館"));
-        togoData.add(new TogoData("紅樓中餐廳"));
-        togoData.add(new TogoData("重建街戀愛巷"));
-        togoData.add(new TogoData("海風餐廳"));
-        togoData.add(new TogoData("真理大學禮拜堂"));
-        return togoData;
+    public ArrayList<TogoPlannedData> setTogoList() {
+        ArrayList<TogoPlannedData> togoPlannedData = new ArrayList<>();
+        togoPlannedData.add(new TogoPlannedData("三協成博物館"));
+        togoPlannedData.add(new TogoPlannedData("紅樓中餐廳"));
+        togoPlannedData.add(new TogoPlannedData("重建街戀愛巷"));
+        togoPlannedData.add(new TogoPlannedData("海風餐廳"));
+        togoPlannedData.add(new TogoPlannedData("真理大學禮拜堂"));
+        return togoPlannedData;
     }
 
 }

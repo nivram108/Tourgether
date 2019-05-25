@@ -30,7 +30,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -103,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final int SCREEN_CAPTURE_REQUEST = 789;
     // Checkins
     public static Map<String, Checkin> checkinMap;
-    public static Map<String, Boolean> savedPostId;
+    public static Map<String, Boolean> collectedCheckinKey;
     public static UserData userData;
     // view objects
     private MyViewPager viewPager;
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements
         edgeNode = new EdgeNode(new File(dirPath + "/" + mapTag + "_edge_length.txt"));
 
         checkinMap = new LinkedHashMap<>();
-        savedPostId = new LinkedHashMap<>();
+        collectedCheckinKey = new LinkedHashMap<>();
 
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
@@ -328,6 +327,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     checkinMap.put(dataSnapshot.getKey(), checkin);
                     mapFragment.addCheckin(checkin);
+                    personalFragment.personalMapFragment.addCheckin(checkin);
                     Log.d("NIVRAM", "checkin add");
 //                        showCheckinDialog();
 
@@ -353,9 +353,10 @@ public class MainActivity extends AppCompatActivity implements
 
                     checkinMap.put(dataSnapshot.getKey(), checkin);
                     listFragment.checkinItemAdapter.notifyDataSetChanged();
-                    personalFragment.notifySavedCheckinChanged();
+                    personalFragment.notifyCollectedCheckinChanged();
                     personalFragment.notifyPostedCheckinChanged();
                     mapFragment.changeCheckin(checkin);
+                    personalFragment.personalMapFragment.changeCheckin(checkin);
                     Log.d("NIVRAM", "child change");
                 } catch (Exception ignored) {
 
@@ -388,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void querySavedPostId() {
-        savedPostId.clear();
+        collectedCheckinKey.clear();
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -398,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    savedPostId.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
                 }
@@ -407,7 +408,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 try {
-                    savedPostId.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
                 }
@@ -416,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 try {
-                    savedPostId.remove(dataSnapshot.getKey());
+                    collectedCheckinKey.remove(dataSnapshot.getKey());
                 } catch (Exception ignored) {
 
                 }
@@ -513,6 +514,9 @@ public class MainActivity extends AppCompatActivity implements
                         mapFragment.handleGpsUpdate(
                                 intent.getFloatExtra("lat", 0),
                                 intent.getFloatExtra("lng", 0));
+                        personalFragment.personalMapFragment.handleGpsUpdate(
+                                intent.getFloatExtra("lat", 0),
+                                intent.getFloatExtra("lng", 0));
                         break;
                     case "fogUpdate":
                         notifySpot(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng", 0));
@@ -552,6 +556,7 @@ public class MainActivity extends AppCompatActivity implements
                         float orientation[] = new float[3];
                         SensorManager.getOrientation(R, orientation);
                         mapFragment.handleSensorChange(orientation[0]);
+//                        personalFragment.personalMapFragment.handleSensorChange(orientation[0]);
                     }
                 }
             }
@@ -701,6 +706,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onCheckinIconSwitched(boolean flag) {
         mapFragment.switchCheckinIcon(flag);
+        personalFragment.personalMapFragment.switchCheckinIcon(flag);
     }
 
     @Override
