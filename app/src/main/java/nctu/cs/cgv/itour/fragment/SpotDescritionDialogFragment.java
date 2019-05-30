@@ -176,7 +176,14 @@ public class SpotDescritionDialogFragment extends DialogFragment {
     }
 
     private void setActionBtn(final View view, final SpotNode spotnode) {
-        final LinearLayout locateBtn = view.findViewById(R.id.);
+        final LinearLayout locateBtn = view.findViewById(R.id.btn_spot_locate);
+        locateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("SpotDescritionDialogFragment");
+                Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
+            }
+        });
 
     }
         public void refresh() {

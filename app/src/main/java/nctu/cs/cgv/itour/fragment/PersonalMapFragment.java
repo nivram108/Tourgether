@@ -1038,6 +1038,7 @@ public class PersonalMapFragment extends Fragment {
 //        checkinNodeMap.put(checkin.key, checkinNode);
     }
 
+    public void on
     public void onLocateClick(String lat, String lng) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
