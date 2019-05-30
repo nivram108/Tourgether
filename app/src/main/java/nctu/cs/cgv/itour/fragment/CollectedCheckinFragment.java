@@ -36,7 +36,7 @@ public class CollectedCheckinFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>());
+        if (checkinItemAdapter == null) checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>(), this);
     }
 
     @Override
@@ -76,6 +76,7 @@ public class CollectedCheckinFragment extends Fragment {
 
     public void refresh() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            if (checkinItemAdapter == null) checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>(), this);
             checkinItemAdapter.clear();
             for (final Map.Entry<String, Boolean> entry : collectedCheckinKey.entrySet()) {
                 if (entry.getValue()) {

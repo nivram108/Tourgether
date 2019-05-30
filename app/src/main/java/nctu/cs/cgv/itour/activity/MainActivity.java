@@ -63,7 +63,9 @@ import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
 import nctu.cs.cgv.itour.object.Mesh;
+import nctu.cs.cgv.itour.object.MyAppGlideModule;
 import nctu.cs.cgv.itour.object.SpotCategory;
+import nctu.cs.cgv.itour.object.SpotDescriptionMap;
 import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
@@ -144,8 +146,11 @@ public class MainActivity extends AppCompatActivity implements
     private Handler checkLaunchedByNotificationThreadHandler;
     public static SpotCategory spotCategory;
     private static boolean activityIsVisible = false;
+    public static SpotDescriptionMap spotDescriptionMap;
+    MyAppGlideModule myAppGlideModule;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
         super.onCreate(savedInstanceState);
         spotCategory = new SpotCategory();
         setContentView(R.layout.activity_main);
@@ -326,8 +331,10 @@ public class MainActivity extends AppCompatActivity implements
 
 
                     checkinMap.put(dataSnapshot.getKey(), checkin);
+                    Log.d("NIVRAMMM", "q checkin");
                     mapFragment.addCheckin(checkin);
-                    personalFragment.personalMapFragment.addCheckin(checkin);
+
+
                     Log.d("NIVRAM", "checkin add");
 //                        showCheckinDialog();
 
@@ -399,6 +406,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
+                    Log.d("NIVRAMMM", "q save");
                     collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -408,6 +416,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 try {
+                    Log.d("NIVRAMMM", "q save");
                     collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -444,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements
         fragmentList.add(listFragment);
         fragmentList.add(personalFragment);
         fragmentList.add(NewsFragment.newInstance());
-        fragmentList.add(TogoFragment.newInstance());
+//        fragmentList.add(TogoFragment.newInstance());
         fragmentList.add(SettingsFragment.newInstance());
 //        fragmentList.add(NotificationFragment.newInstance());
         //TODO: add fragment here
@@ -466,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // set keep all three pages alive
         // add one more page
-        viewPager.setOffscreenPageLimit(5);
+        viewPager.setOffscreenPageLimit(4);
 
         bottomBar = findViewById(R.id.bottom_bar);
         bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
@@ -491,14 +500,14 @@ public class MainActivity extends AppCompatActivity implements
                             Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
                         }
                         break;
-                    case R.id.tab_togo:
-                        viewPager.setCurrentItem(4);
-                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
-                        }
-                        break;
+//                    case R.id.tab_togo:
+//                        viewPager.setCurrentItem(4);
+//                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+//                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
+//                        }
+//                        break;
                     case R.id.tab_settings:
-                        viewPager.setCurrentItem(5);
+                        viewPager.setCurrentItem(4);
                         break;
                 }
             }
@@ -712,6 +721,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onSpotIconSwitched(boolean flag) {
         mapFragment.switchSpotIcon(flag);
+        personalFragment.personalMapFragment.switchSpotIcon(flag);
     }
 
     public void onLocateClick(String lat, String lng) {
@@ -822,5 +832,18 @@ public class MainActivity extends AppCompatActivity implements
             checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
         }
     }
+    public static String getDescription(String spotName) {
+        if (spotDescriptionMap == null || spotDescriptionMap.descriptionMap == null) {
+            spotDescriptionMap = new SpotDescriptionMap();
+        }
+        return spotDescriptionMap.getDescription(spotName);
+    }
 
+    public static boolean isSpot(String spotName) {
+
+        if (spotDescriptionMap == null || spotDescriptionMap.descriptionMap == null) {
+            spotDescriptionMap = new SpotDescriptionMap();
+        }
+        return spotDescriptionMap.isSpot(spotName);
+    }
 }

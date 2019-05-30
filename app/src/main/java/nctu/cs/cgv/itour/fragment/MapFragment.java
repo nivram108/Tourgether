@@ -294,14 +294,15 @@ public class MapFragment extends Fragment {
 //        switchDistanceIndicator(preferences.getBoolean("distance_indicator", false));
         switchSpotIcon(preferences.getBoolean("spot", true));
 
-        // load checkin after map view set.
-        ((MainActivity) getActivity()).queryCheckin();
+
 //        ((MainActivity) getActivity()).queryCommentNotification();
 
         if (!uid.equals("")) {
             ((MainActivity) getActivity()).querySavedPostId();
         }
 
+        // load checkin after map view set.
+        ((MainActivity) getActivity()).queryCheckin();
         rootLayout.post(new Runnable() {
             @Override
             public void run() {
@@ -625,7 +626,7 @@ public class MapFragment extends Fragment {
 
     public void addCheckin(final Checkin checkin) {
         float[] imgPx = gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
-
+        Log.d("NIVRAMMMM", "add checkin key : " + checkin.key);
         addCheckinIcon(checkin, imgPx[0], imgPx[1]);
         addCheckinClusterIcon(checkin, imgPx[0], imgPx[1]);
         changeCheckin(checkin); // set heat checkin icon
@@ -663,7 +664,7 @@ public class MapFragment extends Fragment {
         // search for exist node
         for (final CheckinNode checkinNode : checkinNodeList) {
             double distance = Math.pow(x - checkinNode.x, 2) + Math.pow(y - checkinNode.y, 2);
-            if (distance < OVERLAP_THRESHOLD) {
+            if (distance < OVERLAP_THRESHOLD && (checkinNodeMap.containsKey(checkin.key) == false)) {
                 checkinNode.checkinList.add(checkin);
                 checkinNodeMap.put(checkin.key, checkinNode);
                 if (checkinNode.checkinList.size() > 1) {
@@ -724,6 +725,7 @@ public class MapFragment extends Fragment {
             }
         }
 
+        Log.d("NIVRAMMMM", "LOCATION:" + location);
         if (location.equals("")) {
             // search for exist cluster node
             for (final CheckinNode checkinClusterNode : checkinClusterNodeList) {
@@ -802,6 +804,7 @@ public class MapFragment extends Fragment {
                 checkinsNumCircle.setText(checkinsNum < 10 ?
                         " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
                 checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
+                Log.d("NIVRAMMMM", "HERE 2");
             }
         }
     }
@@ -1022,6 +1025,7 @@ public class MapFragment extends Fragment {
         }
         reRender();
     }
+
     public String getUid() {
         return uid;
     }

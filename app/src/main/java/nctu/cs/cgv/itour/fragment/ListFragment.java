@@ -56,7 +56,7 @@ public class ListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>());
+        checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>(), this);
     }
 
     @Override

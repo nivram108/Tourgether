@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +18,9 @@ import java.util.List;
 import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.MyViewPager;
+import nctu.cs.cgv.itour.object.Checkin;
 
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 
@@ -32,7 +36,21 @@ public class PersonalFragment extends Fragment {
     private PostedCheckinFragment postedCheckinFragment;
 
     public static PersonalFragment newInstance() {
+
         return new PersonalFragment();
+    }
+
+    public PersonalFragment() {
+        togoFragment = TogoFragment.newInstance();
+        collectedCheckinFragment = CollectedCheckinFragment.newInstance();
+        postedCheckinFragment = PostedCheckinFragment.newInstance();
+        personalMapFragment = PersonalMapFragment.newInstance();
+        fragmentList = new ArrayList<>();
+        fragmentList.add(personalMapFragment);
+        fragmentList.add(togoFragment);
+        fragmentList.add(collectedCheckinFragment);
+        fragmentList.add(postedCheckinFragment);
+//        fragmentList.add(personalMapFragment);
     }
 
     @Override
@@ -45,15 +63,7 @@ public class PersonalFragment extends Fragment {
 
         actionBar = ((AppCompatActivity) Objects.requireNonNull(getActivity())).getSupportActionBar();
 
-        personalMapFragment = PersonalMapFragment.newInstance();
-        togoFragment = TogoFragment.newInstance();
-        collectedCheckinFragment = CollectedCheckinFragment.newInstance();
-        postedCheckinFragment = PostedCheckinFragment.newInstance();
-        fragmentList = new ArrayList<>();
-        fragmentList.add(personalMapFragment);
-        fragmentList.add(togoFragment);
-        fragmentList.add(collectedCheckinFragment);
-        fragmentList.add(postedCheckinFragment);
+
 
         viewPager = view.findViewById(R.id.view_pager);
         viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
@@ -96,6 +106,8 @@ public class PersonalFragment extends Fragment {
             togoFragment.refresh();
             collectedCheckinFragment.refresh();
             postedCheckinFragment.refresh();
+//            addCollectedCheckinIcon();
+//            addPostedCheckinIcon();
         } else {
             if (actionBar != null) {
 //                personalMapFragment.clearMap();
@@ -110,5 +122,31 @@ public class PersonalFragment extends Fragment {
 
     public void notifyPostedCheckinChanged() {
         postedCheckinFragment.checkinItemAdapter.notifyDataSetChanged();
+    }
+
+    public void addPostedCheckinIcon() {
+//        if (postedCheckinFragment.getActivity() == null) {
+//            Log.d("NIVRAMMMM", "PPPPPPPPPPPPPP");
+//            return;
+//        }
+        postedCheckinFragment.refresh();
+        List<Checkin> postedCheckins = postedCheckinFragment.checkinItemAdapter.checkins;
+        for (Checkin checkin: postedCheckins) {
+            Checkin newCheckin = new Checkin(checkin);
+            personalMapFragment.addCheckin(newCheckin, "posted");
+        }
+    }
+
+    public void addCollectedCheckinIcon() {
+//        if (collectedCheckinFragment.getActivity() == null) {
+//            Log.d("NIVRAMMMM", "CCCCCCCCCCCCCCC");
+//            return;
+//        }
+        collectedCheckinFragment.refresh();
+        List<Checkin> collectedCheckins = collectedCheckinFragment.checkinItemAdapter.checkins;
+        for (Checkin checkin: collectedCheckins) {
+            Checkin newCheckin = new Checkin(checkin);
+            personalMapFragment.addCheckin(newCheckin, "collected");
+        }
     }
 }

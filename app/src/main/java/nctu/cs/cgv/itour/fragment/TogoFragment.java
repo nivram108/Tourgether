@@ -13,25 +13,43 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.activity.LocationChooseActivity;
+import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.custom.ItemClickSupport;
 import nctu.cs.cgv.itour.custom.SwipeController;
 import nctu.cs.cgv.itour.custom.SwipeControllerActions;
 import nctu.cs.cgv.itour.custom.TogoItemAdapter;
+import nctu.cs.cgv.itour.object.Node;
+import nctu.cs.cgv.itour.object.SpotList;
+import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
+import static nctu.cs.cgv.itour.MyApplication.dirPath;
+import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
+import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
+import static nctu.cs.cgv.itour.activity.MainActivity.isSpot;
 
 public class TogoFragment extends Fragment{
     private static final String TAG = "TogoFragment";
@@ -41,7 +59,7 @@ public class TogoFragment extends Fragment{
     private final int ORDER_TIME = 0;
     private final int ORDER_POPULAR = 1;
     private int orderFlag = ORDER_TIME;
-
+    private SpotList spotList;
     public static TogoFragment newInstance() {
         return new TogoFragment();
     }
@@ -101,6 +119,16 @@ public class TogoFragment extends Fragment{
                 swipeController.onDraw(c);
             }
         });
+        ItemClickSupport.addTo(recyclerView).setOnItemClickListener(
+                new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        String spotName = togoItemAdapter.togoPlannedDataList.get(position).locationName;
+                        SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName);
+                        spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
+                    }
+                }
+        );
 
     }
 
@@ -110,20 +138,53 @@ public class TogoFragment extends Fragment{
     }
 
     public void addItem() {
-        final Dialog dialog= new BottomSheetDialog(getActivity());
+        final Dialog dialog= new Dialog(getActivity());
         dialog.setContentView(R.layout.add_togo_dialog);
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+//        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        final AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.place_togo);
+
+        if (spotList == null) {
+            spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
+
+        }
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(spotList.getSpotsName());
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
+
+        autoCompleteTextView.setThreshold(0);
+        autoCompleteTextView.setAdapter(adapter);
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hideSoftKeyboard(getActivity());
+                autoCompleteTextView.setText(adapter.getItem(position));
+//                String autocompleteStr = adapter.getItem(position);
+            }
+        });
+
+        autoCompleteTextView.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                autoCompleteTextView.showDropDown();
+                return false;
+            }
+        });
+
         Button confirmBtn = dialog.findViewById(R.id.btn_confirm_adding_togo);
         confirmBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText editText = dialog.findViewById(R.id.place_togo);
-                final String togoName = editText.getText().toString();
-                togoItemAdapter.addTogo(new TogoPlannedData(togoName));
-                dialog.dismiss();
+
+                final String togoName = autoCompleteTextView.getText().toString();
+                if (isSpot(togoName)) {
+                    togoItemAdapter.addTogo(new TogoPlannedData(togoName));
+                    dialog.dismiss();
+                } else {
+                    //TODO : TOAST MESSAGE
+                }
+
             }
         });
-
         Button cancelBtn = dialog.findViewById(R.id.btn_cancel_adding_togo);
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,8 +193,14 @@ public class TogoFragment extends Fragment{
             }
         });
 
-
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.gravity = Gravity.TOP;
+        dialog.setCanceledOnTouchOutside(false);
         dialog.show();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        dialog.getWindow().setAttributes(lp);
     }
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {

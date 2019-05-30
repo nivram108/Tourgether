@@ -31,6 +31,7 @@ public class MyApplication extends Application {
     public static final String APPServerURL = "http://3.14.193.188:55555";
     public static final String fileUploadURL = APPServerURL + "/uploadPhoto";
     public static final String fileDownloadURL = APPServerURL + "/download";
+    public static final String spotDescriptionImageURL = APPServerURL + "/spotImage";
     public static final String dirPath = Environment.getExternalStorageDirectory().toString() + "/iTour";
     public static final String audioLogPath = dirPath + "/audioLog";
     public static final String imageLogPath = dirPath + "/imageLog";

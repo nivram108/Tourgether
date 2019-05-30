@@ -60,6 +60,24 @@ public class Checkin {
         this.likeNum = 0;
     }
 
+    public Checkin(Checkin checkin) {
+        this.lng = checkin.lng;
+        this.lat = checkin.lat;
+        this.location = checkin.location;
+        this.description = checkin.description;
+        this.category = checkin.category;
+        this.photo = checkin.photo;
+        this.uid = checkin.uid;
+        this.username = checkin.username;
+        this.timestamp = checkin.timestamp;
+        this.key = checkin.key;
+        this.targetUid = "all";
+        this.popularTargetUid = new HashMap<>();
+        this.popularTargetUid.put("all",false);
+        this.fakeFlag = false;
+        this.likeNum = 0;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();

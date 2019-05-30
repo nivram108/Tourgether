@@ -1,5 +1,6 @@
 package nctu.cs.cgv.itour.custom;
 
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -32,12 +33,14 @@ import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.ViewHolder> {
 
     private static final String TAG = "CheckinItemAdapter";
-    private ArrayList<Checkin> checkins;
+    public ArrayList<Checkin> checkins;
     private Context context;
+    private Fragment parentFragment;
 
-    public CheckinItemAdapter(Context context, ArrayList<Checkin> checkins) {
+    public CheckinItemAdapter(Context context, ArrayList<Checkin> checkins, Fragment parentFragment) {
         this.checkins = checkins;
         this.context = context;
+        this.parentFragment = parentFragment;
     }
 
     @NonNull
@@ -111,7 +114,7 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
     }
 
     private void setPhoto(final ViewHolder viewHolder, final String filename) {
-
+        if(parentFragment.getActivity() == null) return;
         if (filename.equals("")) {
             viewHolder.photo.setVisibility(View.GONE);
             return;
@@ -119,7 +122,7 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
             viewHolder.photo.setVisibility(View.VISIBLE);
         }
 
-        Glide.with(context)
+        Glide.with(parentFragment.getActivity())
                 .load(fileDownloadURL + "?filename=" + filename)
                 .apply(new RequestOptions().placeholder(R.drawable.ic_broken_image_black_48dp))
                 .into(viewHolder.photo);
