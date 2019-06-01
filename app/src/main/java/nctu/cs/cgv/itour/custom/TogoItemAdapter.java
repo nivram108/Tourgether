@@ -108,7 +108,10 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         });
     }
 
-    public void removeTogo(TogoPlannedData togoPlannedData) {
+    public void removeTogo(TogoPlannedData togoPlannedData, int position) {
+        togoPlannedDataList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, getItemCount());
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("togo_list").child(mapTag).child(uid).child(togoPlannedData.locationName);
         databaseReference.removeValue();
@@ -133,5 +136,14 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
                         //commentMsg.setText("");
                     }
                 });
+    }
+
+    public void setIsVisited(String spotName, boolean isVisited) {
+        for (TogoPlannedData togoPlannedData: togoPlannedDataList ) {
+            if (togoPlannedData.locationName.equals(spotName)) {
+                togoPlannedData.isVisited = isVisited;
+                return;
+            }
+        }
     }
 }

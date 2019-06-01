@@ -500,12 +500,6 @@ public class MainActivity extends AppCompatActivity implements
                             Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
                         }
                         break;
-//                    case R.id.tab_togo:
-//                        viewPager.setCurrentItem(4);
-//                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-//                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
-//                        }
-//                        break;
                     case R.id.tab_settings:
                         viewPager.setCurrentItem(4);
                         break;
@@ -739,6 +733,7 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment.onLocateCheckinClick(checkinMap.get(postId));
     }
 
+//    public void onLocateSpotClick()
     @Override
     protected void onStart() {
         super.onStart();

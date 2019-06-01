@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/transparent"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/md_white_1000">
+        <TextView
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:text="請輸入造訪的地點"
+            android:gravity="center_horizontal"
+            android:textColor="@color/md_black_1000"/>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="8dp" />
+       <EditText
+           android:id="@+id/visited_place"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           android:textSize="18dp"
+           android:hint="造訪的地點:"/>
+    </LinearLayout>
+
+
+</LinearLayout>

@@ -101,10 +101,8 @@ public class TogoFragment extends Fragment{
             @Override
             public void onRightClicked(int position) {
                 TogoPlannedData togoPlannedData = togoItemAdapter.togoPlannedDataList.get(position);
-                togoItemAdapter.togoPlannedDataList.remove(position);
-                togoItemAdapter.removeTogo(togoPlannedData);
-                togoItemAdapter.notifyItemRemoved(position);
-                togoItemAdapter.notifyItemRangeChanged(position, togoItemAdapter.getItemCount());
+                togoItemAdapter.removeTogo(togoPlannedData, position);
+
             }
         });
 

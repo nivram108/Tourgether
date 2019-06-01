@@ -34,9 +34,8 @@ public class PersonalFragment extends Fragment {
     private TogoFragment togoFragment;
     private CollectedCheckinFragment collectedCheckinFragment;
     private PostedCheckinFragment postedCheckinFragment;
-
+    private TabLayout tabLayout;
     public static PersonalFragment newInstance() {
-
         return new PersonalFragment();
     }
 
@@ -90,7 +89,7 @@ public class PersonalFragment extends Fragment {
         viewPager.setPagingEnabled(false);
         viewPager.setOffscreenPageLimit(2);
 
-        TabLayout tabLayout = view.findViewById(R.id.tab_layout);
+        tabLayout = view.findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(viewPager);
     }
 
@@ -148,5 +147,9 @@ public class PersonalFragment extends Fragment {
             Checkin newCheckin = new Checkin(checkin);
             personalMapFragment.addCheckin(newCheckin, "collected");
         }
+    }
+
+    public void switchTab(int position) {
+        tabLayout.getTabAt(position).select();
     }
 }

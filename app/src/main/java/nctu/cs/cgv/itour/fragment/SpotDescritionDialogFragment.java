@@ -175,11 +175,20 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                 .into(photo);
     }
 
-    private void setActionBtn(final View view, final SpotNode spotnode) {
+    private void setActionBtn(final View view, final SpotNode spotNode) {
         final LinearLayout locateBtn = view.findViewById(R.id.btn_spot_locate);
         locateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                PersonalMapFragment personalMapFragment = new PersonalMapFragment();
+                for (Fragment fragment: getFragmentManager().getFragments()) {
+                    if (fragment.getClass() == PersonalMapFragment.class) {
+                        personalMapFragment = (PersonalMapFragment) fragment;
+                    }
+                }
+                PersonalFragment personalFragment =  (PersonalFragment)getParentFragment();
+                personalFragment.switchTab(0);
+                personalMapFragment.onLocateClick(spotNode.lat, spotNode.lng);
                 Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("SpotDescritionDialogFragment");
                 Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
             }

@@ -17,10 +17,6 @@
         icon="@drawable/notification_icon"
         title="News" />
     <tab
-        id="@+id/tab_togo"
-        icon="@drawable/ic_togo_list_24dp"
-        title="Togo" />
-    <tab
         id="@+id/tab_settings"
         icon="@drawable/ic_settings_white_24dp"
         title="Settings" />

@@ -28,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -823,7 +824,7 @@ public class MapFragment extends Fragment {
         CheckinNode checkinClusterNode = checkinClusterNodeMap.get(clickedCheckin.key);
         CheckinNode checkinNode = checkinNodeMap.get(clickedCheckin.key);
         onClusterNodeClick(checkinClusterNode, checkinNode.x, checkinNode.y);
-        searchLocationDialog(clickedCheckin);
+        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng);
     }
 
     public void onClusterNodeClick(CheckinNode checkinNode) {
@@ -1030,17 +1031,17 @@ public class MapFragment extends Fragment {
         return uid;
     }
 
-    public void searchLocationDialog(Checkin checkin) {
+    public void searchLocationDialog(final String lat, final String lng) {
         final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
-        final Checkin c = checkin;
-        String latLng = c.lat + "," + c.lng;
+        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        String latLng = lat + "," + lng;
         Log.d("NIVRAM", "LATLNG: " + latLng);
         Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
         searchLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String latLng = c.lat + "," + c.lng;
+                String latLng = lat + "," + lng;
                 Log.d("NIVRAM", "LATLNG: " + latLng);
                 searchLocation(latLng);
             }
@@ -1050,7 +1051,7 @@ public class MapFragment extends Fragment {
         navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String latLng = c.lat + "," + c.lng;
+                String latLng = lat + "," + lng;
                 Log.d("NIVRAM", "LATLNG: " + latLng);
                 navigateLocation(latLng);
             }
@@ -1064,8 +1065,8 @@ public class MapFragment extends Fragment {
             }
         });
         bottomSheetDialog.show();
-
     }
+
     public void searchLocation(String locationName) {
         locationName = locationName.replace(' ', '+');
         Log.d("NIVRAM", "location : " + locationName);
