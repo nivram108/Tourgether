@@ -17,18 +17,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textSize="24dp"
+            android:textSize="24sp"
             android:text="真理大學"
             android:paddingLeft="16dp"
             android:textColor="@color/md_black_1000"
             />
         <Button
             android:id="@+id/navigate_location"
-            android:paddingHorizontal="8dp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"
             android:layout_width="wrap_content"
             android:layout_height="32dp"
             android:text="立即導航"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textColor="@color/md_white_1000"
             android:background="@drawable/navigate_location_button_background"
             android:layout_gravity="right"
@@ -37,6 +37,12 @@
             android:layout_width="36dp"
             android:layout_height="wrap_content" />
     </FrameLayout>
+    <TextView
+        android:id="@+id/user_name"
+        android:text="user"
+        android:paddingLeft="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
     <Space
         android:layout_width="match_parent"
         android:layout_height="16dp" />
@@ -45,7 +51,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="查看詳情"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:layout_marginHorizontal="16dp"/>
     <Space
         android:layout_width="match_parent"
@@ -55,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="回報已造訪"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:layout_marginHorizontal="16dp"/>
     <Space
         android:layout_width="match_parent"
@@ -65,6 +71,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="刪除景點"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:layout_marginHorizontal="16dp"/>
 </LinearLayout>

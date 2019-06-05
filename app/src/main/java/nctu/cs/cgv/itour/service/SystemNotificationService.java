@@ -24,7 +24,7 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.notifyCheckin;
 import static nctu.cs.cgv.itour.Utility.pushNews;
 
-public class CheckinNotificationService extends Service {
+public class SystemNotificationService extends Service {
     private static final String TAG = "CheckinNotification";
     private NotificationManager notificationManager;
     private String channelId = "hot notification";
@@ -74,7 +74,7 @@ public class CheckinNotificationService extends Service {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d(TAG, "DATA CHANGED!");
+                    Log.d(TAG, "notification CHANGED!");
                     SystemNotification systemNotification =
                             dataSnapshot.getValue(SystemNotification.class);
                     if (systemNotification == null) return;

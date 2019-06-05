@@ -63,14 +63,8 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
         viewHolder.description.setText(checkin.description);
 
         int likeNum = checkin.likeNum;
-        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
-            if (checkin.like != null && checkin.like.size() > 0) {
-                likeNum += checkin.like.size();
-            }
-        } else if (VERSION_OPTION == VERSION_ONLY_SELF_CHECKIN) {
-
-        } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
-
+        if (checkin.like != null && checkin.like.size() > 0) {
+            likeNum += checkin.like.size();
         }
 
         viewHolder.like.setText(String.valueOf(likeNum));

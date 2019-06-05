@@ -11,38 +11,46 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@color/md_white_1000">
+        android:background="@color/md_white_1000"
+        android:orientation="vertical">
+
         <AutoCompleteTextView
-        android:id="@+id/place_togo"
-        android:layout_marginTop="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="想去的地點:"
-        android:textSize="16dp"
-        android:gravity="center_horizontal"/>
+            android:id="@+id/place_togo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_marginTop="24dp"
+            android:gravity="center_horizontal"
+            android:hint="想去的地點:"
+            android:textSize="16sp" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            android:layout_marginVertical="16dp"
+            android:orientation="horizontal">
+
             <Button
                 android:id="@+id/btn_confirm_adding_togo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/md_white_1000"
                 android:text="確認"
-                android:textSize="16dp"
-                android:background="@color/md_white_1000"/>
+                android:textSize="16sp" />
+
             <Space
                 android:layout_width="60dp"
                 android:layout_height="match_parent" />
+
             <Button
                 android:id="@+id/btn_cancel_adding_togo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@color/md_white_1000"
                 android:text="取消"
-                android:textSize="16dp"
-                android:background="@color/md_white_1000"/>
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 

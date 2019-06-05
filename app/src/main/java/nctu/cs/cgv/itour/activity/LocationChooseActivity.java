@@ -118,18 +118,11 @@ public class LocationChooseActivity extends AppCompatActivity {
     private float[] geomagnetic;
     // receive gps location
     private BroadcastReceiver messageReceiver;
+    public String category;
     // flags
     private boolean isGpsCurrent = false;
     private boolean isOrientationCurrent = true;
-    public SpotCategory spotCategory;
-    public String category;
-    public boolean isCategorySelected;
-    Button foodCategoryBtn;
-    Button religionCategoryBtn;
-    Button historyCategoryBtn;
-    Button transportationCategoryBtn;
-    Button leisureCategoryBtn;
-    Button othersCategoryBtn;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,20 +131,12 @@ public class LocationChooseActivity extends AppCompatActivity {
             finish();
         }
 
-        isCategorySelected = false;
-        category = "";
-        foodCategoryBtn = findViewById(R.id.food);
-        religionCategoryBtn = findViewById(R.id.religion);
-        historyCategoryBtn = findViewById(R.id.history);
-        transportationCategoryBtn = findViewById(R.id.transportation);
-        leisureCategoryBtn = findViewById(R.id.leisure);
-        othersCategoryBtn = findViewById(R.id.others);
 
-        spotCategory = new SpotCategory();
         // set variables
         Intent intent = getIntent();
         description = intent.getStringExtra("description");
         photo = intent.getStringExtra("photo");
+        category = intent.getStringExtra("category");
 
         // set actionBar title, top-left icon
         ActionBar actionBar = getSupportActionBar();
@@ -255,7 +240,6 @@ public class LocationChooseActivity extends AppCompatActivity {
                 checkinIcon.setTranslationY(mapCenterY - 96);
             }
         });
-        setSelectCategory();
 
     }
 
@@ -269,12 +253,7 @@ public class LocationChooseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.btn_submit:
-                if (isCategorySelected == true) {
-                    checkin();
-                }
-                else {
-                    Toast.makeText(getApplicationContext(), "請選擇類別", Toast.LENGTH_SHORT).show();
-                }
+                checkin();
                 return true;
             case android.R.id.home:
                 finish();
@@ -717,90 +696,7 @@ public class LocationChooseActivity extends AppCompatActivity {
             }
         });
     }
-    public void setSelectCategory(){
-        foodCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = foodCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(foodCategoryBtn);
-            }
-        });
 
-        religionCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = religionCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(religionCategoryBtn);
-            }
-        });
-
-        historyCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = historyCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(historyCategoryBtn);
-            }
-        });
-
-        transportationCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = transportationCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(transportationCategoryBtn);
-            }
-        });
-
-        leisureCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = leisureCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(leisureCategoryBtn);
-            }
-        });
-
-        othersCategoryBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                category = othersCategoryBtn.getText().toString();
-                isCategorySelected = true;
-                setCategoryButtonColor(othersCategoryBtn);
-            }
-        });
-    }
-
-    void setCategoryButtonColor(Button selectedButton) {
-//        int paddingLeft = selectedButton.getPaddingLeft();
-//        int paddingTop = selectedButton.getPaddingTop();
-//        int paddingRight = selectedButton.getPaddingRight();
-//        int paddingBottom = selectedButton.getPaddingBottom();
-        foodCategoryBtn.setSelected(false);
-        religionCategoryBtn.setSelected(false);
-        historyCategoryBtn.setSelected(false);
-        transportationCategoryBtn.setSelected(false);
-        leisureCategoryBtn.setSelected(false);
-        othersCategoryBtn.setSelected(false);
-        selectedButton.setSelected(true);
-//        foodCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        foodCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        religionCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        religionCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        historyCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        historyCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        transportationCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        transportationCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        leisureCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        leisureCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        othersCategoryBtn.setBackgroundResource(R.color.default_gray);
-//        othersCategoryBtn.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-//        selectedButton.setBackgroundResource(R.color.md_blue_200);
-//        selectedButton.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-
-    }
 
 }
 

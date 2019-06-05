@@ -1,7 +1,6 @@
 package nctu.cs.cgv.itour.custom;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,15 +12,18 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
 import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.fragment.NewsFragment;
 import nctu.cs.cgv.itour.object.CommentNotification;
+import nctu.cs.cgv.itour.object.GlideApp;
 import nctu.cs.cgv.itour.object.LikeNotification;
 import nctu.cs.cgv.itour.object.NotificationType;
+import nctu.cs.cgv.itour.object.SystemNotification;
 
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 
@@ -64,12 +66,22 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         NotificationType notificationType = notificationTypes.get(position);
         Log.d("NIVRAM", "Show noti:(" + notificationType.type + ", " + notificationType.key + ")");
 
-        if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
+        if (notificationType.type == NotificationType.TYPE_SYSTEM_NOTIFICATION) {
+            SystemNotification systemNotification = newsFragment.systemNotificationMap.get(notificationType.key);
+            viewHolder.title.setText(systemNotification.title);
+            viewHolder.msg.setText("");
+            if (systemNotification.uid.equals("")) {
+                setSpotPhoto(viewHolder, systemNotification.location);
+            } else {
+                setCheckinPhoto(viewHolder, systemNotification.photo);
+            }
+
+        } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
             CommentNotification commentNotification = newsFragment.commentNotificationMap.get(notificationType.key);
             viewHolder.title.setText(getStringWithLength(
                     commentNotification.commentUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "回應了你的貼文。");
             viewHolder.msg.setText("");
-//        setPhoto(viewHolder, commentNotification.photo);
+        setCheckinPhoto(viewHolder, commentNotification.commentedCheckinKey + ".jpg");
 
         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
             LikeNotification likeNotification = newsFragment.likeNotificationMap.get(notificationType.key);
@@ -78,7 +90,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 
             viewHolder.msg.setText("「" + getStringWithLength(
                     likeNotification.likedCheckinDescription, DISPLAY_MSG_LENGTH_MAX) + "」");
-//        setPhoto(viewHolder, likeNotification.photo);
+        setCheckinPhoto(viewHolder, likeNotification.likedCheckinKey + ".jpg");
         }
 
         if (notificationType.isChecked == false) {
@@ -90,8 +102,21 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         }
 
     }
+    private void setSpotPhoto(final NewsItemAdapter.ViewHolder viewHolder, final String filename) {
+//        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Image").child(filename + ".png");
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("image").child(filename + ".png");
+        if (filename.equals("")) {
+            viewHolder.photo.setVisibility(View.GONE);
+            return;
+        }
 
-    private void setPhoto(final NewsItemAdapter.ViewHolder viewHolder, final String filename) {
+        GlideApp.with(getContext())
+                .load(storageReference)
+                .apply(new RequestOptions().placeholder(R.drawable.ic_broken_image_black_48dp))
+                .into(viewHolder.photo);
+    }
+
+    private void setCheckinPhoto(final NewsItemAdapter.ViewHolder viewHolder, final String filename) {
 
         if (filename.equals("")) {
             viewHolder.photo.setVisibility(View.GONE);
@@ -122,6 +147,20 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 //        notificationTypes.addAll(commentNotificationList);
 //        notifyDataSetChanged();
 //    }
+
+    public void add(String systemNotificationKey) {
+
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_SYSTEM_NOTIFICATION, systemNotificationKey);
+        int index = getKeyPosition(notificationType);
+
+        if (index != -1) {
+            // contain notification, remove
+            notificationTypes.remove(index);
+        }
+        notificationType.setNotChecked();
+        insert(notificationType, 0);
+        notifyDataSetChanged();
+    }
 
     public void add(CommentNotification commentNotification) {
 

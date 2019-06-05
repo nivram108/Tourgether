@@ -1,7 +1,9 @@
 package nctu.cs.cgv.itour.custom;
 
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,19 +18,23 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-
+import android.content.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.fragment.PersonalMapFragment;
+import nctu.cs.cgv.itour.fragment.TogoFragment;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
 public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHolder>{
     public List<TogoPlannedData> togoPlannedDataList;
+    TogoFragment parentFragment;
+    public boolean isUpdated;
     @Override
     public TogoItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
@@ -39,9 +45,10 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         return new TogoItemAdapter.ViewHolder(checkinCardView);
     }
 
-    public TogoItemAdapter(List<TogoPlannedData> togoPlannedDataList) {
-
+    public TogoItemAdapter(List<TogoPlannedData> togoPlannedDataList, TogoFragment parentFragment) {
+        this.parentFragment = parentFragment;
         this.togoPlannedDataList = new ArrayList<>();
+        isUpdated = true;
         for ( TogoPlannedData togoPlannedData : togoPlannedDataList) {
             addTogo(togoPlannedData);
         }
@@ -50,7 +57,16 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(TogoItemAdapter.ViewHolder holder, int position) {
         TogoPlannedData togoPlannedData = this.togoPlannedDataList.get(position);
-        holder.locationName.setText(togoPlannedData.locationName);
+        if (togoPlannedData.isVisited) {
+            holder.locationName.setTextColor(ContextCompat.getColor(parentFragment.getContext(),R.color.default_gray));
+            holder.locationName.setText("(已造訪)" + togoPlannedData.locationName);
+
+        } else {
+            holder.locationName.setTextColor(ContextCompat.getColor(parentFragment.getContext(),R.color.md_black_1000));
+            holder.locationName.setText(togoPlannedData.locationName);
+
+
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -84,16 +100,19 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
                 togoPlannedDataList.add(0, togoPlannedData);
                 notifyItemInserted(0);
                 notifyDataSetChanged();
+                reRenderPersonalMap();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+                notifyDataSetChanged();
+                reRenderPersonalMap();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                notifyDataSetChanged();
+                reRenderPersonalMap();
             }
 
             @Override
@@ -142,8 +161,33 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         for (TogoPlannedData togoPlannedData: togoPlannedDataList ) {
             if (togoPlannedData.locationName.equals(spotName)) {
                 togoPlannedData.isVisited = isVisited;
+                String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                final String pushKey = togoPlannedData.locationName;
+
+                Map<String, Object> childUpdates = new HashMap<>();
+                childUpdates.put("/togo_list/" + mapTag + "/" + uid + "/" + pushKey, togoPlannedData.toMap());
+                FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
+                        new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                                //commentMsg.setText("");
+                            }
+                        });
+                notifyDataSetChanged();
                 return;
             }
         }
+    }
+
+    public void reRenderPersonalMap() {
+        List<Fragment> fragments =  parentFragment.getFragmentManager().getFragments();
+        PersonalMapFragment personalMapFragment = new PersonalMapFragment();
+        for (Fragment fragment: fragments ) {
+            if (fragment.getClass() == PersonalMapFragment.class) {
+                personalMapFragment = (PersonalMapFragment) fragment;
+                break;
+            }
+        }
+        personalMapFragment.reRenderPersonal(true, true);
     }
 }

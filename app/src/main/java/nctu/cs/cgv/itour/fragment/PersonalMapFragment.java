@@ -21,13 +21,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,6 +41,8 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
@@ -58,7 +64,6 @@ import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
-import static nctu.cs.cgv.itour.MyApplication.CLUSTER_THRESHOLD;
 import static nctu.cs.cgv.itour.MyApplication.MAP_DISPLAY_COMMUNITY;
 import static nctu.cs.cgv.itour.MyApplication.MAX_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.MIN_ZOOM;
@@ -69,6 +74,7 @@ import static nctu.cs.cgv.itour.MyApplication.realMesh;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.spToPx;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinIsVisited;
 
 public class PersonalMapFragment extends Fragment {
 
@@ -92,6 +98,7 @@ public class PersonalMapFragment extends Fragment {
     private int mergedCheckinIconPivotY;
     private int spotIconPivotX;
     private int spotIconPivotY;
+    private float lastLat, lastLng;
     //    private int edgeNodeIconPivotX;
 //    private int edgeNodeIconPivotY;
     // UI references
@@ -138,6 +145,7 @@ public class PersonalMapFragment extends Fragment {
     private boolean isOrientationCurrent = true;
     private boolean checkinSwitch = true;
     private boolean spotSwitch = true;
+    private Button reportAnywhereBtn;
 //    private boolean fogSwitch = false;
 //    private boolean edgeLengthSwitch = false;
 
@@ -151,7 +159,8 @@ public class PersonalMapFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-
+        lastLat = 0;
+        lastLng = 0;
         // load preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(context));
 
@@ -329,7 +338,7 @@ public class PersonalMapFragment extends Fragment {
             }
         });
 
-
+        reRender();
 //        Log.d("NIVRAMMM", "Viewcreate");
     }
 
@@ -363,6 +372,7 @@ public class PersonalMapFragment extends Fragment {
         if (getUserVisibleHint()) {
             Log.d("NIVRAMMM", "HINT");
             if (actionBar != null) {
+                reRender();
                 actionBar.setSubtitle(getString(R.string.subtitle_map));
             }
 
@@ -470,13 +480,18 @@ public class PersonalMapFragment extends Fragment {
         });
     }
 
-    private void reRender() {
-        reRenderPersonal(true);
+    public void reRender() {
+        reRenderPersonal(true, false);
     }
 
-    private void reRenderPersonal(boolean performMerge) {
+    public void reRenderPersonal(boolean performMerge, boolean togoIsUpdated) {
 
         performMerge = false;
+        for (CheckinNode checkinNode : checkinNodeList) {
+            checkinNode.icon.setVisibility(View.GONE);
+        }
+        checkinNodeList.clear();
+
         PersonalFragment personalFragment = (PersonalFragment)getParentFragment();
         personalFragment.addPostedCheckinIcon();
         personalFragment.addCollectedCheckinIcon();
@@ -489,7 +504,21 @@ public class PersonalMapFragment extends Fragment {
         }
 
         Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
-        if (togoFragment.togoItemAdapter.togoPlannedDataList.size() < togoNodeList.size()) {
+        if (togoIsUpdated){
+            for (CheckinNode checkinNode : togoNodeList) {
+                checkinNode.icon.setVisibility(View.GONE);
+            }
+            togoNodeList.clear();
+            List<SpotNode> togoSpotNodeList = new ArrayList<>();
+            for (TogoPlannedData togoPlannedData : togoFragment.togoItemAdapter.togoPlannedDataList) {
+                Log.d("NIVRAMM", "togoPlannedData:" + togoPlannedData.locationName);
+                if(spotList.personalNodeMap.containsKey(togoPlannedData.locationName)) {
+                    SpotNode spotNode = spotList.personalNodeMap.get(togoPlannedData.locationName);
+                    togoSpotNodeList.add(spotNode);
+                    setTogoNode(spotNode, togoPlannedData.isVisited);
+                }
+            }
+        } else if (togoFragment.togoItemAdapter.togoPlannedDataList.size() < togoNodeList.size()) {
             for (CheckinNode checkinNode : togoNodeList) {
                 checkinNode.icon.setVisibility(View.GONE);
             }
@@ -504,8 +533,8 @@ public class PersonalMapFragment extends Fragment {
                     setTogoNode(spotNode, togoPlannedData.isVisited);
                 }
             }
-
         }
+
         Matrix gpsMarkTransform = new Matrix();
         Matrix spotIconTransform = new Matrix();
 //        Matrix nodeIconTransform = new Matrix();
@@ -555,7 +584,7 @@ public class PersonalMapFragment extends Fragment {
                 spotNode.icon.setTranslationX(point[0]);
                 spotNode.icon.setTranslationY(point[1]);
             }
-            if (isMerged) {
+            if (true) {
                 for (SpotNode spotNode : spotNodeList) {
                     if (spotNode.order == 2) {
                         spotNode.icon.setVisibility(View.GONE);
@@ -701,28 +730,6 @@ public class PersonalMapFragment extends Fragment {
 
     // checkins that their icon overlay
     private void addCheckinIcon(final Checkin checkin, float x, float y, String type) {
-        // search for exist node
-//        for (final CheckinNode checkinNode : checkinNodeList) {
-//            double distance = Math.pow(x - checkinNode.x, 2) + Math.pow(y - checkinNode.y, 2);
-//            if (distance < OVERLAP_THRESHOLD) {
-//                checkinNode.checkinList.add(checkin);
-//                checkinNodeMap.put(checkin.key, checkinNode);
-//                if (checkinNode.checkinList.size() > 1) {
-//                    checkinNode.icon.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View v) {
-//                            showCheckinListDialog(checkinNode);
-//                        }
-//                    });
-//                }
-//                if (uid.equals(checkin.uid)) {
-////                    ((ImageView) checkinNode.icon).setImageDrawable(
-////                            ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
-//                    ((ImageView) checkinNode.icon).setImageDrawable(
-//                            ResourcesCompat.getDrawable(getResources(), R.drawable.ic_notifications_notify_24dp, null));}
-//                return;
-//            }
-//        }
 
         // create new node
         CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
@@ -730,7 +737,7 @@ public class PersonalMapFragment extends Fragment {
         checkinNode.icon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showCheckinDialog(checkin.key);
+                showCheckinMapIconClickedOptions(checkin);
             }
         });
         checkinNode.icon.setLayoutParams(new RelativeLayout.LayoutParams(checkinIconWidth, checkinIconHeight));
@@ -741,116 +748,21 @@ public class PersonalMapFragment extends Fragment {
             ((ImageView) checkinNode.icon).setImageDrawable(
                     ResourcesCompat.getDrawable(getResources(), R.drawable.ic_notifications_notify_24dp, null));
         } else {
-//            ((ImageView) checkinNode.icon).setImageDrawable(
-//                    ResourcesCompat.getDrawable(getResources(), R.drawable.checkin_icon_60px, null));
-            ((ImageView) checkinNode.icon).setImageDrawable(
-                    ResourcesCompat.getDrawable(getResources(), R.drawable.ic_location_on_ffbb33_24dp, null));}
+            Log.d("ISVISITED", collectedCheckinIsVisited.containsKey(checkin.key) + ", " + collectedCheckinIsVisited.get(checkin.key));
+            if (collectedCheckinIsVisited.containsKey(checkin.key) && collectedCheckinIsVisited.get(checkin.key)) {
+                ((ImageView) checkinNode.icon).setImageDrawable(
+                        ResourcesCompat.getDrawable(getResources(), R.drawable.ic_togo_list_24dp, null));
+            }else  {
+                ((ImageView) checkinNode.icon).setImageDrawable(
+                        ResourcesCompat.getDrawable(getResources(), R.drawable.ic_location_on_ffbb33_24dp, null));
+            }
+
+        }
         rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
         checkinNode.checkinList.add(checkin);
         checkinNodeList.add(checkinNode);
-        checkinNodeMap.put(checkin.key, checkinNode);
     }
 
-
-    // nearby checkins, checkins with same location
-    private void addCheckinClusterIcon(final Checkin checkin, final float x, final float y) {
-        String location = "";
-        if (spotNodeMap.containsKey(checkin.location)) {
-            location = checkin.location;
-        } else {
-            float minDist = 101f;
-            for (SpotNode spot : spotNodeList) {
-                float dist = Utility.isNearBy(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng),
-                        Float.valueOf(spot.lat), Float.valueOf(spot.lng));
-                if (dist <= 100f && dist < minDist) {
-                    location = spot.name;
-                    minDist = dist;
-                }
-            }
-        }
-
-        if (location.equals("")) {
-            // search for exist cluster node
-            for (final CheckinNode checkinClusterNode : checkinClusterNodeList) {
-                if (checkinClusterNode.onSpot) continue;
-
-                double distance = Utility.isNearBy(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng),
-                        checkinClusterNode.lat, checkinClusterNode.lng);
-                if (distance < CLUSTER_THRESHOLD) {
-                    int clusterSize = checkinClusterNode.checkinList.size();
-                    checkinClusterNode.lat = (checkinClusterNode.lat * clusterSize + Float.valueOf(checkin.lat)) / (clusterSize + 1);
-                    checkinClusterNode.lng = (checkinClusterNode.lng * clusterSize + Float.valueOf(checkin.lng)) / (clusterSize + 1);
-                    float[] imgPx = Utility.gpsToImgPx(checkinClusterNode.lat, checkinClusterNode.lng);
-                    checkinClusterNode.x = imgPx[0];
-                    checkinClusterNode.y = imgPx[1];
-                    checkinClusterNode.icon.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onClusterNodeClick(checkinClusterNode);
-                        }
-                    });
-                    checkinClusterNode.checkinList.add(checkin);
-                    TextView checkinsNumCircle = checkinClusterNode.icon.findViewById(R.id.checkin_num);
-                    int checkinsNum = checkinClusterNode.checkinList.size();
-                    checkinsNumCircle.setText(checkinsNum < 10 ?
-                            " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
-                    checkinClusterNodeMap.put(checkin.key, checkinClusterNode);
-                    return;
-                }
-            }
-            // cluster not found, create a new one
-            CheckinNode checkinNode = new CheckinNode(
-                    x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng),
-                    inflater.inflate(R.layout.item_merged_checkin, null));
-            checkinNode.icon.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showCheckinDialog(checkin.key);
-                }
-            });
-            checkinNode.checkinList.add(checkin);
-            TextView checkinsNumCircle = checkinNode.icon.findViewById(R.id.checkin_num);
-            checkinsNumCircle.setText(" 1");
-            rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
-            checkinClusterNodeList.add(checkinNode);
-            checkinClusterNodeMap.put(checkin.key, checkinNode);
-
-        } else { // add into spot
-            final SpotNode spotNode = spotNodeMap.get(location);
-            if (spotNode.checkinNode == null) { // no checkin on spot yet
-                spotNode.checkinNode = new CheckinNode(spotNode.x, spotNode.y,
-                        Float.valueOf(spotNode.lat), Float.valueOf(spotNode.lng),
-                        inflater.inflate(R.layout.item_merged_checkin, null));
-                spotNode.checkinNode.icon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showCheckinDialog(checkin.key);
-                    }
-                });
-                spotNode.checkinNode.onSpot = true;
-                spotNode.checkinNode.checkinList.add(checkin);
-                TextView checkinsNumCircle = spotNode.checkinNode.icon.findViewById(R.id.checkin_num);
-                checkinsNumCircle.setText(" 1");
-                rootLayout.addView(spotNode.checkinNode.icon, rootLayout.indexOfChild(seperator));
-                checkinClusterNodeList.add(spotNode.checkinNode);
-                checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
-            } else {
-                spotNode.checkinNode.icon.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onClusterNodeClick(spotNode.checkinNode);
-                    }
-                });
-                spotNode.checkinNode.checkinList.add(checkin);
-                TextView checkinsNumCircle = spotNode.checkinNode.icon.findViewById(R.id.checkin_num);
-                int checkinsNum = spotNode.checkinNode.checkinList.size();
-//                checkinsNumCircle.setText(checkinsNum < 10 ?
-//                        " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
-                checkinsNumCircle.setText("");
-                checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
-            }
-        }
-    }
 
     // checkins that their icon overlay
 
@@ -867,7 +779,7 @@ public class PersonalMapFragment extends Fragment {
         });
         checkinNode.icon.setLayoutParams(new RelativeLayout.LayoutParams(checkinIconWidth, checkinIconHeight));
 
-        if (isVisited) {
+        if (isVisited == false) {
             ((ImageView) checkinNode.icon).setImageDrawable(
                     ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
         } else {
@@ -886,84 +798,6 @@ public class PersonalMapFragment extends Fragment {
         searchLocationDialog(lat, lng);
     }
 
-    public void onLocateClick(String location) {
-        CheckinNode checkinClusterNode = spotNodeMap.get(location).checkinNode;
-        onClusterNodeClick(checkinClusterNode);
-    }
-
-    public void showTogoMapIconClickedOptions(final String spotName, final String lat, final String lng) {
-//        //TODO: Show description dialog
-
-        final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
-        bottomSheetDialog.setContentView(R.layout.togo_map_icon_clicked_options_dialog);
-        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        String latLng = lat + "," + lng;
-        Log.d("NIVRAM", "LATLNG: " + latLng);
-        TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
-        spotNameTextView.setText(spotName);
-        Button showDescriptionBrn = bottomSheetDialog.findViewById(R.id.show_description);
-        showDescriptionBrn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName);
-                spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
-                bottomSheetDialog.dismiss();
-            }
-        });
-
-        Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
-        navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String latLng = lat + "," + lng;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng);
-            }
-        });
-
-        final Button reportVisitedBtn = bottomSheetDialog.findViewById(R.id.report_visited);
-        reportVisitedBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                reportVisitedOptionClicked(spotName);
-            }
-        });
-
-        final Button removeTogoBtn = bottomSheetDialog.findViewById(R.id.remove_togo);
-        removeTogoBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                removeTogoOptionClicked(spotName);
-                bottomSheetDialog.dismiss();
-            }
-        });
-        bottomSheetDialog.show();
-    }
-
-    public void onLocateCheckinClick(Checkin clickedCheckin) {
-        CheckinNode checkinClusterNode = checkinClusterNodeMap.get(clickedCheckin.key);
-        CheckinNode checkinNode = checkinNodeMap.get(clickedCheckin.key);
-        onClusterNodeClick(checkinClusterNode, checkinNode.x, checkinNode.y);
-        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng);
-    }
-
-    public void onClusterNodeClick(CheckinNode checkinNode) {
-        translateToImgPx(checkinNode.x, checkinNode.y, false);
-        checkinNode.icon.setVisibility(View.GONE);
-        for (Checkin checkinInSpot : checkinNode.checkinList) {
-            View checkinIcon = checkinNodeMap.get(checkinInSpot.key).icon;
-            checkinIcon.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void onClusterNodeClick(CheckinNode checkinNode, float x, float y) {
-        translateToImgPx(x, y, false);
-        checkinNode.icon.setVisibility(View.GONE);
-        for (Checkin checkinInSpot : checkinNode.checkinList) {
-            View checkinIcon = checkinNodeMap.get(checkinInSpot.key).icon;
-            checkinIcon.setVisibility(View.VISIBLE);
-        }
-    }
 
     public void translateToImgPx(final float x, final float y, final boolean toCurrent) {
 
@@ -1001,7 +835,7 @@ public class PersonalMapFragment extends Fragment {
                         transformMat.postTranslate(point[0], point[1]);
                         scale += scaleTo22 / 5;
                     }
-                    reRenderPersonal(false);
+                    reRenderPersonal(false, false);
                     translationHandler.postDelayed(this, 5);
                 }
             }
@@ -1036,7 +870,8 @@ public class PersonalMapFragment extends Fragment {
     }
 
     public void handleGpsUpdate(float lat, float lng) {
-
+        lastLat = lat;
+        lastLng = lng;
         if (getView() == null) {
             return;
         }
@@ -1065,6 +900,7 @@ public class PersonalMapFragment extends Fragment {
             }
         }
     }
+
 
     public void handleFogUpdate(double lat, double lng) {
 //        if (lat >= realMesh.minLat && lat <= realMesh.maxLat && lng >= realMesh.minLon && lng <= realMesh.maxLon) {
@@ -1210,6 +1046,118 @@ public class PersonalMapFragment extends Fragment {
         startActivity(mapIntent);
     }
 
+    public void showCheckinMapIconClickedOptions(final Checkin checkin) {
+        final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
+        bottomSheetDialog.setContentView(R.layout.personal_map_icon_clicked_options_dialog);
+        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        TextView userName = bottomSheetDialog.findViewById(R.id.user_name);
+        String latLng = checkin.lat + "," + checkin.lng ;
+        Log.d("NIVRAM", "LATLNG: " + latLng);
+        TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
+        if (uid.equals(checkin.uid)) {
+            userName.setText("我自己的打卡");
+            if (checkin.location.equals("")) {
+                spotNameTextView.setText("未知地點");
+            } else {
+                spotNameTextView.setText(checkin.location);
+            }
+        } else {
+            userName.setText(checkin.username + "的打卡");
+            if (checkin.location.equals("")) {
+                spotNameTextView.setText("未知地點");
+            } else {
+
+                spotNameTextView.setText(checkin.location);
+            }
+        }
+        Button showDescriptionBrn = bottomSheetDialog.findViewById(R.id.show_description);
+        showDescriptionBrn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCheckinDialog(checkin.key);
+//                bottomSheetDialog.dismiss();
+            }
+        });
+
+        Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
+        navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String latLng = checkin.lat + "," + checkin.lng ;
+                Log.d("NIVRAM", "LATLNG: " + latLng);
+                navigateLocation(latLng);
+            }
+        });
+
+        final Button reportVisitedBtn = bottomSheetDialog.findViewById(R.id.report_visited);
+        reportVisitedBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportCollectedCheckinOptionClicked(checkin, bottomSheetDialog);
+            }
+        });
+
+        final Button removeTogoBtn = bottomSheetDialog.findViewById(R.id.remove_togo);
+        removeTogoBtn.setVisibility(View.GONE);
+
+        if (uid.equals(checkin.uid)) {
+            reportVisitedBtn.setVisibility(View.GONE);
+        }
+        bottomSheetDialog.show();
+
+    }
+
+    public void showTogoMapIconClickedOptions(final String spotName, final String lat, final String lng) {
+//        //TODO: Show description dialog
+
+        final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
+        bottomSheetDialog.setContentView(R.layout.personal_map_icon_clicked_options_dialog);
+        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        TextView userName = bottomSheetDialog.findViewById(R.id.user_name);
+        userName.setVisibility(View.GONE);
+        String latLng = lat + "," + lng;
+        Log.d("NIVRAM", "LATLNG: " + latLng);
+        TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
+        spotNameTextView.setText(spotName);
+        Button showDescriptionBrn = bottomSheetDialog.findViewById(R.id.show_description);
+        showDescriptionBrn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName);
+                spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
+//                bottomSheetDialog.dismiss();
+            }
+        });
+
+        Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
+        navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String latLng = lat + "," + lng;
+                Log.d("NIVRAM", "LATLNG: " + latLng);
+                navigateLocation(latLng);
+            }
+        });
+
+        final Button reportVisitedBtn = bottomSheetDialog.findViewById(R.id.report_visited);
+        reportVisitedBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportTogoVisitedOptionClicked(spotName, bottomSheetDialog);
+            }
+        });
+
+        final Button removeTogoBtn = bottomSheetDialog.findViewById(R.id.remove_togo);
+        removeTogoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeTogoOptionClicked(spotName);
+                bottomSheetDialog.dismiss();
+            }
+        });
+        bottomSheetDialog.show();
+    }
+
     void removeTogoOptionClicked(final String spotName) {
         Log.d("NIVRAMM", "SHOW DIALOG");
         //TODO: show remove confirmation dialog
@@ -1217,7 +1165,7 @@ public class PersonalMapFragment extends Fragment {
         dialog.setContentView(R.layout.confirmation_dialog);
         TextView confirmation = dialog.findViewById(R.id.confirmation_message);
         confirmation.setText("確定要刪除 " + spotName + " 嗎?");
-        Button confiramtionBtn = dialog.findViewById(R.id.btn_confirm);
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
         confiramtionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1225,7 +1173,7 @@ public class PersonalMapFragment extends Fragment {
                 dialog.dismiss();
             }
         });
-        Button cancelBtn = dialog.findViewById(R.id.btn_cancel);
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1252,22 +1200,27 @@ public class PersonalMapFragment extends Fragment {
         reRender();
     }
 
-    void reportVisitedOptionClicked(final String spotName) {
+    void reportCollectedCheckinOptionClicked(final Checkin checkin, final BottomSheetDialog parentDialog) {
         Log.d("NIVRAMM", "SHOW DIALOG");
         //TODO: show remove confirmation dialog
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.confirmation_dialog);
         TextView confirmation = dialog.findViewById(R.id.confirmation_message);
-        confirmation.setText("是否造訪了 " + spotName + " 呢?");
-        Button confiramtionBtn = dialog.findViewById(R.id.btn_confirm);
+        if (checkin.location.equals("")) {
+            confirmation.setText("是否造訪了來自" + System.getProperty("line.separator")+ checkin.username + "的未知地點呢?");
+        } else {
+            confirmation.setText("是否造訪了 " + checkin.location + " 呢?");
+        }
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
         confiramtionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reportVisited(spotName);
+                reportCollectedCheckinVisited(checkin);
+                parentDialog.dismiss();
                 dialog.dismiss();
             }
         });
-        Button cancelBtn = dialog.findViewById(R.id.btn_cancel);
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1277,11 +1230,47 @@ public class PersonalMapFragment extends Fragment {
         dialog.show();
     }
 
-    void reportVisited(String spotName) {
+    void reportTogoVisitedOptionClicked(final String spotName, final Dialog parentDialog) {
+        Log.d("NIVRAMM", "SHOW DIALOG");
+        //TODO: show remove confirmation dialog
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.confirmation_dialog);
+        TextView confirmation = dialog.findViewById(R.id.confirmation_message);
+        confirmation.setText("是否造訪了 " + spotName + " 呢?");
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confiramtionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportTogoVisited(spotName);
+                parentDialog.dismiss();
+                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    void reportCollectedCheckinVisited(Checkin checkin) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference.child("users").child(uid).child("visited").child(mapTag).child(checkin.key).setValue(true);
+        collectedCheckinIsVisited.put(checkin.key, true);
+        reRender();
+        ReportManager reportManager = new ReportManager();
+        reportManager.reportTogo();
+    }
+
+    void reportTogoVisited(String spotName) {
         setTogoVisited(spotName);
         ReportManager reportManager = new ReportManager();
         reportManager.reportTogo();
     }
+
     void setTogoVisited(String spotName) {
         //TODO: set
         List<Fragment> fragmentList = getFragmentManager().getFragments();
@@ -1294,6 +1283,126 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportAnywhereClicked() {
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.report_anywhere_dialog);
+        TextView textView = dialog.findViewById(R.id.report_message);
+        textView.setText("請輸入造訪的景點");
+        final EditText visitedPlace = dialog.findViewById(R.id.visited_place);
+        visitedPlace.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    reportAnywhere(visitedPlace.getText().toString(), dialog);
+//                    dialog.dismiss();
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
+        Button confirmationBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confirmationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportAnywhere(visitedPlace.getText().toString(), dialog);
+//                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+    }
+
+    void reportAnywhere(final String locationName, final Dialog parentDialog) {
+        List<Fragment> fragmentList = getFragmentManager().getFragments();
+        TogoFragment togoFragment = new TogoFragment();
+        for (Fragment fragment: fragmentList) {
+            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+        }
+        for (TogoPlannedData togoPlannedData:togoFragment.togoItemAdapter.togoPlannedDataList) {
+            if (togoPlannedData.locationName.equals(locationName)) {
+                reportTogoVisitedOptionClicked(locationName, parentDialog);
+                return;
+            }
+        }
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.confirmation_dialog);
+        TextView confirmation = dialog.findViewById(R.id.confirmation_message);
+        confirmation.setText("是否造訪了 " + locationName + " 呢?");
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confiramtionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportMotivation(locationName);
+                parentDialog.dismiss();
+                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    void reportMotivation(final String locationName) {
+        if (lastLat == 0 && lastLng == 0) {
+            Toast.makeText(getContext(), "無法取得你的位置", Toast.LENGTH_SHORT);
+            return;
+        }
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.report_anywhere_dialog);
+        TextView textView = dialog.findViewById(R.id.report_message);
+        textView.setText("促使你造訪這個景點的原因是:");
+        final EditText motivation = dialog.findViewById(R.id.visited_place);
+        motivation.setHint("造訪原因");
+        motivation.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    reportAnywhere(locationName, motivation.getText().toString());
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
+        Button confirmationBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confirmationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportAnywhere(locationName, motivation.getText().toString());
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+    }
+
+    void reportAnywhere(String location, String motivation) {
 
     }
 }

@@ -58,7 +58,6 @@ import nctu.cs.cgv.itour.fragment.MapFragment;
 import nctu.cs.cgv.itour.fragment.NewsFragment;
 import nctu.cs.cgv.itour.fragment.PersonalFragment;
 import nctu.cs.cgv.itour.fragment.SettingsFragment;
-import nctu.cs.cgv.itour.fragment.TogoFragment;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
@@ -71,7 +70,7 @@ import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.UserData;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
-import nctu.cs.cgv.itour.service.CheckinNotificationService;
+import nctu.cs.cgv.itour.service.SystemNotificationService;
 import nctu.cs.cgv.itour.service.CommentNotificationService;
 import nctu.cs.cgv.itour.service.GpsLocationService;
 import nctu.cs.cgv.itour.service.LikeNotificationService;
@@ -105,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements
     // Checkins
     public static Map<String, Checkin> checkinMap;
     public static Map<String, Boolean> collectedCheckinKey;
+    public static Map<String, Boolean> collectedCheckinIsVisited;
     public static UserData userData;
     // view objects
     private MyViewPager viewPager;
@@ -128,17 +128,21 @@ public class MainActivity extends AppCompatActivity implements
     private ChildEventListener checkinListener;
     private Query commentNotificationQuery;
     private ChildEventListener commentNotificationListener;
-    private Query savePostIdQuery;
-    private ChildEventListener savePostIdListener;
+    private Query collectedPostIdQuery;
+    private ChildEventListener collectedPostIdListener;
     private Query ungoQuery;
     private ValueEventListener ungoListener;
+
+    private Query collectedVisitedQuery;
+    private ChildEventListener collectedVisitedListener;
 
     private boolean noticeCheckinFlag = false;
     private String notification_lat;
     private String notification_lng;
     private String notification_location;
     private String notification_key;
-    private NotificationManager notificationManager, commentNotificationManager;
+    private NotificationManager notificationManager, commentNotificationManager, likeNotificationManager;
+
     private String notificationChannelId = "nearby notification";
     private String commentNotificationChannelId = "comment notification";
     private String likeNotificationChannelId = "like notification";
@@ -176,11 +180,14 @@ public class MainActivity extends AppCompatActivity implements
 
         checkinMap = new LinkedHashMap<>();
         collectedCheckinKey = new LinkedHashMap<>();
+        collectedCheckinIsVisited = new LinkedHashMap<>();
 
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
         startService(new Intent(this, NotificationListener.class));
+        startService(new Intent(this, SystemNotificationService.class));
+
         setSensors();
         String string = Settings.Secure.getString(getContentResolver(),
                 "enabled_notification_listeners");
@@ -198,7 +205,6 @@ public class MainActivity extends AppCompatActivity implements
         if (logFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             queryUserUngo();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            startService(new Intent(this, CheckinNotificationService.class));
             Log.d("NIVRAM", "EXCUSE ME WHAT THe FUCK");
 //            startService(new Intent(this, CommentNotificationService.class));
         }
@@ -235,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setLikeNotificationChannel() {
-        commentNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        likeNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     likeNotificationChannelId,
@@ -244,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements
             channel.enableLights(true);
             channel.enableVibration(true);
             channel.setVibrationPattern(new long[]{0, 50, 100, 100});
-            commentNotificationManager.createNotificationChannel(channel);
+            likeNotificationManager.createNotificationChannel(channel);
         }
     }
 
@@ -400,9 +406,9 @@ public class MainActivity extends AppCompatActivity implements
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        savePostIdQuery = databaseReference.child("users").child(uid).child("saved").child(mapTag);
+        collectedPostIdQuery = databaseReference.child("users").child(uid).child("saved").child(mapTag);
 
-        savePostIdListener = savePostIdQuery.addChildEventListener(new ChildEventListener() {
+        collectedPostIdListener = collectedPostIdQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
@@ -427,6 +433,55 @@ public class MainActivity extends AppCompatActivity implements
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 try {
                     collectedCheckinKey.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void queryCollectedIsVisited() {
+//        collectedCheckinIsVisited.clear();
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        collectedVisitedQuery = databaseReference.child("users").child(uid).child("visited").child(mapTag);
+
+        collectedVisitedListener = collectedVisitedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+                    Log.d("NIVRAMMM", "VISITED save");
+                    collectedCheckinIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+                    Log.d("NIVRAMMM", "q save");
+                    collectedCheckinIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    collectedCheckinIsVisited.remove(dataSnapshot.getKey());
                 } catch (Exception ignored) {
 
                 }
@@ -690,7 +745,7 @@ public class MainActivity extends AppCompatActivity implements
 
         checkinQuery.removeEventListener(checkinListener);
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
-            savePostIdQuery.removeEventListener(savePostIdListener);
+            collectedPostIdQuery.removeEventListener(collectedPostIdListener);
 
         if (logFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             ungoQuery.removeEventListener(ungoListener);

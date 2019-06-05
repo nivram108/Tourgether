@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:textSize="18dp"
             android:text="你是否確定"
+            android:maxLines="2"
             android:gravity="center_horizontal"
             android:textColor="@color/md_black_1000"/>
         <LinearLayout
@@ -27,21 +28,21 @@
             android:orientation="horizontal"
             android:layout_gravity="center_horizontal">
             <Button
-                android:id="@+id/btn_confirm"
+                android:id="@+id/btn_report_confirm"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="確認"
-                android:textSize="16dp"
+                android:textSize="16sp"
                 android:background="@color/md_white_1000"/>
             <Space
                 android:layout_width="60dp"
                 android:layout_height="match_parent" />
             <Button
-                android:id="@+id/btn_cancel"
+                android:id="@+id/btn_report_cancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="取消"
-                android:textSize="16dp"
+                android:textSize="16sp"
                 android:background="@color/md_white_1000"/>
         </LinearLayout>
     </LinearLayout>

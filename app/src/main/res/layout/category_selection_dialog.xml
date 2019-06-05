@@ -13,43 +13,43 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="美食"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
         <Button
             android:id="@+id/history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="歷史"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
         <Button
             android:id="@+id/religion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="宗教"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
         <Button
             android:id="@+id/leisure"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="休閒"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
         <Button
             android:id="@+id/transportation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="交通"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
         <Button
             android:id="@+id/others"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="其他"
-            android:textSize="16dp"
-            android:paddingHorizontal="8dp"/>
+            android:textSize="16sp"
+            android:paddingLeft="8dp"    android:paddingRight="8dp"/>
     </LinearLayout>
 
 </HorizontalScrollView>

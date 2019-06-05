@@ -69,7 +69,7 @@ public class TogoFragment extends Fragment{
         super.onCreate(savedInstanceState);
 
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        togoItemAdapter = new TogoItemAdapter(setTogoList());
+        togoItemAdapter = new TogoItemAdapter(setTogoList(), this);
     }
 
     @Override

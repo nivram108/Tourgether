@@ -384,8 +384,7 @@ public class CheckinDialogFragment extends DialogFragment {
         childUpdates.put("/comment_notification/" + mapTag + "/" + pushKey, commentNotificationValue);
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
                 new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                    @Override                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                         //commentMsg.setText("");
                         Log.e("NIVRAM", "ERROR GG");
                     }

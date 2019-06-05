@@ -35,6 +35,7 @@ import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.object.CommentNotification;
 import nctu.cs.cgv.itour.object.LikeNotification;
 import nctu.cs.cgv.itour.object.NotificationType;
+import nctu.cs.cgv.itour.object.SystemNotification;
 
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
@@ -50,6 +51,7 @@ public class NewsFragment extends Fragment {
     private static final String TAG = "NewsFragment";
     private ActionBar actionBar;
     private NewsItemAdapter newsItemAdapter;
+    public Map<String, SystemNotification> systemNotificationMap;
     public Map<String, CommentNotification> commentNotificationMap;
     public Map<String, LikeNotification> likeNotificationMap;
     public static NewsFragment newInstance() {
@@ -78,6 +80,8 @@ public class NewsFragment extends Fragment {
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null)
             return;
+        if (systemNotificationMap != null) systemNotificationMap.clear();
+        else systemNotificationMap = new LinkedHashMap<String, SystemNotification>();
         if (commentNotificationMap != null) commentNotificationMap.clear();
         else commentNotificationMap = new LinkedHashMap<String, CommentNotification>();
         if (likeNotificationMap != null) likeNotificationMap.clear();
@@ -91,10 +95,9 @@ public class NewsFragment extends Fragment {
         newsList.addItemDecoration(itemDecor);
 
 
-
-
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
 
+        querySystemNotification();
         queryCommentNotification();
         queryLikeNotification();
 
@@ -106,13 +109,21 @@ public class NewsFragment extends Fragment {
                         newsItemAdapter.notifyDataSetChanged();
                         clearFocusNotificationIcon();
                         NotificationType notificationType= newsItemAdapter.getItem(position);
-                        if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
+                        if (notificationType.type == NotificationType.TYPE_SYSTEM_NOTIFICATION) {
+                            SystemNotification systemNotification = systemNotificationMap.get(notificationType.key);
+                            if (systemNotification.uid.equals("")) {
+                                ((MainActivity)getActivity()).onLocateClick(systemNotification.lat, systemNotification.lng);
+                                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(systemNotification.location);
+                                spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
+                            } else {
+                                showCheckinDialog(systemNotification.postId);
+                            }
+                            //TODO: make log
+                        } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
                             showCheckinDialog(notificationType.key);
                             //TODO: make log
                         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
                             showCheckinDialog(notificationType.key);
-                        } else {
-
                         }
 
 //                        if (commentNotification.postId.equals("")) {
@@ -146,6 +157,45 @@ public class NewsFragment extends Fragment {
                 actionBar.setElevation(dpToPx(getContext(), 4));
             }
         }
+    }
+    private void querySystemNotification() {
+        Query systemNotificationQuery = FirebaseDatabase.getInstance().getReference().child("notification").child(mapTag);
+        systemNotificationQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                nctu.cs.cgv.itour.object.SystemNotification systemNotification = dataSnapshot.getValue(nctu.cs.cgv.itour.object.SystemNotification.class);
+                if (systemNotification == null) return;
+                if (systemNotification.targetUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()) ||
+                        systemNotification.targetUid.equals("all")) {
+                    systemNotificationMap.put(dataSnapshot.getKey(), systemNotification);
+                    newsItemAdapter.add(dataSnapshot.getKey());
+                    requestFocusNotificationIcon();
+//                    Log.d("NIVRAM", "q c noti key:" + systemNotification.likedCheckinKey);
+                }
+                // notification from own checkin while not liked by self
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void queryCommentNotification() {
@@ -187,7 +237,7 @@ public class NewsFragment extends Fragment {
             }
         });
     }
-
+    
     private void queryLikeNotification() {
         Query likeNotificationQuery = FirebaseDatabase.getInstance().getReference().child("like_notification").child(mapTag);
         likeNotificationQuery.addChildEventListener(new ChildEventListener() {
@@ -227,6 +277,7 @@ public class NewsFragment extends Fragment {
             }
         });
     }
+    
     void showCheckinDialog(String key) {
         CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key);
         checkinDialogFragment.show(getFragmentManager(), "fragment_checkin_dialog");

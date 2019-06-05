@@ -105,6 +105,7 @@ public class PersonalFragment extends Fragment {
             togoFragment.refresh();
             collectedCheckinFragment.refresh();
             postedCheckinFragment.refresh();
+            personalMapFragment.reRender();
 //            addCollectedCheckinIcon();
 //            addPostedCheckinIcon();
         } else {
@@ -141,6 +142,7 @@ public class PersonalFragment extends Fragment {
 //            Log.d("NIVRAMMMM", "CCCCCCCCCCCCCCC");
 //            return;
 //        }
+        ((MainActivity) getActivity()).queryCollectedIsVisited();
         collectedCheckinFragment.refresh();
         List<Checkin> collectedCheckins = collectedCheckinFragment.checkinItemAdapter.checkins;
         for (Checkin checkin: collectedCheckins) {

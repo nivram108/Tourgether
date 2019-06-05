@@ -40,6 +40,7 @@ import java.util.Calendar;
 
 import id.zelory.compressor.Compressor;
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.object.SpotCategory;
 
 import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
 import static nctu.cs.cgv.itour.Utility.moveFile;
@@ -84,11 +85,29 @@ public class CheckinActivity extends AppCompatActivity {
     private Handler progressBarHandler;
     private Runnable progressBarRunnable;
 
+    public SpotCategory spotCategory;
+    public String category;
+    public boolean isCategorySelected;
+    Button foodCategoryBtn;
+    Button religionCategoryBtn;
+    Button historyCategoryBtn;
+    Button transportationCategoryBtn;
+    Button leisureCategoryBtn;
+    Button othersCategoryBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkin);
+        isCategorySelected = false;
+        category = "";
+        foodCategoryBtn = findViewById(R.id.food);
+        religionCategoryBtn = findViewById(R.id.religion);
+        historyCategoryBtn = findViewById(R.id.history);
+        transportationCategoryBtn = findViewById(R.id.transportation);
+        leisureCategoryBtn = findViewById(R.id.leisure);
+        othersCategoryBtn = findViewById(R.id.others);
 
+        spotCategory = new SpotCategory();
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             finish();
         }
@@ -99,6 +118,7 @@ public class CheckinActivity extends AppCompatActivity {
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close_black_24dp);
 
 //        checkPermission();
+        setSelectCategory();
 
         setView();
     }
@@ -282,12 +302,20 @@ public class CheckinActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "請先完成錄音", Toast.LENGTH_LONG).show();
                     return true;
                 }
-                Intent intent = new Intent(CheckinActivity.this, LocationChooseActivity.class);
-                intent.putExtra("description", descriptionEdit.getText().toString().trim());
-                intent.putExtra("photo", photoFile);
-                intent.putExtra("audio", audioFile);
-                startActivityForResult(intent, REQUEST_CODE_CHECKIN_FINISH);
+                if (isCategorySelected == true) {
+                    Intent intent = new Intent(CheckinActivity.this, LocationChooseActivity.class);
+                    intent.putExtra("description", descriptionEdit.getText().toString().trim());
+                    intent.putExtra("photo", photoFile);
+                    intent.putExtra("audio", audioFile);
+                    intent.putExtra("audio", audioFile);
+                    intent.putExtra("category", category);
+                    startActivityForResult(intent, REQUEST_CODE_CHECKIN_FINISH);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "請選擇類別", Toast.LENGTH_SHORT).show();
+                }
                 return true;
+
             case android.R.id.home:
                 finish();
                 return true;
@@ -477,5 +505,74 @@ public class CheckinActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    public void setSelectCategory(){
+        foodCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = foodCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(foodCategoryBtn);
+            }
+        });
+
+        religionCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = religionCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(religionCategoryBtn);
+            }
+        });
+
+        historyCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = historyCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(historyCategoryBtn);
+            }
+        });
+
+        transportationCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = transportationCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(transportationCategoryBtn);
+            }
+        });
+
+        leisureCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = leisureCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(leisureCategoryBtn);
+            }
+        });
+
+        othersCategoryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                category = othersCategoryBtn.getText().toString();
+                isCategorySelected = true;
+                setCategoryButtonColor(othersCategoryBtn);
+            }
+        });
+    }
+
+    void setCategoryButtonColor(Button selectedButton) {
+
+        foodCategoryBtn.setSelected(false);
+        religionCategoryBtn.setSelected(false);
+        historyCategoryBtn.setSelected(false);
+        transportationCategoryBtn.setSelected(false);
+        leisureCategoryBtn.setSelected(false);
+        othersCategoryBtn.setSelected(false);
+        selectedButton.setSelected(true);
+
+
     }
 }

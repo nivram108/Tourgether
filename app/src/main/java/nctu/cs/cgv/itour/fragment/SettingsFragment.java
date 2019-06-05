@@ -17,7 +17,6 @@ import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.activity.LoginActivity;
 import nctu.cs.cgv.itour.activity.RegisterActivity;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
-import nctu.cs.cgv.itour.service.CheckinNotificationService;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
@@ -67,7 +66,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     getActivity().finish();
                     getContext().stopService(new Intent(getContext(), ScreenShotService.class));
                     getContext().stopService(new Intent(getContext(), AudioFeedbackService.class));
-                    getContext().stopService(new Intent(getContext(), CheckinNotificationService.class));
+//                    getContext().stopService(new Intent(getContext(), SystemNotificationService.class));
                     startActivity(new Intent(getContext(), LoginActivity.class));
                     return true;
                 }

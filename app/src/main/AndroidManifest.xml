@@ -55,7 +55,7 @@
             android:name=".service.AudioFeedbackService"
             android:stopWithTask="false" />
         <service
-            android:name=".service.CheckinNotificationService"
+            android:name=".service.SystemNotificationService"
             android:stopWithTask="false" />
         <service
             android:name=".service.CommentNotificationService"

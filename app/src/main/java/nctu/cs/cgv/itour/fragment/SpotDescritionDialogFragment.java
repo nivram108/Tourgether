@@ -161,13 +161,6 @@ public class SpotDescritionDialogFragment extends DialogFragment {
             return;
         }
 
-//        Glide.with(Objects.requireNonNull(getContext()))
-//                .load(storageReference)
-//                .apply(new RequestOptions().placeholder(R.drawable.ic_broken_image_black_48dp))
-//                .into(photo);
-//        Glide.with(getContext())
-//                .load(storageReference)
-//                .into(photo);
 
         GlideApp.with(this /* context */)
                 .load(storageReference)
