@@ -78,6 +78,9 @@ import nctu.cs.cgv.itour.service.LikeNotificationService;
 import nctu.cs.cgv.itour.service.NotificationListener;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.audioFeedbackFlag;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.edgeNode;
@@ -157,7 +160,8 @@ public class MainActivity extends AppCompatActivity implements
         if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
         super.onCreate(savedInstanceState);
         spotCategory = new SpotCategory();
-        setContentView(R.layout.activity_main);
+        if(VERSION_OPTION == VERSION_ALL_FEATURE) setContentView(R.layout.activity_main);
+        else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) setContentView(R.layout.activity_main_google_comment_version);
         checkPermission();
 //        showCheckinDialog();
 
@@ -195,12 +199,19 @@ public class MainActivity extends AppCompatActivity implements
 //            startActivity(new Intent(
 //                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
 //        }
-        setBroadcastReceiver();
-        setCheckinPreference();
-        setView();
-        setNotificationManager();
-        setCommentNotificationChannel();
-        setLikeNotificationChannel();
+
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+
+            setViewAllFeatureVersion();
+            setBroadcastReceiver();
+            setCheckinPreference();
+            setNotificationManager();
+            setCommentNotificationChannel();
+            setLikeNotificationChannel();
+        } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
+            setViewGoogleCommentOnly();
+        }
+
 
         if (logFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             queryUserUngo();
@@ -499,7 +510,7 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    private void setView() {
+    private void setViewAllFeatureVersion() {
         mapFragment = MapFragment.newInstance();
         listFragment = ListFragment.newInstance();
         personalFragment = PersonalFragment.newInstance();
@@ -557,6 +568,74 @@ public class MainActivity extends AppCompatActivity implements
                         break;
                     case R.id.tab_settings:
                         viewPager.setCurrentItem(4);
+                        break;
+                }
+            }
+        });
+    }
+
+
+    private void setViewGoogleCommentOnly() {
+        mapFragment = MapFragment.newInstance();
+        listFragment = ListFragment.newInstance();
+        personalFragment = PersonalFragment.newInstance();
+        fragmentList = new ArrayList<>();
+//        fragmentList.add(mapFragment);
+        fragmentList.add(personalFragment);
+        fragmentList.add(listFragment);
+//        fragmentList.add(NewsFragment.newInstance());
+//        fragmentList.add(TogoFragment.newInstance());
+        fragmentList.add(SettingsFragment.newInstance());
+//        fragmentList.add(NotificationFragment.newInstance());
+        //TODO: add fragment here
+
+        viewPager = findViewById(R.id.view_pager);
+        viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
+            @Override
+            public Fragment getItem(int position) {
+                return fragmentList.get(position);
+            }
+
+            @Override
+            public int getCount() {
+                return fragmentList.size();
+            }
+        });
+        // disable swipe
+        viewPager.setPagingEnabled(false);
+
+        // set keep all three pages alive
+        // add one more page
+//        viewPager.setOffscreenPageLimit(4);
+        viewPager.setOffscreenPageLimit(2);
+
+        bottomBar = findViewById(R.id.bottom_bar);
+        bottomBar.setOnTabSelectListener(new OnTabSelectListener() {
+            @Override
+            public void onTabSelected(@IdRes int tabId) {
+                switch (tabId) {
+//                    case R.id.tab_map:
+//                        viewPager.setCurrentItem(0);
+//                        break;
+                    case R.id.tab_list_gcv:
+                        viewPager.setCurrentItem(1);
+                        break;
+                    case R.id.tab_map_gcv:
+//                        viewPager.setCurrentItem(2);
+                        viewPager.setCurrentItem(0);
+                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
+                        }
+                        break;
+//                    case R.id.tab_news:
+//                        viewPager.setCurrentItem(3);
+//                        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+//                            Toast.makeText(getApplicationContext(), getString(R.string.toast_guest_function), Toast.LENGTH_SHORT).show();
+//                        }
+//                        break;
+                    case R.id.tab_settings_gcv:
+//                        viewPager.setCurrentItem(4);
+                        viewPager.setCurrentItem(2);
                         break;
                 }
             }

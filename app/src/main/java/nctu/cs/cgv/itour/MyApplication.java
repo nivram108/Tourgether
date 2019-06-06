@@ -19,7 +19,8 @@ public class MyApplication extends Application {
     public static final String VERSION_ALL_FEATURE = "VERSION_ALL_FEATURE";
     public static final String VERSION_ONLY_SELF_CHECKIN = "VERSION_ONLY_SELF_CHECKIN";
     public static final String VERSION_ONLY_GOOGLE_COMMENT = "VERSION_ONLY_GOOGLE_COMMENT";
-    public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
+//    public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
+    public static final String VERSION_OPTION = VERSION_ONLY_GOOGLE_COMMENT;
 
 
     public static final String mapTag = "development";

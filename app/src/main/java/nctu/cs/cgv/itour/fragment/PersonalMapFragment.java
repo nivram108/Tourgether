@@ -67,6 +67,8 @@ import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static nctu.cs.cgv.itour.MyApplication.MAP_DISPLAY_COMMUNITY;
 import static nctu.cs.cgv.itour.MyApplication.MAX_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.MIN_ZOOM;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.ZOOM_THRESHOLD;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
@@ -487,16 +489,22 @@ public class PersonalMapFragment extends Fragment {
     public void reRenderPersonal(boolean performMerge, boolean togoIsUpdated) {
 
         performMerge = false;
-        for (CheckinNode checkinNode : checkinNodeList) {
-            checkinNode.icon.setVisibility(View.GONE);
-        }
-        checkinNodeList.clear();
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+            PersonalFragment personalFragment = (PersonalFragment)getParentFragment();
 
-        PersonalFragment personalFragment = (PersonalFragment)getParentFragment();
-        personalFragment.addPostedCheckinIcon();
-        personalFragment.addCollectedCheckinIcon();
+            for (CheckinNode checkinNode : checkinNodeList) {
+                checkinNode.icon.setVisibility(View.GONE);
+            }
+            checkinNodeList.clear();
+            personalFragment.addPostedCheckinIcon();
+            personalFragment.addCollectedCheckinIcon();
+        }
+
+
+
 
         boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
+        if (getFragmentManager() == null) return;
         List<Fragment> fragmentList = getFragmentManager().getFragments();
         TogoFragment togoFragment = new TogoFragment();
         for (Fragment fragment: fragmentList) {
@@ -592,7 +600,7 @@ public class PersonalMapFragment extends Fragment {
                 }
             }}
 
-        if (checkinSwitch) {
+        if (checkinSwitch && VERSION_OPTION == VERSION_ALL_FEATURE) {
             if (isMerged) {
 
                 for (CheckinNode checkinNode : checkinNodeList) {
@@ -633,6 +641,7 @@ public class PersonalMapFragment extends Fragment {
         }
 
         for (CheckinNode checkinNode : togoNodeList) {
+            Log.d("NIVRAMM", "DRAW TOGO");
             point[0] = checkinNode.x;
             point[1] = checkinNode.y;
             transformMat.mapPoints(point);

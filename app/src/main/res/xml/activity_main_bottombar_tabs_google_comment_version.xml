@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tabs>
+    <tab
+        id="@+id/tab_map_gcv"
+        icon="@drawable/ic_explore_white_24dp"
+        title="Map" />
+    <tab
+        id="@+id/tab_list_gcv"
+        icon="@drawable/ic_dns_white_24dp"
+        title="List" />
+    <tab
+        id="@+id/tab_settings_gcv"
+        icon="@drawable/ic_settings_white_24dp"
+        title="Settings" />
+</tabs>
