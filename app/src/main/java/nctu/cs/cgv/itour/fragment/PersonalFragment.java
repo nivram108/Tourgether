@@ -22,6 +22,8 @@ import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.MyViewPager;
 import nctu.cs.cgv.itour.object.Checkin;
 
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 
 public class PersonalFragment extends Fragment {
@@ -45,10 +47,14 @@ public class PersonalFragment extends Fragment {
         postedCheckinFragment = PostedCheckinFragment.newInstance();
         personalMapFragment = PersonalMapFragment.newInstance();
         fragmentList = new ArrayList<>();
+
         fragmentList.add(personalMapFragment);
         fragmentList.add(togoFragment);
-        fragmentList.add(collectedCheckinFragment);
-        fragmentList.add(postedCheckinFragment);
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+            fragmentList.add(collectedCheckinFragment);
+            fragmentList.add(postedCheckinFragment);
+        }
+
 //        fragmentList.add(personalMapFragment);
     }
 
@@ -68,6 +74,7 @@ public class PersonalFragment extends Fragment {
         viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
 
 //            String tabTitles[] = new String[]{"我的地點", "收藏打卡", "個人發文"};
+
             String tabTitles[] = new String[]{"我的地圖", "我的地點", "收藏打卡", "個人發文"};
 
             @Override
