@@ -51,7 +51,7 @@ public class SystemNotification {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("postId", postId);
-        result.put("uid", uid);
+        result.put("rate", uid);
         result.put("targetUid", targetUid);
         result.put("title", title);
         result.put("msg", msg);

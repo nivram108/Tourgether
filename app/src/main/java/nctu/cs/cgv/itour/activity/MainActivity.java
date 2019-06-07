@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements
     public static Map<String, Checkin> checkinMap;
     public static Map<String, Boolean> collectedCheckinKey;
     public static Map<String, Boolean> collectedCheckinIsVisited;
+    public static Map<String, Boolean> togoIsVisited;
     public static UserData userData;
     // view objects
     private MyViewPager viewPager;
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements
     // MapFragment: communicate by calling fragment method
     private MapFragment mapFragment;
     private ListFragment listFragment;
-    private PersonalFragment personalFragment;
+    public PersonalFragment personalFragment;
     // use broadcast to receive gpsUpdate and fogUpdate
     private BroadcastReceiver messageReceiver;
     // device sensor manager
@@ -139,6 +140,9 @@ public class MainActivity extends AppCompatActivity implements
     private Query collectedVisitedQuery;
     private ChildEventListener collectedVisitedListener;
 
+    private Query togoVisitedQuery;
+    private ChildEventListener togoVisitedListener;
+
     private boolean noticeCheckinFlag = false;
     private String notification_lat;
     private String notification_lng;
@@ -152,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements
     private HandlerThread checkLaunchedByNotificationThread;
     private Handler checkLaunchedByNotificationThreadHandler;
     public static SpotCategory spotCategory;
-    private static boolean activityIsVisible = false;
+    public static boolean activityIsVisible = false;
     public static SpotDescriptionMap spotDescriptionMap;
     MyAppGlideModule myAppGlideModule;
     @Override
@@ -163,6 +167,13 @@ public class MainActivity extends AppCompatActivity implements
         if(VERSION_OPTION == VERSION_ALL_FEATURE) setContentView(R.layout.activity_main);
         else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) setContentView(R.layout.activity_main_google_comment_version);
         checkPermission();
+
+        String string = Settings.Secure.getString(getContentResolver(),
+                "enabled_notification_listeners");
+        if (!string.contains(NotificationListener.class.getName())) {
+            startActivity(new Intent(
+                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));}
+
 //        showCheckinDialog();
 
         if (checkLaunchedByNotificationThread == null)
@@ -172,6 +183,8 @@ public class MainActivity extends AppCompatActivity implements
         if (checkLaunchedByNotificationThreadHandler == null)
             checkLaunchedByNotificationThreadHandler = new Handler(checkLaunchedByNotificationThread.getLooper());
         checkLaunchedByNotificationThreadHandler.post(listenNotificationClicked);
+        activityIsVisible = true;
+
     }
 
     private void init() {
@@ -185,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements
         checkinMap = new LinkedHashMap<>();
         collectedCheckinKey = new LinkedHashMap<>();
         collectedCheckinIsVisited = new LinkedHashMap<>();
+        togoIsVisited = new LinkedHashMap<>();
 
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
@@ -348,11 +362,11 @@ public class MainActivity extends AppCompatActivity implements
 
 
                     checkinMap.put(dataSnapshot.getKey(), checkin);
-                    Log.d("NIVRAMMM", "q checkin");
+//                    Log.d("NIVRAMMM", "q checkin");
                     mapFragment.addCheckin(checkin);
 
 
-                    Log.d("NIVRAM", "checkin add");
+//                    Log.d("NIVRAM", "checkin add");
 //                        showCheckinDialog();
 
 
@@ -423,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAMMM", "q save");
+//                    Log.d("NIVRAMMM", "q save");
                     collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -433,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAMMM", "q save");
+//                    Log.d("NIVRAMMM", "q save");
                     collectedCheckinKey.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -466,13 +480,13 @@ public class MainActivity extends AppCompatActivity implements
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        collectedVisitedQuery = databaseReference.child("users").child(uid).child("visited").child(mapTag);
+        collectedVisitedQuery = databaseReference.child("users").child(uid).child("visited").child("collected_post").child(mapTag);
 
         collectedVisitedListener = collectedVisitedQuery.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAMMM", "VISITED save");
+//                    Log.d("NIVRAMMM", "VISITED save");
                     collectedCheckinIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -482,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAMMM", "q save");
+//                    Log.d("NIVRAMMM", "q save");
                     collectedCheckinIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                 } catch (Exception ignored) {
 
@@ -509,7 +523,54 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+    public void queryTogoIsVisited() {
+//        togoCheckinIsVisited.clear();
 
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        togoVisitedQuery = databaseReference.child("users").child(uid).child("visited").child("togo").child(mapTag);
+
+        togoVisitedListener = togoVisitedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    togoIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    togoIsVisited.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    togoIsVisited.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
     private void setViewAllFeatureVersion() {
         mapFragment = MapFragment.newInstance();
         listFragment = ListFragment.newInstance();
@@ -892,6 +953,7 @@ public class MainActivity extends AppCompatActivity implements
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.RECORD_AUDIO},
                     PERMISSIONS_MULTIPLE_REQUEST);
+
         } else {
             init();
         }
@@ -961,7 +1023,7 @@ public class MainActivity extends AppCompatActivity implements
             checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
         }
     }
-    public static String getDescription(String spotName) {
+    public static String getSpotDescription(String spotName) {
         if (spotDescriptionMap == null || spotDescriptionMap.descriptionMap == null) {
             spotDescriptionMap = new SpotDescriptionMap();
         }

@@ -25,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.fragment.PersonalMapFragment;
 import nctu.cs.cgv.itour.fragment.TogoFragment;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.activity.MainActivity.togoIsVisited;
 
 public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHolder>{
     public List<TogoPlannedData> togoPlannedDataList;
@@ -95,7 +97,7 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 TogoPlannedData togoPlannedData = dataSnapshot.getValue(TogoPlannedData.class);
-                Log.d("NIVRAMM", "get togo firebase :" + togoPlannedData.locationName);
+//                Log.d("NIVRAMM", "get togo firebase :" + togoPlannedData.locationName);
 
                 togoPlannedDataList.add(0, togoPlannedData);
                 notifyItemInserted(0);
@@ -135,11 +137,20 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("togo_list").child(mapTag).child(uid).child(togoPlannedData.locationName);
         databaseReference.removeValue();
     }
-
+    public void removeTogo(String spotName) {
+        for(int i = 0; i < togoPlannedDataList.size(); i++) {
+            if (togoPlannedDataList.get(i).locationName.equals(spotName)) {
+                removeTogo(togoPlannedDataList.get(i), i);
+                return;
+            }
+        }
+    }
     public void clear() {
         togoPlannedDataList.clear();
     }
     public void addTogo(TogoPlannedData togoPlannedData) {
+        ((MainActivity) parentFragment.getActivity()).queryTogoIsVisited();
+        if (togoIsVisited.containsKey(togoPlannedData.locationName) && togoIsVisited.get(togoPlannedData.locationName)) togoPlannedData.isVisited = true;
         notifyItemInserted(0);
         notifyDataSetChanged();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -173,6 +184,8 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
                                 //commentMsg.setText("");
                             }
                         });
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+                databaseReference.child("users").child(uid).child("visited").child("togo").child(mapTag).child(spotName).setValue(true);
                 notifyDataSetChanged();
                 return;
             }
@@ -189,5 +202,11 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
             }
         }
         personalMapFragment.reRenderPersonal(true, true);
+    }
+    public boolean isTogo(String spotName) {
+        for (TogoPlannedData togoPlannedData: togoPlannedDataList ) {
+            if (togoPlannedData.locationName.equals(spotName)) return true;
+        }
+        return false;
     }
 }

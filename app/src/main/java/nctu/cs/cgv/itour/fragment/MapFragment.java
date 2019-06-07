@@ -72,6 +72,7 @@ import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.spToPx;
+import static nctu.cs.cgv.itour.activity.MainActivity.activityIsVisible;
 
 public class MapFragment extends Fragment {
 
@@ -580,6 +581,7 @@ public class MapFragment extends Fragment {
                 checkinClusterNode.icon.setTranslationY(point[1]);
             }
         }
+        activityIsVisible = true;
     }
 
     private void addSpotNode(final SpotNode spotNode) {
@@ -627,7 +629,7 @@ public class MapFragment extends Fragment {
 
     public void addCheckin(final Checkin checkin) {
         float[] imgPx = gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
-        Log.d("NIVRAMMMM", "add checkin key : " + checkin.key);
+//        Log.d("NIVRAMMMM", "add checkin key : " + checkin.key);
         addCheckinIcon(checkin, imgPx[0], imgPx[1]);
         addCheckinClusterIcon(checkin, imgPx[0], imgPx[1]);
         changeCheckin(checkin); // set heat checkin icon
@@ -726,7 +728,7 @@ public class MapFragment extends Fragment {
             }
         }
 
-        Log.d("NIVRAMMMM", "LOCATION:" + location);
+//        Log.d("NIVRAMMMM", "LOCATION:" + location);
         if (location.equals("")) {
             // search for exist cluster node
             for (final CheckinNode checkinClusterNode : checkinClusterNodeList) {
@@ -805,7 +807,7 @@ public class MapFragment extends Fragment {
                 checkinsNumCircle.setText(checkinsNum < 10 ?
                         " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
                 checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
-                Log.d("NIVRAMMMM", "HERE 2");
+//                Log.d("NIVRAMMMM", "HERE 2");
             }
         }
     }

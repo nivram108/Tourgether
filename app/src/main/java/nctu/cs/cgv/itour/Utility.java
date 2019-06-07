@@ -138,7 +138,7 @@ public class Utility {
         }
         requestParams.put("postId", postId);
         requestParams.put("username", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-        requestParams.put("uid", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        requestParams.put("rate", FirebaseAuth.getInstance().getCurrentUser().getUid());
         requestParams.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
 
         client.post(url, requestParams, new AsyncHttpResponseHandler() {
@@ -206,7 +206,7 @@ public class Utility {
 //        String msg = checkin.location.equals("") ? checkin.description : checkin.location + " | " + checkin.description;
 //        final String notificationKey = databaseReference.child("notification").child(mapTag).push().getKey();
 //        final SystemNotification notification = new SystemNotification(checkin.key,
-//                checkin.uid,
+//                checkin.rate,
 //                "all",
 //                checkin.username,
 //                msg,

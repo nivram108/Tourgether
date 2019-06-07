@@ -208,7 +208,7 @@ public class LocationChooseActivity extends AppCompatActivity {
 
         // set location autocomplete
         ArrayList<String> array = new ArrayList<>();
-        array.addAll(spotList.getSpotsName());
+        array.addAll(spotList.getFullSpotsName());
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_search, array);
         locationEdit.setThreshold(0);
         locationEdit.setAdapter(adapter);

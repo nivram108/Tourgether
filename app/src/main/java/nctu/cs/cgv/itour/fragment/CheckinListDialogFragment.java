@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,25 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Map;
 
+import nctu.cs.cgv.itour.MyApplication;
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.custom.GridPhotoAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
+import nctu.cs.cgv.itour.object.SpotDescriptionMap;
+import nctu.cs.cgv.itour.object.SpotList;
+
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
+import static nctu.cs.cgv.itour.MyApplication.dirPath;
+import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.MyApplication.spotList;
+import static nctu.cs.cgv.itour.activity.MainActivity.spotDescriptionMap;
 
 @SuppressLint("ValidFragment")
 public class CheckinListDialogFragment extends DialogFragment {
@@ -26,7 +40,6 @@ public class CheckinListDialogFragment extends DialogFragment {
     private static final String TAG = "CheckinDialogFragment";
 
     private ArrayList<Checkin> checkinList;
-
     public static CheckinListDialogFragment newInstance(CheckinNode checkinNode) {
         CheckinListDialogFragment checkinListDialogFragment = new CheckinListDialogFragment(checkinNode);
         return checkinListDialogFragment;
@@ -34,7 +47,7 @@ public class CheckinListDialogFragment extends DialogFragment {
 
     @SuppressLint("ValidFragment")
     public CheckinListDialogFragment(CheckinNode checkinNode) {
-        this.checkinList = new ArrayList<>(checkinNode.checkinList);
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) this.checkinList = new ArrayList<>(checkinNode.checkinList);
     }
 
     @Override
@@ -81,5 +94,9 @@ public class CheckinListDialogFragment extends DialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         Log.d(TAG, "onDestroyView");
+    }
+
+    void createSpotCheckin() {
+
     }
 }

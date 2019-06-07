@@ -1,10 +1,12 @@
 package nctu.cs.cgv.itour.fragment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -13,56 +15,41 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.Utility;
 import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.custom.CheckinCommentItemAdapter;
 import nctu.cs.cgv.itour.custom.CheckinItemAdapter;
-import nctu.cs.cgv.itour.custom.CommentItemAdapter;
-import nctu.cs.cgv.itour.custom.GridPhotoAdapter;
+import nctu.cs.cgv.itour.custom.GoogleCommentItemAdapter;
 import nctu.cs.cgv.itour.custom.ItemClickSupport;
+import nctu.cs.cgv.itour.custom.TogoItemAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
-import nctu.cs.cgv.itour.object.Comment;
-import nctu.cs.cgv.itour.object.CommentNotification;
+import nctu.cs.cgv.itour.object.CheckinComment;
 import nctu.cs.cgv.itour.object.GlideApp;
-import nctu.cs.cgv.itour.object.LikeNotification;
-import nctu.cs.cgv.itour.object.SpotList;
+import nctu.cs.cgv.itour.object.GoogleComment;
 import nctu.cs.cgv.itour.object.SpotNode;
+import nctu.cs.cgv.itour.object.TogoPlannedData;
 
-import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.latitude;
 import static nctu.cs.cgv.itour.MyApplication.longitude;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
@@ -70,7 +57,7 @@ import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
-import static nctu.cs.cgv.itour.activity.MainActivity.getDescription;
+import static nctu.cs.cgv.itour.activity.MainActivity.getSpotDescription;
 
 public class SpotDescritionDialogFragment extends DialogFragment {
 
@@ -107,24 +94,25 @@ public class SpotDescritionDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SpotNode spotNode = spotList.personalNodeMap.get(spotName);
+        SpotNode spotNode = spotList.fullNodeMap.get(spotName);
 
         TextView description = view.findViewById(R.id.spot_description);
         TextView distance = view.findViewById(R.id.spot_distance);
-
+        TextView spotNameTv = view.findViewById(R.id.spot_name_dialog);
+        spotNameTv.setText(spotName);
         if (spotNode != null) {
 //            actionLog("browse checkin", checkin.location, checkin.key);
 //            username.setText(checkin.username);
 //            location.setText(checkin.location);
             //TODO:
-            description.setText(getDescription(spotName));
+            description.setText(getSpotDescription(spotName));
 
             float dist = Utility.gpsToMeter(latitude, longitude, Float.valueOf(spotNode.lat), Float.valueOf(spotNode.lng));
             distance.setText(String.valueOf((int)dist) + getString(R.string.meter));
 
 
             setPhoto(view, spotName);
-            setActionBtn(view, spotNode);
+            setActionBtn(view, spotNode, spotName);
 //            setComment(view, checkin);
         } else {
             description.setText("ERROR");
@@ -134,20 +122,27 @@ public class SpotDescritionDialogFragment extends DialogFragment {
         }
 
         refresh();
-        RecyclerView recyclerView = view.findViewById(R.id.more_checkin_view);
-        recyclerView.setAdapter(checkinItemAdapter);
-        recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
+        RecyclerView moreCheckinRecyclerView = view.findViewById(R.id.more_checkin_view);
+        RecyclerView googleCommentRecyclerView = view.findViewById(R.id.lv_spot_comment);
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+            googleCommentRecyclerView.setVisibility(View.GONE);
+            moreCheckinRecyclerView.setAdapter(checkinItemAdapter);
+            moreCheckinRecyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
 
-        ItemClickSupport.addTo(recyclerView).setOnItemClickListener(
-                new ItemClickSupport.OnItemClickListener() {
-                    @Override
-                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
-                        Checkin checkin = checkinItemAdapter.getItem(position);
-                        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key);
-                        checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
+            ItemClickSupport.addTo(moreCheckinRecyclerView).setOnItemClickListener(
+                    new ItemClickSupport.OnItemClickListener() {
+                        @Override
+                        public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                            Checkin checkin = checkinItemAdapter.getItem(position);
+                            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key);
+                            checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
+                        }
                     }
-                }
-        );
+            );
+        } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
+            moreCheckinRecyclerView.setVisibility(View.GONE);
+            setGoogleComment(view);
+        }
 
     }
 
@@ -168,7 +163,20 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                 .into(photo);
     }
 
-    private void setActionBtn(final View view, final SpotNode spotNode) {
+    void setGoogleComment(View view) {
+
+        RecyclerView googleCommentRecyclerView = view.findViewById(R.id.lv_spot_comment);
+        googleCommentRecyclerView.setVisibility(View.VISIBLE);
+        final GoogleCommentItemAdapter googleCommentItemAdapter = new GoogleCommentItemAdapter(getContext(), new ArrayList<GoogleComment>());
+        googleCommentRecyclerView.setAdapter(googleCommentItemAdapter);
+        googleCommentRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        googleCommentRecyclerView.scrollToPosition(googleCommentItemAdapter.getItemCount() - 1);
+
+        GoogleComment googleComment = new GoogleComment("很棒", "5", "帥哥");
+        googleCommentItemAdapter.add(googleComment);
+    }
+
+    private void setActionBtn(final View view, final SpotNode spotNode, final String spotName) {
         final LinearLayout locateBtn = view.findViewById(R.id.btn_spot_locate);
         locateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,6 +194,35 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                 Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
             }
         });
+
+        PersonalFragment personalFragment = ((MainActivity)getActivity()).personalFragment;
+        final TogoItemAdapter togoItemAdapter = personalFragment.togoFragment.togoItemAdapter;
+        final ImageView saveBtn = view.findViewById(R.id.btn_spot_save);
+
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+            saveBtn.setVisibility(View.GONE);
+        } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT){
+            saveBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+                    if (togoItemAdapter.isTogo(spotName)) {
+                        saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                                R.drawable.ic_bookmark_border_black_24dp, null));
+                        togoItemAdapter.removeTogo(spotName);
+                    } else {
+                        saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                                R.drawable.ic_bookmark_blue_24dp, null));
+                        togoItemAdapter.addTogo(new TogoPlannedData(spotName));
+                    }
+                }
+            });
+
+            if (togoItemAdapter.isTogo(spotName)) {
+                saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                        R.drawable.ic_bookmark_blue_24dp, null));
+            }
+        }
 
     }
         public void refresh() {

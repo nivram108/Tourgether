@@ -70,6 +70,8 @@ public class TogoFragment extends Fragment{
 
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         togoItemAdapter = new TogoItemAdapter(setTogoList(), this);
+        ((MainActivity) getActivity()).queryTogoIsVisited();
+
     }
 
     @Override
@@ -143,10 +145,9 @@ public class TogoFragment extends Fragment{
 
         if (spotList == null) {
             spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
-
         }
         ArrayList<String> array = new ArrayList<>();
-        array.addAll(spotList.getSpotsName());
+        array.addAll(spotList.getFullSpotsName());
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
 
         autoCompleteTextView.setThreshold(0);

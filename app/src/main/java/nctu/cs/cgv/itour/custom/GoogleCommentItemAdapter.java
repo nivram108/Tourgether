@@ -3,39 +3,41 @@ package nctu.cs.cgv.itour.custom;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
 import nctu.cs.cgv.itour.R;
-import nctu.cs.cgv.itour.object.Checkin;
-import nctu.cs.cgv.itour.object.Comment;
+import nctu.cs.cgv.itour.object.GoogleComment;
 
-public class CommentItemAdapter extends RecyclerView.Adapter<CommentItemAdapter.ViewHolder> {
+public class GoogleCommentItemAdapter extends RecyclerView.Adapter<GoogleCommentItemAdapter.ViewHolder> {
 
-    private static final String TAG = "CommentItemAdapter";
-    private ArrayList<Comment> comments;
+    private static final String TAG = "GoogleCommentItemAdapter";
+    private ArrayList<GoogleComment> comments;
 
-    public CommentItemAdapter(Context context, ArrayList<Comment> comments) {
+    public GoogleCommentItemAdapter(Context context, ArrayList<GoogleComment> comments) {
         this.comments = comments;
     }
 
     @NonNull
     @Override
-    public CommentItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public GoogleCommentItemAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View commentItemView = inflater.inflate(R.layout.item_comment, parent, false);
+        View commentItemView = inflater.inflate(R.layout.item_google_comment, parent, false);
         return new ViewHolder(commentItemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
-        Comment comment = comments.get(position);
+        GoogleComment comment = comments.get(position);
         viewHolder.username.setText(comment.username);
         viewHolder.msg.setText(comment.msg);
     }
@@ -46,16 +48,17 @@ public class CommentItemAdapter extends RecyclerView.Adapter<CommentItemAdapter.
         return comments.size();
     }
 
-    public Comment getItem(int index) {
+    public GoogleComment getItem(int index) {
         return comments.get(index);
     }
 
-    public void addAll(Collection<Comment> commentCollection) {
+    public void addAll(Collection<GoogleComment> commentCollection) {
         comments.addAll(commentCollection);
         notifyDataSetChanged();
     }
 
-    public void add(Comment comment) {
+    public void add(GoogleComment comment) {
+        Log.d("GCV", "add comment!");
         comments.add(comment);
         notifyDataSetChanged();
     }
@@ -65,7 +68,7 @@ public class CommentItemAdapter extends RecyclerView.Adapter<CommentItemAdapter.
         notifyDataSetChanged();
     }
 
-    public void insert(Comment comment, int index) {
+    public void insert(GoogleComment comment, int index) {
         comments.add(index, comment);
         notifyItemInserted(index);
     }
@@ -78,14 +81,15 @@ public class CommentItemAdapter extends RecyclerView.Adapter<CommentItemAdapter.
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView username;
         TextView msg;
-
+        TextView rate;
         ViewHolder(View view) {
             // Stores the itemView in a public final member variable that can be used
             // to access the context from any ViewHolder instance.
             super(view);
 
-            username = view.findViewById(R.id.tv_username);
-            msg = view.findViewById(R.id.tv_msg);
+            username = view.findViewById(R.id.tv_google_username);
+            msg = view.findViewById(R.id.tv_google_msg);
+            rate = view.findViewById(R.id.tv_google_rate);
         }
     }
 }

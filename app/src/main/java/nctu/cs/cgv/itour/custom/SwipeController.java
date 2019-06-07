@@ -131,7 +131,7 @@ public class SwipeController extends Callback {
                         }
                         else if (buttonShowedState == ButtonsState.RIGHT_VISIBLE) {
                             buttonsActions.onRightClicked(viewHolder.getAdapterPosition());
-                            Log.d("NIVRAMM", "REMOVE!");
+//                            Log.d("NIVRAMM", "REMOVE!");
                         }
                     }
                     buttonShowedState = ButtonsState.GONE;

@@ -265,7 +265,7 @@ public class AudioFeedbackService extends Service {
         String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
         RequestParams requestParams = new RequestParams();
         requestParams.put("username", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-        requestParams.put("uid", uid);
+        requestParams.put("rate", uid);
         requestParams.put("timestamp", timeStamp);
         requestParams.setForceMultipartEntityContentType(true);
         try {

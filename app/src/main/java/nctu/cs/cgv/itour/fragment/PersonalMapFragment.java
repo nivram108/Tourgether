@@ -269,7 +269,7 @@ public class PersonalMapFragment extends Fragment {
 //        }
 
         // draw spots
-        spotNodeMap = new LinkedHashMap<>(spotList.personalNodeMap);    // for search query
+        spotNodeMap = new LinkedHashMap<>(spotList.fullNodeMap);    // for search query
         spotNodeList = new ArrayList<>(spotNodeMap.values());   // for transformation
         for (SpotNode spotNode : spotNodeList) {
             addSpotNode(spotNode);
@@ -341,7 +341,7 @@ public class PersonalMapFragment extends Fragment {
         });
 
         reRender();
-//        Log.d("NIVRAMMM", "Viewcreate");
+//        //Log.d("NIVRAMMM", "Viewcreate");
     }
 
 //    @Override
@@ -357,7 +357,7 @@ public class PersonalMapFragment extends Fragment {
 //            @Override
 //            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                String autocompleteStr = adapter.getItem(position);
-//                Node node = spotList.personalNodeMap.get(autocompleteStr);
+//                Node node = spotList.fullNodeMap.get(autocompleteStr);
 //                translateToImgPx(node.x, node.y, false);
 //                searchView.clearFocus();
 //                searchView.setText(autocompleteStr);
@@ -372,7 +372,7 @@ public class PersonalMapFragment extends Fragment {
         super.setUserVisibleHint(isVisibleToUser);
 
         if (getUserVisibleHint()) {
-            Log.d("NIVRAMMM", "HINT");
+//            //Log.d("NIVRAMMM", "HINT");
             if (actionBar != null) {
                 reRender();
                 actionBar.setSubtitle(getString(R.string.subtitle_map));
@@ -511,7 +511,7 @@ public class PersonalMapFragment extends Fragment {
             if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
         }
 
-        Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
+//        //Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
         if (togoIsUpdated){
             for (CheckinNode checkinNode : togoNodeList) {
                 checkinNode.icon.setVisibility(View.GONE);
@@ -519,9 +519,9 @@ public class PersonalMapFragment extends Fragment {
             togoNodeList.clear();
             List<SpotNode> togoSpotNodeList = new ArrayList<>();
             for (TogoPlannedData togoPlannedData : togoFragment.togoItemAdapter.togoPlannedDataList) {
-                Log.d("NIVRAMM", "togoPlannedData:" + togoPlannedData.locationName);
-                if(spotList.personalNodeMap.containsKey(togoPlannedData.locationName)) {
-                    SpotNode spotNode = spotList.personalNodeMap.get(togoPlannedData.locationName);
+//                //Log.d("NIVRAMM", "togoPlannedData:" + togoPlannedData.locationName);
+                if(spotList.fullNodeMap.containsKey(togoPlannedData.locationName)) {
+                    SpotNode spotNode = spotList.fullNodeMap.get(togoPlannedData.locationName);
                     togoSpotNodeList.add(spotNode);
                     setTogoNode(spotNode, togoPlannedData.isVisited);
                 }
@@ -534,9 +534,9 @@ public class PersonalMapFragment extends Fragment {
         } else if (togoFragment.togoItemAdapter.togoPlannedDataList.size() > togoNodeList.size()){
             List<SpotNode> togoSpotNodeList = new ArrayList<>();
             for (TogoPlannedData togoPlannedData : togoFragment.togoItemAdapter.togoPlannedDataList) {
-                Log.d("NIVRAMM", "togoPlannedData:" + togoPlannedData.locationName);
-                if(spotList.personalNodeMap.containsKey(togoPlannedData.locationName)) {
-                    SpotNode spotNode = spotList.personalNodeMap.get(togoPlannedData.locationName);
+//                //Log.d("NIVRAMM", "togoPlannedData:" + togoPlannedData.locationName);
+                if(spotList.fullNodeMap.containsKey(togoPlannedData.locationName)) {
+                    SpotNode spotNode = spotList.fullNodeMap.get(togoPlannedData.locationName);
                     togoSpotNodeList.add(spotNode);
                     setTogoNode(spotNode, togoPlannedData.isVisited);
                 }
@@ -641,7 +641,7 @@ public class PersonalMapFragment extends Fragment {
         }
 
         for (CheckinNode checkinNode : togoNodeList) {
-            Log.d("NIVRAMM", "DRAW TOGO");
+//            //Log.d("NIVRAMM", "DRAW TOGO");
             point[0] = checkinNode.x;
             point[1] = checkinNode.y;
             transformMat.mapPoints(point);
@@ -705,7 +705,7 @@ public class PersonalMapFragment extends Fragment {
 
     public void addCheckin(final Checkin checkin, String type) {
         float[] imgPx = gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
-        Log.d("NIVRAMMM", "checkin key :" + checkin.key);
+//        //Log.d("NIVRAMMM", "checkin key :" + checkin.key);
         addCheckinIcon(checkin, imgPx[0], imgPx[1], type);
 //        addCheckinClusterIcon(checkin, imgPx[0], imgPx[1]);
 //        changeCheckin(checkin); // set heat checkin icon
@@ -718,11 +718,11 @@ public class PersonalMapFragment extends Fragment {
 //        View checkinClusterNodeView = checkinClusterNodeMap.get(checkin.key).icon;
 //
 //        boolean allPopularFlag = checkin.popularTargetUid.containsKey("all") && checkin.popularTargetUid.get("all");
-//        boolean targetPopularFlag = !uid.equals("") && checkin.popularTargetUid.containsKey(uid) && checkin.popularTargetUid.get(uid);
+//        boolean targetPopularFlag = !rate.equals("") && checkin.popularTargetUid.containsKey(rate) && checkin.popularTargetUid.get(rate);
 //        int checkinLikeNum = checkin.likeNum;
 //        if (checkin.like != null) checkinLikeNum += checkin.like.size();
 //        if (allPopularFlag || targetPopularFlag || checkinLikeNum >= 5) {
-//            if (uid.equals(checkin.uid)) {
+//            if (rate.equals(checkin.rate)) {
 //                ((ImageView) checkinNodeView).setImageDrawable(
 //                        ResourcesCompat.getDrawable(getResources(), R.drawable.self_hot_checkin_icon_60px, null));
 //            } else {
@@ -757,7 +757,7 @@ public class PersonalMapFragment extends Fragment {
             ((ImageView) checkinNode.icon).setImageDrawable(
                     ResourcesCompat.getDrawable(getResources(), R.drawable.ic_notifications_notify_24dp, null));
         } else {
-            Log.d("ISVISITED", collectedCheckinIsVisited.containsKey(checkin.key) + ", " + collectedCheckinIsVisited.get(checkin.key));
+//            //Log.d("ISVISITED", collectedCheckinIsVisited.containsKey(checkin.key) + ", " + collectedCheckinIsVisited.get(checkin.key));
             if (collectedCheckinIsVisited.containsKey(checkin.key) && collectedCheckinIsVisited.get(checkin.key)) {
                 ((ImageView) checkinNode.icon).setImageDrawable(
                         ResourcesCompat.getDrawable(getResources(), R.drawable.ic_togo_list_24dp, null));
@@ -1007,13 +1007,13 @@ public class PersonalMapFragment extends Fragment {
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         String latLng = lat + "," + lng;
-        Log.d("NIVRAM", "LATLNG: " + latLng);
+        //Log.d("NIVRAM", "LATLNG: " + latLng);
         Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
         searchLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
+                //Log.d("NIVRAM", "LATLNG: " + latLng);
                 searchLocation(latLng);
             }
         });
@@ -1023,7 +1023,7 @@ public class PersonalMapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
+                //Log.d("NIVRAM", "LATLNG: " + latLng);
                 navigateLocation(latLng);
             }
         });
@@ -1040,7 +1040,7 @@ public class PersonalMapFragment extends Fragment {
 
     public void searchLocation(String locationName) {
         locationName = locationName.replace(' ', '+');
-        Log.d("NIVRAM", "location : " + locationName);
+        //Log.d("NIVRAM", "location : " + locationName);
         Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + locationName + "&mode=w");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
@@ -1061,7 +1061,7 @@ public class PersonalMapFragment extends Fragment {
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         TextView userName = bottomSheetDialog.findViewById(R.id.user_name);
         String latLng = checkin.lat + "," + checkin.lng ;
-        Log.d("NIVRAM", "LATLNG: " + latLng);
+        //Log.d("NIVRAM", "LATLNG: " + latLng);
         TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
         if (uid.equals(checkin.uid)) {
             userName.setText("我自己的打卡");
@@ -1093,7 +1093,7 @@ public class PersonalMapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String latLng = checkin.lat + "," + checkin.lng ;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
+                //Log.d("NIVRAM", "LATLNG: " + latLng);
                 navigateLocation(latLng);
             }
         });
@@ -1125,7 +1125,7 @@ public class PersonalMapFragment extends Fragment {
         TextView userName = bottomSheetDialog.findViewById(R.id.user_name);
         userName.setVisibility(View.GONE);
         String latLng = lat + "," + lng;
-        Log.d("NIVRAM", "LATLNG: " + latLng);
+        //Log.d("NIVRAM", "LATLNG: " + latLng);
         TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
         spotNameTextView.setText(spotName);
         Button showDescriptionBrn = bottomSheetDialog.findViewById(R.id.show_description);
@@ -1143,7 +1143,7 @@ public class PersonalMapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
+                //Log.d("NIVRAM", "LATLNG: " + latLng);
                 navigateLocation(latLng);
             }
         });
@@ -1168,7 +1168,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void removeTogoOptionClicked(final String spotName) {
-        Log.d("NIVRAMM", "SHOW DIALOG");
+//        //Log.d("NIVRAMM", "SHOW DIALOG");
         //TODO: show remove confirmation dialog
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.confirmation_dialog);
@@ -1199,7 +1199,7 @@ public class PersonalMapFragment extends Fragment {
             if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
         }
         for (TogoPlannedData togoPlannedData: togoFragment.togoItemAdapter.togoPlannedDataList) {
-            Log.d("NIVRAM", togoPlannedData.locationName + "XDDDD");
+            //Log.d("NIVRAM", togoPlannedData.locationName + "XDDDD");
         }
         for (int i = 0; i < togoFragment.togoItemAdapter.togoPlannedDataList.size(); i++) {
             if (togoFragment.togoItemAdapter.togoPlannedDataList.get(i).locationName.equals(spotName)) {
@@ -1210,7 +1210,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportCollectedCheckinOptionClicked(final Checkin checkin, final BottomSheetDialog parentDialog) {
-        Log.d("NIVRAMM", "SHOW DIALOG");
+//        //Log.d("NIVRAMM", "SHOW DIALOG");
         //TODO: show remove confirmation dialog
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.confirmation_dialog);
@@ -1240,7 +1240,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportTogoVisitedOptionClicked(final String spotName, final Dialog parentDialog) {
-        Log.d("NIVRAMM", "SHOW DIALOG");
+//        //Log.d("NIVRAMM", "SHOW DIALOG");
         //TODO: show remove confirmation dialog
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.confirmation_dialog);
@@ -1267,7 +1267,7 @@ public class PersonalMapFragment extends Fragment {
 
     void reportCollectedCheckinVisited(Checkin checkin) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        databaseReference.child("users").child(uid).child("visited").child(mapTag).child(checkin.key).setValue(true);
+        databaseReference.child("users").child(uid).child("visited").child("collected_post").child(mapTag).child(checkin.key).setValue(true);
         collectedCheckinIsVisited.put(checkin.key, true);
         reRender();
         ReportManager reportManager = new ReportManager();

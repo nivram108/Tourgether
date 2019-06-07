@@ -33,7 +33,7 @@ public class PersonalFragment extends Fragment {
     private MyViewPager viewPager;
     private List<Fragment> fragmentList;
     public PersonalMapFragment personalMapFragment;
-    private TogoFragment togoFragment;
+    public TogoFragment togoFragment;
     private CollectedCheckinFragment collectedCheckinFragment;
     private PostedCheckinFragment postedCheckinFragment;
     private TabLayout tabLayout;

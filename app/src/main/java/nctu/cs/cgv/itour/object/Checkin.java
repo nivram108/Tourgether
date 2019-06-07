@@ -5,6 +5,10 @@ import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
+import static nctu.cs.cgv.itour.MyApplication.spotList;
+import static nctu.cs.cgv.itour.activity.MainActivity.getSpotDescription;
+
 /**
  * Created by lobZter on 2017/7/4.
  */
@@ -21,7 +25,7 @@ public class Checkin {
     public String username;
     public long timestamp;
     public Map<String, Boolean> like = new HashMap<>();
-    public Map<String, Comment> comment = new HashMap<>();
+    public Map<String, CheckinComment> comment = new HashMap<>();
     // for admin function
     public String targetUid;
     public Map<String, Boolean> popularTargetUid;
@@ -33,6 +37,26 @@ public class Checkin {
     public Checkin() {
     }
 
+    public void setSpot(String spotName) {
+        SpotNode spotNode = spotList.fullNodeMap.get(spotName);
+
+        this.lng = spotNode.lng;
+        this.lat = spotNode.lat;
+        this.location = spotName;
+        this.description = getSpotDescription(spotName);
+        this.category = VERSION_ONLY_GOOGLE_COMMENT;
+        this.photo = spotName;
+        this.uid = "";
+        this.username = spotName;
+        this.timestamp = timestamp;
+        // for admin function
+        this.targetUid = "all";
+        this.popularTargetUid = new HashMap<>();
+        this.popularTargetUid.put("all", false);
+        this.fakeFlag = false;
+        this.likeNum = 0;
+        this.key = spotName;
+    }
     public Checkin(String lat,
                    String lng,
                    String location,
@@ -87,7 +111,7 @@ public class Checkin {
         result.put("description", description);
         result.put("category", category);
         result.put("photo", photo);
-        result.put("uid", uid);
+        result.put("rate", uid);
         result.put("username", username);
         result.put("timestamp", timestamp);
         result.put("targetUid", targetUid);

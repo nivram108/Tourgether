@@ -138,7 +138,7 @@ public class GpsLocationService extends Service implements
         requestParams.put("lat", String.valueOf(location.getLatitude()));
         requestParams.put("lng", String.valueOf(location.getLongitude()));
         requestParams.put("username", FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
-        requestParams.put("uid", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        requestParams.put("rate", FirebaseAuth.getInstance().getCurrentUser().getUid());
         requestParams.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000));
 
         client.post(url, requestParams, new AsyncHttpResponseHandler() {

@@ -20,11 +20,11 @@ import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 public class SpotList {
 
     public Map<String, SpotNode> nodeMap;
-    public Map<String, SpotNode> personalNodeMap;
+    public Map<String, SpotNode> fullNodeMap;
 
     public SpotList(File spotListFile) {
         nodeMap = new LinkedHashMap<>();
-        personalNodeMap = new LinkedHashMap<>();
+        fullNodeMap = new LinkedHashMap<>();
         readSpotsFile(spotListFile);
     }
 
@@ -43,9 +43,9 @@ public class SpotList {
                 int order = Integer.parseInt(arr[3]);
                 if (order < 3) {
                     nodeMap.put(arr[0], new SpotNode(imgPx[0], imgPx[1], arr[1], arr[2], arr[0], order));
-                    Log.d("NIVRAMM" , "node Map key :" + arr[0]);
+//                    Log.d("NIVRAMM" , "node Map key :" + arr[0]);
                 }
-                personalNodeMap.put(arr[0], new SpotNode(imgPx[0], imgPx[1], arr[1], arr[2], arr[0], order));
+                fullNodeMap.put(arr[0], new SpotNode(imgPx[0], imgPx[1], arr[1], arr[2], arr[0], order));
 
 
             }
@@ -59,7 +59,11 @@ public class SpotList {
     public Set<String> getSpotsName() {
         return nodeMap.keySet();
     }
+
+    public Set<String> getFullSpotsName() {
+        return fullNodeMap.keySet();
+    }
     public Set<String> getPersonalSpotsName() {
-        return personalNodeMap.keySet();
+        return fullNodeMap.keySet();
     }
 }

@@ -43,9 +43,9 @@ import java.util.Objects;
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.Utility;
 import nctu.cs.cgv.itour.activity.MainActivity;
-import nctu.cs.cgv.itour.custom.CommentItemAdapter;
+import nctu.cs.cgv.itour.custom.CheckinCommentItemAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
-import nctu.cs.cgv.itour.object.Comment;
+import nctu.cs.cgv.itour.object.CheckinComment;
 import nctu.cs.cgv.itour.object.CommentNotification;
 import nctu.cs.cgv.itour.object.LikeNotification;
 
@@ -269,22 +269,22 @@ public class CheckinDialogFragment extends DialogFragment {
         final EditText commentMsg = view.findViewById(R.id.et_comment_msg);
         final ImageView sendBtn = view.findViewById(R.id.btn_comment_send);
 
-        final CommentItemAdapter commentItemAdapter = new CommentItemAdapter(getContext(), new ArrayList<Comment>());
-        commentList.setAdapter(commentItemAdapter);
+        final CheckinCommentItemAdapter checkinCommentItemAdapter = new CheckinCommentItemAdapter(getContext(), new ArrayList<CheckinComment>());
+        commentList.setAdapter(checkinCommentItemAdapter);
         commentList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-        commentList.scrollToPosition(commentItemAdapter.getItemCount() - 1);
+        commentList.scrollToPosition(checkinCommentItemAdapter.getItemCount() - 1);
 
         query = FirebaseDatabase.getInstance().getReference()
                 .child("checkin").child(mapTag).child(checkin.key).child("comment");
         childEventListener = query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Comment comment = dataSnapshot.getValue(Comment.class);
-                if (comment != null) {
-                    commentItemAdapter.add(comment);
+                CheckinComment checkinComment = dataSnapshot.getValue(CheckinComment.class);
+                if (checkinComment != null) {
+                    checkinCommentItemAdapter.add(checkinComment);
                     commentDivider.setVisibility(View.VISIBLE);
                     commentList.setVisibility(View.VISIBLE);
-                    commentList.scrollToPosition(commentItemAdapter.getItemCount() - 1);
+                    commentList.scrollToPosition(checkinCommentItemAdapter.getItemCount() - 1);
                 }
             }
 
@@ -316,23 +316,23 @@ public class CheckinDialogFragment extends DialogFragment {
             sendBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // send comment
+                    // send checkinComment
                     String msg = commentMsg.getText().toString().trim();
                     if (msg.equals("")) return;
                     //send CommentNotification
                     sendCommentNotification(checkin);
                     
-                    Comment comment = new Comment(msg,
+                    CheckinComment checkinComment = new CheckinComment(msg,
                             FirebaseAuth.getInstance().getCurrentUser().getUid(),
                             FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),
                             System.currentTimeMillis() / 1000);
                     String pushKey = FirebaseDatabase.getInstance().getReference()
-                            .child("checkin").child(mapTag).child(checkin.key).child("comment")
+                            .child("checkin").child(mapTag).child(checkin.key).child("checkinComment")
                             .push().getKey();
 
-                    Map<String, Object> commentValue = comment.toMap();
+                    Map<String, Object> commentValue = checkinComment.toMap();
                     Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put("/checkin/" + mapTag + "/" + checkin.key + "/comment/" + pushKey, commentValue);
+                    childUpdates.put("/checkin/" + mapTag + "/" + checkin.key + "/checkinComment/" + pushKey, commentValue);
                     FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
                             new DatabaseReference.CompletionListener() {
                                 @Override

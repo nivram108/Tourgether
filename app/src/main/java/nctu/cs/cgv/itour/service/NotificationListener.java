@@ -15,7 +15,7 @@ public class NotificationListener extends NotificationListenerService {
     public MainActivity mainActivity;
     @Override
     public void onCreate() {
-        Log.d("MARVIN", "START");
+        Log.d("MARVIN", "NL START");
         super.onCreate();
     }
 
@@ -34,6 +34,8 @@ public class NotificationListener extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn,
                                       NotificationListenerService.RankingMap rankingMap,
                                       int reason) {
+        Log.d("NIVRAM", "remove package : " + sbn.getPackageName() + ", " + sbn.getTag());
+
         if (sbn.getPackageName().equals("nctu.cs.cgv.itour") == false) return;
         if (reason == REASON_CLICK) {
             Log.d("NIVRAM", "謝天謝地 " + sbn.getTag());
