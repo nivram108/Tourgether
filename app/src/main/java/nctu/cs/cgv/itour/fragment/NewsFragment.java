@@ -168,7 +168,7 @@ public class NewsFragment extends Fragment {
                 if (systemNotification.targetUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()) ||
                         systemNotification.targetUid.equals("all")) {
                     systemNotificationMap.put(dataSnapshot.getKey(), systemNotification);
-                    newsItemAdapter.add(dataSnapshot.getKey());
+                    newsItemAdapter.add(dataSnapshot.getKey(), dataSnapshot.getKey());
                     requestFocusNotificationIcon();
 //                    Log.d("NIVRAM", "q c noti key:" + systemNotification.likedCheckinKey);
                 }
@@ -208,7 +208,7 @@ public class NewsFragment extends Fragment {
                 if (commentNotification.commentedUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         && (commentNotification.commentUid.equals(commentNotification.commentedUid) == false)) {
                     commentNotificationMap.put(commentNotification.commentedCheckinKey, commentNotification);
-                    newsItemAdapter.add(commentNotification);
+                    newsItemAdapter.add(commentNotification, dataSnapshot.getKey());
                     requestFocusNotificationIcon();
                     Log.d("NIVRAM", "q c noti key:" + commentNotification.commentedCheckinKey);
                 }
@@ -248,7 +248,7 @@ public class NewsFragment extends Fragment {
                 if (likeNotification.likedUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         && (likeNotification.likeUid.equals(likeNotification.likedUid) == false)) {
                     likeNotificationMap.put(likeNotification.likedCheckinKey, likeNotification);
-                    newsItemAdapter.add(likeNotification);
+                    newsItemAdapter.add(likeNotification, dataSnapshot.getKey());
                     requestFocusNotificationIcon();
                     Log.d("NIVRAM", "q c noti key:" + likeNotification.likedCheckinKey);
                 }

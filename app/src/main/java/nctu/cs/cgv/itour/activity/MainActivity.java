@@ -816,9 +816,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onNewIntent(Intent intent) {
+        Log.d("NOTIFICATIONN", "NEW INTENT");
+
         if (intent.getBooleanExtra("checkinNotificationIntent", false)) {
             Utility.actionLog("notice checkin", intent.getStringExtra("title"), intent.getStringExtra("key"));
-
+            Log.d("NOTIFICATIONN", "CLICK NOTIFICATION");
             notification_lat = intent.getStringExtra("lat");
             notification_lng = intent.getStringExtra("lng");
             notification_location = intent.getStringExtra("location");
@@ -858,7 +860,10 @@ public class MainActivity extends AppCompatActivity implements
                         onLocateClick(notification_location);
                     }
                 } else {
-                    onLocateCheckinClick(notification_key);
+                    CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(notification_key);
+                    FragmentManager fragmentManager = this.getSupportFragmentManager();
+                    checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
+//                    onLocateCheckinClick(notification_key);
                 }
 
             } catch (Exception ignore) {

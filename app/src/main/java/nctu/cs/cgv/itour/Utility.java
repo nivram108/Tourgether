@@ -319,13 +319,14 @@ public class Utility {
 //        notificationIntent.putExtra("location", commentNotification.location);
 //        notificationIntent.putExtra("title", commentNotification.title);
 //        notificationIntent.putExtra("msg", commentNotification.msg);
-//        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent
-        Intent intent = new Intent(context, MainActivity.class);
-
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        notificationIntent.putExtra("checkinNotificationIntent", true);
+        notificationIntent.putExtra("key", commentNotification.commentedCheckinKey);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
         String commentUserName = commentNotification.commentUserName;
@@ -335,7 +336,7 @@ public class Utility {
         notificationBuilder.setVibrate(new long[]{0, 300, 300, 300, 300});
         notificationBuilder.setContentTitle(commentUserName + "在你的打卡下留言");
         notificationBuilder.setContentText("點擊立刻查看");
-        //notificationBuilder.setContentIntent(intent);
+        notificationBuilder.setContentIntent(intent);
         notificationBuilder.setChannelId(channelId);
         notificationBuilder.setContentIntent(pendingIntent);
         // remvoe notification after user taps it
@@ -381,11 +382,16 @@ public class Utility {
 //        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent
-        Intent intent = new Intent(context, MainActivity.class);
-
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
+//        Intent intent = new Intent(context, MainActivity.class);
+//
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        notificationIntent.putExtra("checkinNotificationIntent", true);
+        notificationIntent.putExtra("key", likeNotification.likedCheckinKey);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         String likeUserName = likeNotification.likeUserName;
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
@@ -394,7 +400,7 @@ public class Utility {
         notificationBuilder.setVibrate(new long[]{0, 50, 100, 100});
         notificationBuilder.setContentTitle(likeUserName + "說你的打卡讚");
         notificationBuilder.setContentText("點擊立刻查看");
-        //notificationBuilder.setContentIntent(intent);
+        notificationBuilder.setContentIntent(intent);
         notificationBuilder.setChannelId(channelId);
         notificationBuilder.setContentIntent(pendingIntent);
         // remvoe notification after user taps it

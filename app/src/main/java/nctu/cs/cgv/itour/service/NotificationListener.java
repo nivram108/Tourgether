@@ -38,13 +38,13 @@ public class NotificationListener extends NotificationListenerService {
 
         if (sbn.getPackageName().equals("nctu.cs.cgv.itour") == false) return;
         if (reason == REASON_CLICK) {
-            Log.d("NIVRAM", "謝天謝地 " + sbn.getTag());
-            SharedPreferences sharedPreferences = getBaseContext().getSharedPreferences("data", Context.MODE_PRIVATE);
-            sharedPreferences.edit().putString("tappedNotificationCheckinId", sbn.getTag()).apply();
-            sharedPreferences.edit().putBoolean("launchedByTappingNotification", true).apply();
-
-            Log.d("NIVRAM", "clicked notification" + sharedPreferences.getString("tappedNotificationCheckinId", "") + ", " +
-                    sharedPreferences.getBoolean("launchedByTappingNotification", false));
+//            Log.d("NIVRAM", "謝天謝地 " + sbn.getTag());
+//            SharedPreferences sharedPreferences = getBaseContext().getSharedPreferences("data", Context.MODE_PRIVATE);
+//            sharedPreferences.edit().putString("tappedNotificationCheckinId", sbn.getTag()).apply();
+//            sharedPreferences.edit().putBoolean("launchedByTappingNotification", true).apply();
+//
+//            Log.d("NIVRAM", "clicked notification" + sharedPreferences.getString("tappedNotificationCheckinId", "") + ", " +
+//                    sharedPreferences.getBoolean("launchedByTappingNotification", false));
         }
     }
 

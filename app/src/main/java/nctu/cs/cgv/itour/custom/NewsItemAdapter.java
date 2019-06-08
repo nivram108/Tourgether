@@ -12,10 +12,19 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.fragment.NewsFragment;
@@ -26,6 +35,7 @@ import nctu.cs.cgv.itour.object.NotificationType;
 import nctu.cs.cgv.itour.object.SystemNotification;
 
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
+import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
 /**
  * Created by lobZter on 2017/7/10.
@@ -37,6 +47,18 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
     private static final int DISPLAY_TITLE_NAME_LENGTH_MAX = 9;
     private static final String TAG = "NewsItemAdapter";
     private ArrayList<NotificationType> notificationTypes;
+
+    public static Map<String, Boolean> systemNotificationIsClickedMap;
+    private Query systemNotificationIsClickedQuery;
+    private ChildEventListener systemNotificationIsClickedListener;
+    
+    public static Map<String, Boolean> commentNotificationIsClickedMap;
+    private Query commentNotificationIsClickedQuery;
+    private ChildEventListener commentNotificationIsClickedListener;
+    
+    public static Map<String, Boolean> likeNotificationIsClickedMap;
+    private Query likeNotificationIsClickedQuery;
+    private ChildEventListener likeNotificationIsClickedListener;
     private Context context;
     private NewsFragment newsFragment;
 
@@ -52,6 +74,19 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 
     @Override
     public NewsItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (systemNotificationIsClickedMap == null)  {
+            systemNotificationIsClickedMap = new LinkedHashMap<>();
+            querySystemNotificationIsClicked();
+        }
+        if (likeNotificationIsClickedMap == null)  {
+            likeNotificationIsClickedMap = new LinkedHashMap<>();
+            queryCommentNotificationIsClicked();
+        }
+        if (commentNotificationIsClickedMap == null)  {
+            commentNotificationIsClickedMap = new LinkedHashMap<>();
+            queryLikeNotificationIsClicked();
+        }
+
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
@@ -148,9 +183,9 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 //        notifyDataSetChanged();
 //    }
 
-    public void add(String systemNotificationKey) {
+    public void add(String systemNotificationKey, String pushKey) {
 
-        NotificationType notificationType = new NotificationType(NotificationType.TYPE_SYSTEM_NOTIFICATION, systemNotificationKey);
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_SYSTEM_NOTIFICATION, systemNotificationKey, pushKey);
         int index = getKeyPosition(notificationType);
 
         if (index != -1) {
@@ -162,23 +197,24 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         notifyDataSetChanged();
     }
 
-    public void add(CommentNotification commentNotification) {
+    public void add(CommentNotification commentNotification, String pushKey) {
 
-        NotificationType notificationType = new NotificationType(NotificationType.TYPE_COMMENT_NOTIFICATION, commentNotification.commentedCheckinKey);
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_COMMENT_NOTIFICATION, commentNotification.commentedCheckinKey, pushKey);
         int index = getKeyPosition(notificationType);
 
         if (index != -1) {
             // contain notification, remove
             notificationTypes.remove(index);
         }
+
         notificationType.setNotChecked();
         insert(notificationType, 0);
         notifyDataSetChanged();
     }
 
-    public void add(LikeNotification likeNotification) {
+    public void add(LikeNotification likeNotification, String pushKey) {
 
-        NotificationType notificationType = new NotificationType(NotificationType.TYPE_LIKE_NOTIFICATION, likeNotification.likedCheckinKey);
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_LIKE_NOTIFICATION, likeNotification.likedCheckinKey, pushKey);
         int index = getKeyPosition(notificationType);
 
         if (index != -1) {
@@ -196,6 +232,14 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
     }
 
     public void insert(NotificationType notificationType, int index) {
+
+        if (notificationType.type == NotificationType.TYPE_SYSTEM_NOTIFICATION) {
+            if (systemNotificationIsClickedMap.containsKey(notificationType.pushKey) && systemNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
+        } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
+            if (commentNotificationIsClickedMap.containsKey(notificationType.pushKey) && commentNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
+        } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
+            if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
+        }
         notificationTypes.add(index, notificationType);
         notifyItemInserted(index);
     }
@@ -254,5 +298,164 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 
         }
         return s.substring(0, index) + "...";
+    }
+
+    boolean notificationisChecked(NotificationType notificationType) {
+
+        return false;
+    }
+
+    public void querySystemNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        systemNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_SYSTEM_NOTIFICATION).child(mapTag);
+
+        systemNotificationIsClickedListener = systemNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_SYSTEM_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_SYSTEM_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    systemNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void queryCommentNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        commentNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_COMMENT_NOTIFICATION).child(mapTag);
+
+        commentNotificationIsClickedListener = commentNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_COMMENT_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_COMMENT_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    commentNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void queryLikeNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        likeNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_LIKE_NOTIFICATION).child(mapTag);
+
+        likeNotificationIsClickedListener = likeNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateIsChecked(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    likeNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    void updateIsChecked(String tag, String pushKey) {
+
     }
 }
