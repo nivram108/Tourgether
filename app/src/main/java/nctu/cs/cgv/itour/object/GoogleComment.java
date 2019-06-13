@@ -6,25 +6,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GoogleComment {
-    public String msg;
-    public String rate;
     public String username;
+    public String rate;
+    public String comment;
 
     public GoogleComment() {
     }
 
-    public GoogleComment(String msg, String rate, String username) {
-        this.msg = msg;
-        this.rate = rate;
+    public GoogleComment(String username, String rate, String comment) {
         this.username = username;
+        this.rate = rate;
+        this.comment = comment;
     }
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("msg", msg);
-        result.put("rate", rate);
         result.put("username", username);
+        result.put("rate", rate);
+        result.put("comment", comment);
         return result;
     }
 }

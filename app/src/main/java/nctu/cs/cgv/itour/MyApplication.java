@@ -23,6 +23,9 @@ public class MyApplication extends Application {
 //    public static final String VERSION_OPTION = VERSION_ONLY_GOOGLE_COMMENT;
 
 
+    public static final String LOG_TAG_APP_INTERACTION = "LOG_TAG_APP_INTERACTION";
+    public static final String LOG_TAG_NOTIFICATION = "LOG_TAG_NOTIFICATION";
+
     public static final String mapTag = "development";
 //    public static final String fileServerURL = "http://140.113.210.17:55555/data/json_maps";
 //    public static final String APPServerURL = "http://140.113.210.17:55555";

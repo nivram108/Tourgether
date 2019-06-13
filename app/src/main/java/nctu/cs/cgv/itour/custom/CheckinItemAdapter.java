@@ -131,7 +131,19 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
 
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
+        String s = "紅毛城";
+        if (spotList.fullNodeMap.containsKey("紅毛城")) {
+            Log.d("紅毛城", "BINGO");
+        } else {
+//            Log.d("紅毛城??", array.get(0) + " equals 紅毛城:" + array.get(0).equals("紅毛城"));
+//            Log.d("紅毛城!!", s + " equals 紅毛城:" + s.equals("紅毛城"));
+//            Log.d("紅毛城ＱＱ", s + " equals 紅毛城:" + s.equals(array.get(0)));
+            Log.d("紅毛城??",  Integer.toString((int)array.get(0).charAt(0)) + ", " +
+                    Integer.toString((int)array.get(0).charAt(1)) + ", " + Integer.toString((int)array.get(0).charAt(2)));
+            Log.d("紅毛城??",  Integer.toString((int)s.charAt(0)) + ", " +
+                    Integer.toString((int)s.charAt(1)) + ", " + Integer.toString((int)s.charAt(2)));
 
+        }
         Log.d("GCV", "array size : " + array.size());
         for (String spotName:array) {
             Log.d("GCV", "load");

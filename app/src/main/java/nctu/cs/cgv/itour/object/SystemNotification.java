@@ -54,7 +54,7 @@ public class SystemNotification {
         result.put("rate", uid);
         result.put("targetUid", targetUid);
         result.put("title", title);
-        result.put("msg", msg);
+        result.put("comment", msg);
         result.put("photo", photo);
         result.put("location", location);
         result.put("lat", lat);

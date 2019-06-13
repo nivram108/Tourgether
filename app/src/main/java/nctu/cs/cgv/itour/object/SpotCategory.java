@@ -8,6 +8,7 @@ public class SpotCategory {
     public LinkedHashMap<String, String> spotCategory;
     public SpotCategory() {
         spotCategory = new LinkedHashMap<>();
+        spotCategory.put("3D意象彩繪階梯", "休閒");
         spotCategory.put("三協成博物館", "歷史");
         spotCategory.put("小白宮", "歷史");
         spotCategory.put("之間茶食器", "美食");

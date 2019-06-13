@@ -150,6 +150,7 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
     }
     public void addTogo(TogoPlannedData togoPlannedData) {
         ((MainActivity) parentFragment.getActivity()).queryTogoIsVisited();
+        if (togoIsVisited == null || togoPlannedData == null) Log.d("GGGG", "出大事");
         if (togoIsVisited.containsKey(togoPlannedData.locationName) && togoIsVisited.get(togoPlannedData.locationName)) togoPlannedData.isVisited = true;
         notifyItemInserted(0);
         notifyDataSetChanged();

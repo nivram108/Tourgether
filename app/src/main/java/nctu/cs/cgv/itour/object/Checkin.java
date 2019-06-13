@@ -111,7 +111,7 @@ public class Checkin {
         result.put("description", description);
         result.put("category", category);
         result.put("photo", photo);
-        result.put("rate", uid);
+        result.put("uid", uid);
         result.put("username", username);
         result.put("timestamp", timestamp);
         result.put("targetUid", targetUid);

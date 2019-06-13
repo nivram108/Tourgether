@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.Query;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
@@ -44,6 +45,7 @@ import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinComment;
 import nctu.cs.cgv.itour.object.GlideApp;
 import nctu.cs.cgv.itour.object.GoogleComment;
+import nctu.cs.cgv.itour.object.GoogleCommentManager;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
@@ -172,8 +174,14 @@ public class SpotDescritionDialogFragment extends DialogFragment {
         googleCommentRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         googleCommentRecyclerView.scrollToPosition(googleCommentItemAdapter.getItemCount() - 1);
 
-        GoogleComment googleComment = new GoogleComment("很棒", "5", "帥哥");
-        googleCommentItemAdapter.add(googleComment);
+//        GoogleComment googleComment = new GoogleComment("很棒", "5", "帥哥");
+        GoogleCommentManager googleCommentManager = new GoogleCommentManager();
+        List<GoogleComment> googleCommentList = googleCommentManager.getGoogleCommentList(spotName);
+        for (GoogleComment googleComment: googleCommentList
+             ) {
+            googleCommentItemAdapter.add(googleComment);
+
+        }
     }
 
     private void setActionBtn(final View view, final SpotNode spotNode, final String spotName) {

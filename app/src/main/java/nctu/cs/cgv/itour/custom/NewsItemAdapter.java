@@ -33,7 +33,9 @@ import nctu.cs.cgv.itour.object.GlideApp;
 import nctu.cs.cgv.itour.object.LikeNotification;
 import nctu.cs.cgv.itour.object.NotificationType;
 import nctu.cs.cgv.itour.object.SystemNotification;
-
+import static nctu.cs.cgv.itour.activity.MainActivity.systemNotificationIsClickedMap;
+import static nctu.cs.cgv.itour.activity.MainActivity.commentNotificationIsClickedMap;
+import static nctu.cs.cgv.itour.activity.MainActivity.likeNotificationIsClickedMap;
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
@@ -48,17 +50,8 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
     private static final String TAG = "NewsItemAdapter";
     private ArrayList<NotificationType> notificationTypes;
 
-    public static Map<String, Boolean> systemNotificationIsClickedMap;
-    private Query systemNotificationIsClickedQuery;
-    private ChildEventListener systemNotificationIsClickedListener;
-    
-    public static Map<String, Boolean> commentNotificationIsClickedMap;
-    private Query commentNotificationIsClickedQuery;
-    private ChildEventListener commentNotificationIsClickedListener;
-    
-    public static Map<String, Boolean> likeNotificationIsClickedMap;
-    private Query likeNotificationIsClickedQuery;
-    private ChildEventListener likeNotificationIsClickedListener;
+
+
     private Context context;
     private NewsFragment newsFragment;
 
@@ -74,18 +67,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
 
     @Override
     public NewsItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (systemNotificationIsClickedMap == null)  {
-            systemNotificationIsClickedMap = new LinkedHashMap<>();
-            querySystemNotificationIsClicked();
-        }
-        if (likeNotificationIsClickedMap == null)  {
-            likeNotificationIsClickedMap = new LinkedHashMap<>();
-            queryCommentNotificationIsClicked();
-        }
-        if (commentNotificationIsClickedMap == null)  {
-            commentNotificationIsClickedMap = new LinkedHashMap<>();
-            queryLikeNotificationIsClicked();
-        }
+
 
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -305,155 +287,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         return false;
     }
 
-    public void querySystemNotificationIsClicked() {
-//        collectedCheckinIsVisited.clear();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        systemNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_SYSTEM_NOTIFICATION).child(mapTag);
 
-        systemNotificationIsClickedListener = systemNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "VISITED save");
-                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_SYSTEM_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "q save");
-                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_SYSTEM_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                try {
-                    systemNotificationIsClickedMap.remove(dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    public void queryCommentNotificationIsClicked() {
-//        collectedCheckinIsVisited.clear();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        commentNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_COMMENT_NOTIFICATION).child(mapTag);
-
-        commentNotificationIsClickedListener = commentNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "VISITED save");
-                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_COMMENT_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "q save");
-                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_COMMENT_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                try {
-                    commentNotificationIsClickedMap.remove(dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    public void queryLikeNotificationIsClicked() {
-//        collectedCheckinIsVisited.clear();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        likeNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_LIKE_NOTIFICATION).child(mapTag);
-
-        likeNotificationIsClickedListener = likeNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "VISITED save");
-                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                try {
-//                    Log.d("NIVRAMMM", "q save");
-                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
-                    updateIsChecked(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                try {
-                    likeNotificationIsClickedMap.remove(dataSnapshot.getKey());
-                } catch (Exception ignored) {
-
-                }
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     void updateIsChecked(String tag, String pushKey) {
 

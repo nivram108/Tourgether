@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -39,7 +37,8 @@ public class GoogleCommentItemAdapter extends RecyclerView.Adapter<GoogleComment
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
         GoogleComment comment = comments.get(position);
         viewHolder.username.setText(comment.username);
-        viewHolder.msg.setText(comment.msg);
+        viewHolder.msg.setText(comment.comment);
+        viewHolder.rate.setText(comment.rate);
     }
 
     // Returns the total count of items in the list

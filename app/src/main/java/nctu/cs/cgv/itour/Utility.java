@@ -203,13 +203,13 @@ public class Utility {
 
 //    public void pushNotification(final Checkin checkin) {
 //        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-//        String msg = checkin.location.equals("") ? checkin.description : checkin.location + " | " + checkin.description;
+//        String comment = checkin.location.equals("") ? checkin.description : checkin.location + " | " + checkin.description;
 //        final String notificationKey = databaseReference.child("notification").child(mapTag).push().getKey();
 //        final SystemNotification notification = new SystemNotification(checkin.key,
 //                checkin.rate,
 //                "all",
 //                checkin.username,
-//                msg,
+//                comment,
 //                checkin.photo,
 //                checkin.location,
 //                checkin.lat,
@@ -221,7 +221,7 @@ public class Utility {
 //        databaseReference.updateChildren(notificationUpdates, new DatabaseReference.CompletionListener() {
 //            @Override
 //            public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
-//                actionLog("push notification: " + notification.msg, checkin.location, checkin.key);
+//                actionLog("push notification: " + notification.comment, checkin.location, checkin.key);
 //            }
 //        });
 //    }
@@ -271,7 +271,7 @@ public class Utility {
         notificationIntent.putExtra("key", systemNotification.postId);
         notificationIntent.putExtra("location", systemNotification.location);
         notificationIntent.putExtra("title", systemNotification.title);
-        notificationIntent.putExtra("msg", systemNotification.msg);
+        notificationIntent.putExtra("comment", systemNotification.msg);
         PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
@@ -318,7 +318,7 @@ public class Utility {
 //        notificationIntent.putExtra("key", commentNotification.postId);
 //        notificationIntent.putExtra("location", commentNotification.location);
 //        notificationIntent.putExtra("title", commentNotification.title);
-//        notificationIntent.putExtra("msg", commentNotification.msg);
+//        notificationIntent.putExtra("comment", commentNotification.comment);
         Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent
         Intent notificationIntent = new Intent(context, MainActivity.class);
@@ -378,7 +378,7 @@ public class Utility {
 //        notificationIntent.putExtra("key", likeNotification.postId);
 //        notificationIntent.putExtra("location", likeNotification.location);
 //        notificationIntent.putExtra("title", likeNotification.title);
-//        notificationIntent.putExtra("msg", likeNotification.msg);
+//        notificationIntent.putExtra("comment", likeNotification.comment);
 //        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent

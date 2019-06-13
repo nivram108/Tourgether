@@ -19,6 +19,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -683,8 +684,14 @@ public class LocationChooseActivity extends AppCompatActivity {
                             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
                                 databaseReference.child("checkin").child(mapTag).child(key).removeValue();
                                 progressDialog.dismiss();
-                                Toast.makeText(getApplicationContext(), getString(R.string.toast_upload_file_failed) + statusCode, Toast.LENGTH_SHORT).show();
+                                try {
+                                    String str = new String(errorResponse, "UTF-8");
+                                    Log.e("FUCCKKKKKKK", str);
+                                }catch(Exception exxx) {
+                                    Toast.makeText(getApplicationContext(), getString(R.string.toast_upload_file_failed) + statusCode, Toast.LENGTH_SHORT).show();
+                                }
                             }
+
                         });
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();

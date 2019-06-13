@@ -244,9 +244,14 @@ public class NewsFragment extends Fragment {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 nctu.cs.cgv.itour.object.LikeNotification likeNotification = dataSnapshot.getValue(nctu.cs.cgv.itour.object.LikeNotification.class);
-                if (likeNotification == null) return;
-                if (likeNotification.likedUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        && (likeNotification.likeUid.equals(likeNotification.likedUid) == false)) {
+                if (likeNotification == null ) return;
+                if (likeNotification.likedUid == null) {
+                    Log.e("GGGG", "GG!!!!");
+                    Log.e("GGGG", likeNotification.likedUid);
+                } else {
+                    Log.e("GGGG", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                }
+                if (likeNotification.likedUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                     likeNotificationMap.put(likeNotification.likedCheckinKey, likeNotification);
                     newsItemAdapter.add(likeNotification, dataSnapshot.getKey());
                     requestFocusNotificationIcon();

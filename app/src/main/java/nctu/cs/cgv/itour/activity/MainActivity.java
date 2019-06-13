@@ -63,6 +63,7 @@ import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
 import nctu.cs.cgv.itour.object.Mesh;
 import nctu.cs.cgv.itour.object.MyAppGlideModule;
+import nctu.cs.cgv.itour.object.NotificationType;
 import nctu.cs.cgv.itour.object.SpotCategory;
 import nctu.cs.cgv.itour.object.SpotDescriptionMap;
 import nctu.cs.cgv.itour.object.SystemNotification;
@@ -159,6 +160,19 @@ public class MainActivity extends AppCompatActivity implements
     public static boolean activityIsVisible = false;
     public static SpotDescriptionMap spotDescriptionMap;
     MyAppGlideModule myAppGlideModule;
+
+    public static Map<String, Boolean> systemNotificationIsClickedMap;
+    private Query systemNotificationIsClickedQuery;
+    private ChildEventListener systemNotificationIsClickedListener;
+
+    public static Map<String, Boolean> commentNotificationIsClickedMap;
+    private Query commentNotificationIsClickedQuery;
+    private ChildEventListener commentNotificationIsClickedListener;
+
+    public static Map<String, Boolean> likeNotificationIsClickedMap;
+    private Query likeNotificationIsClickedQuery;
+    private ChildEventListener likeNotificationIsClickedListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
@@ -167,12 +181,6 @@ public class MainActivity extends AppCompatActivity implements
         if(VERSION_OPTION == VERSION_ALL_FEATURE) setContentView(R.layout.activity_main);
         else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) setContentView(R.layout.activity_main_google_comment_version);
         checkPermission();
-
-        String string = Settings.Secure.getString(getContentResolver(),
-                "enabled_notification_listeners");
-        if (!string.contains(NotificationListener.class.getName())) {
-            startActivity(new Intent(
-                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));}
 
 //        showCheckinDialog();
 
@@ -199,7 +207,18 @@ public class MainActivity extends AppCompatActivity implements
         collectedCheckinKey = new LinkedHashMap<>();
         collectedCheckinIsVisited = new LinkedHashMap<>();
         togoIsVisited = new LinkedHashMap<>();
-
+        if (systemNotificationIsClickedMap == null)  {
+            systemNotificationIsClickedMap = new LinkedHashMap<>();
+            querySystemNotificationIsClicked();
+        }
+        if (likeNotificationIsClickedMap == null)  {
+            likeNotificationIsClickedMap = new LinkedHashMap<>();
+            queryCommentNotificationIsClicked();
+        }
+        if (commentNotificationIsClickedMap == null)  {
+            commentNotificationIsClickedMap = new LinkedHashMap<>();
+            queryLikeNotificationIsClicked();
+        }
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
@@ -235,6 +254,11 @@ public class MainActivity extends AppCompatActivity implements
         }
         if (logFlag && screenCaptureFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             requestScreenCapture();
+        String s = Settings.Secure.getString(getContentResolver(),
+                "enabled_notification_listeners");
+        if (!string.contains(NotificationListener.class.getName())) {
+            startActivity(new Intent(
+                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));}
     }
 
     private void setNotificationManager() {
@@ -1041,5 +1065,149 @@ public class MainActivity extends AppCompatActivity implements
             spotDescriptionMap = new SpotDescriptionMap();
         }
         return spotDescriptionMap.isSpot(spotName);
+    }
+
+    public void querySystemNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        systemNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_SYSTEM_NOTIFICATION).child(mapTag);
+
+        systemNotificationIsClickedListener = systemNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    systemNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void queryCommentNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        commentNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_COMMENT_NOTIFICATION).child(mapTag);
+
+        commentNotificationIsClickedListener = commentNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    commentNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void queryLikeNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        likeNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_LIKE_NOTIFICATION).child(mapTag);
+
+        likeNotificationIsClickedListener = likeNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    likeNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

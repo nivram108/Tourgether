@@ -511,7 +511,7 @@ public class PersonalMapFragment extends Fragment {
             if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
         }
 
-//        //Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
+        Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
         if (togoIsUpdated){
             for (CheckinNode checkinNode : togoNodeList) {
                 checkinNode.icon.setVisibility(View.GONE);
