@@ -103,7 +103,7 @@ public class TogoFragment extends Fragment{
             @Override
             public void onRightClicked(int position) {
                 TogoPlannedData togoPlannedData = togoItemAdapter.togoPlannedDataList.get(position);
-                togoItemAdapter.removeTogo(togoPlannedData, position);
+                togoItemAdapter.removeTogo(togoPlannedData, position, TAG);
 
             }
         });
@@ -124,7 +124,7 @@ public class TogoFragment extends Fragment{
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                         String spotName = togoItemAdapter.togoPlannedDataList.get(position).locationName;
-                        SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName);
+                        SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName, TAG);
                         spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
                     }
                 }
@@ -176,7 +176,7 @@ public class TogoFragment extends Fragment{
 
                 final String togoName = autoCompleteTextView.getText().toString();
                 if (isSpot(togoName)) {
-                    togoItemAdapter.addTogo(new TogoPlannedData(togoName));
+                    togoItemAdapter.addTogo(new TogoPlannedData(togoName), TAG);
                     dialog.dismiss();
                 } else {
                     //TODO : TOAST MESSAGE

@@ -113,7 +113,7 @@ public class NewsFragment extends Fragment {
                             SystemNotification systemNotification = systemNotificationMap.get(notificationType.key);
                             if (systemNotification.uid.equals("")) {
                                 ((MainActivity)getActivity()).onLocateClick(systemNotification.lat, systemNotification.lng);
-                                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(systemNotification.location);
+                                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(systemNotification.location, TAG);
                                 spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
                             } else {
                                 showCheckinDialog(systemNotification.postId);

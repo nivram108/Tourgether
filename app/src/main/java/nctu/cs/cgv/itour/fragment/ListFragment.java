@@ -101,7 +101,7 @@ public class ListFragment extends Fragment {
                             CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key, TAG);
                             checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
                         } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
-                            SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(checkin.location);
+                            SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(checkin.location, TAG);
                             spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
                         }
                     }

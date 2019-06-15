@@ -299,6 +299,15 @@ public class CheckinDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 ((MainActivity) Objects.requireNonNull(getActivity())).onLocateCheckinClick(checkin.key);
+                String logNote = "";
+                if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(checkin.uid)) {
+                    logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                } else if (collectedCheckinKey != null && collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
+                    logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                } else {
+                    logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+                }
+                firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
                 Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("fragment_checkin_dialog");
                 Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
                 actionLog("locate checkin", checkin.location, checkin.key);

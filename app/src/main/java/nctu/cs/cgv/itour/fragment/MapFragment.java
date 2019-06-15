@@ -73,6 +73,14 @@ import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.activityIsVisible;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
+import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LIKE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LOCATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
 
 public class MapFragment extends Fragment {
 
@@ -826,7 +834,15 @@ public class MapFragment extends Fragment {
         CheckinNode checkinClusterNode = checkinClusterNodeMap.get(clickedCheckin.key);
         CheckinNode checkinNode = checkinNodeMap.get(clickedCheckin.key);
         onClusterNodeClick(checkinClusterNode, checkinNode.x, checkinNode.y);
-        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng);
+        String logNote = "";
+        if (uid.equals(clickedCheckin.uid)) {
+            logNote = LOG_NOTE_IS_SELF_CHECKIN;
+        } else if (collectedCheckinKey != null && collectedCheckinKey.containsKey(clickedCheckin.key) && collectedCheckinKey.get(clickedCheckin.key)) {
+            logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+        } else {
+            logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+        }
+        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng, clickedCheckin.key, logNote);
     }
 
     public void onClusterNodeClick(CheckinNode checkinNode) {
@@ -1033,7 +1049,7 @@ public class MapFragment extends Fragment {
         return uid;
     }
 
-    public void searchLocationDialog(final String lat, final String lng) {
+    public void searchLocationDialog(final String lat, final String lng, final String logMsg, final String logNote) {
         final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
@@ -1055,7 +1071,7 @@ public class MapFragment extends Fragment {
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
                 Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng);
+                navigateLocation(latLng, logMsg, logNote);
             }
         });
 
@@ -1078,7 +1094,8 @@ public class MapFragment extends Fragment {
         startActivity(mapIntent);
     }
 
-    public void navigateLocation(String locationName) {
+    public void navigateLocation(String locationName, String logMsg, String logNote) {
+        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_NAVIGATE, logMsg, logNote);
         locationName = locationName.replace(' ', '+');
         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);

@@ -18,6 +18,7 @@ public class FirebaseLogData {
     public static final String LOG_APP_INTERACTION_TOGO_OPEN 		= "App Interaction Togo Open";
     public static final String LOG_APP_INTERACTION_TOGO_ADD 		= "App Interaction Togo Add";
     public static final String LOG_APP_INTERACTION_TOGO_REMOVE 		= "App Interaction Togo Remove";
+    public static final String LOG_APP_INTERACTION_TOGO_LOCATE 	= "App Interaction Togo Locate";
     public static final String LOG_APP_INTERACTION_TOGO_NAVIGATE 	= "App Interaction Togo Navigate";
     public static final String LOG_APP_INTERACTION_REPORT_CHECKIN 	= "App Interaction Report Checkin";
     public static final String LOG_APP_INTERACTION_REPORT_TOGO		= "App Interaction Report Togo";
@@ -40,6 +41,9 @@ public class FirebaseLogData {
     public static final String LOG_NOTE_IS_NOT_SELF_CHECKIN = " Is Not Self Checkin";
     public static final String LOG_NOTE_IS_COLLECTED_CHECKIN = " Is Collected Checkin";
     public static final String LOG_NOTE_IS_OTHER_CHECKIN = " Is Other Checkin";
+
+    public static final String LOG_NOTE_IS_COLLECTED_TOGO = " Is Collected Togo";
+    public static final String LOG_NOTE_IS_NOT_COLLECTED_TOGO = " Is Not Collected Togo";
 
 
     public String uid;

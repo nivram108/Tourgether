@@ -959,6 +959,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onLocateCheckinClick(String postId) {
         bottomBar.selectTabAtPosition(0);
+
         mapFragment.onLocateCheckinClick(checkinMap.get(postId));
     }
 

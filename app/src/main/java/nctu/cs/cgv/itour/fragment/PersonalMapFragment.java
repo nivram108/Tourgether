@@ -77,6 +77,18 @@ import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinIsVisited;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
+import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_ANYWHERE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
 
 public class PersonalMapFragment extends Fragment {
 
@@ -801,10 +813,10 @@ public class PersonalMapFragment extends Fragment {
 //        checkinNodeMap.put(checkin.key, checkinNode);
     }
 
-    public void onLocateClick(String lat, String lng) {
+    public void onLocateClick(String lat, String lng, String spotName) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
-        searchLocationDialog(lat, lng);
+        searchLocationDialog(lat, lng, spotName);
     }
 
 
@@ -1002,7 +1014,7 @@ public class PersonalMapFragment extends Fragment {
         return uid;
     }
 
-    public void searchLocationDialog(final String lat, final String lng) {
+    public void searchLocationDialog(final String lat, final String lng, final String spotName) {
         final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
@@ -1024,7 +1036,15 @@ public class PersonalMapFragment extends Fragment {
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng);
+                String logNote = "";
+                List<Fragment> fragmentList = getFragmentManager().getFragments();
+                TogoFragment togoFragment = new TogoFragment();
+                for (Fragment fragment: fragmentList) {
+                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+                }
+                if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                navigateLocation(latLng, LOG_APP_INTERACTION_TOGO_NAVIGATE, spotName, logNote);
             }
         });
 
@@ -1047,7 +1067,8 @@ public class PersonalMapFragment extends Fragment {
         startActivity(mapIntent);
     }
 
-    public void navigateLocation(String locationName) {
+    public void navigateLocation(String locationName, String logTag, String logMsg, String logNote) {
+        firebaseLogManager.log(logTag, logMsg, logNote);
         locationName = locationName.replace(' ', '+');
         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
@@ -1094,7 +1115,12 @@ public class PersonalMapFragment extends Fragment {
             public void onClick(View v) {
                 String latLng = checkin.lat + "," + checkin.lng ;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng);
+                String logNote = "";
+                if (collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                else if (checkin.uid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                else logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+
+                navigateLocation(latLng, LOG_APP_INTERACTION_CHECKIN_NAVIGATE, checkin.key, logNote);
             }
         });
 
@@ -1132,7 +1158,7 @@ public class PersonalMapFragment extends Fragment {
         showDescriptionBrn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName);
+                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName, TAG);
                 spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
 //                bottomSheetDialog.dismiss();
             }
@@ -1144,7 +1170,15 @@ public class PersonalMapFragment extends Fragment {
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng);
+                String logNote = "";
+                List<Fragment> fragmentList = getFragmentManager().getFragments();
+                TogoFragment togoFragment = new TogoFragment();
+                for (Fragment fragment: fragmentList) {
+                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+                }
+                if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                navigateLocation(latLng, LOG_APP_INTERACTION_TOGO_NAVIGATE, spotName, logNote);
             }
         });
 
@@ -1203,7 +1237,7 @@ public class PersonalMapFragment extends Fragment {
         }
         for (int i = 0; i < togoFragment.togoItemAdapter.togoPlannedDataList.size(); i++) {
             if (togoFragment.togoItemAdapter.togoPlannedDataList.get(i).locationName.equals(spotName)) {
-                togoFragment.togoItemAdapter.removeTogo(togoFragment.togoItemAdapter.togoPlannedDataList.get(i), i);
+                togoFragment.togoItemAdapter.removeTogo(togoFragment.togoItemAdapter.togoPlannedDataList.get(i), i, TAG);
             }
         }
         reRender();
@@ -1266,6 +1300,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportCollectedCheckinVisited(Checkin checkin) {
+        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_CHECKIN, checkin.key);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         databaseReference.child("users").child(uid).child("visited").child("collected_post").child(mapTag).child(checkin.key).setValue(true);
         collectedCheckinIsVisited.put(checkin.key, true);
@@ -1276,8 +1311,7 @@ public class PersonalMapFragment extends Fragment {
 
     void reportTogoVisited(String spotName) {
         setTogoVisited(spotName);
-        ReportManager reportManager = new ReportManager();
-        reportManager.reportTogo();
+        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_TOGO, spotName);
     }
 
     void setTogoVisited(String spotName) {
@@ -1412,6 +1446,6 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportAnywhere(String location, String motivation) {
-
+        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_ANYWHERE, location, motivation);
     }
 }
