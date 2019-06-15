@@ -73,7 +73,7 @@ public class PostedCheckinFragment extends Fragment {
                     @Override
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                         Checkin checkin = checkinItemAdapter.getItem(position);
-                        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key);
+                        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key, TAG);
                         checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
                     }
                 }

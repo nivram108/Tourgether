@@ -56,6 +56,17 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
+import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COLLECT_ADD;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COLLECT_REMOVE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COMMENT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LIKE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_OPEN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_SELF_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_CLICKED_LIKE;
 
 public class CheckinDialogFragment extends DialogFragment {
 
@@ -64,13 +75,15 @@ public class CheckinDialogFragment extends DialogFragment {
     public static Checkin notificationCheckin;
 
     private String postId;
+    private String fromPath;
     private Query query;
     private ChildEventListener childEventListener;
 
-    public static CheckinDialogFragment newInstance(String postId) {
+    public static CheckinDialogFragment newInstance(String postId, String fromPath) {
         CheckinDialogFragment checkinDialogFragment = new CheckinDialogFragment();
         Bundle args = new Bundle();
         args.putString("postId", postId);
+        args.putString("fromPath", fromPath);
         checkinDialogFragment.setArguments(args);
         return checkinDialogFragment;
     }
@@ -80,7 +93,9 @@ public class CheckinDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             postId = getArguments().getString("postId");
+            fromPath = getArguments().getString("fromPath");
         }
+        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_OPEN, postId, fromPath);
     }
 
     @Override
@@ -199,6 +214,16 @@ public class CheckinDialogFragment extends DialogFragment {
                         checkin.like.remove(uid);
                         checkinMap.get(checkin.key).like.remove(uid);
                         actionLog("cancel like checkin", checkin.location, checkin.key);
+
+                        String logNote = "";
+                        if (uid.equals(checkin.uid)) {
+                            logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                        } else if (collectedCheckinKey != null && collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
+                            logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                        } else {
+                            logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+                        }
+                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
                     } else {
                         // set like
                         sendLikeNotification(checkin);
@@ -215,6 +240,16 @@ public class CheckinDialogFragment extends DialogFragment {
                         checkin.like.put(uid, true);
                         checkinMap.get(checkin.key).like.put(uid, true);
                         actionLog("like checkin", checkin.location, checkin.key);
+
+                        String logNote = "";
+                        if (uid.equals(checkin.uid)) {
+                            logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                        } else if (collectedCheckinKey != null && collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
+                            logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                        } else {
+                            logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+                        }
+                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
                     }
                 }
             });
@@ -229,12 +264,22 @@ public class CheckinDialogFragment extends DialogFragment {
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).removeValue();
                         collectedCheckinKey.remove(checkin.key);
                         actionLog("cancel save checkin", checkin.location, checkin.key);
+
+                        String logNote = "";
+                        if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                        else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
+                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COLLECT_REMOVE, checkin.key, logNote);
                     } else {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                                 R.drawable.ic_bookmark_blue_24dp, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).setValue(true);
                         collectedCheckinKey.put(checkin.key, true);
                         actionLog("save checkin", checkin.location, checkin.key);
+
+                        String logNote = "";
+                        if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                        else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
+                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COLLECT_ADD, checkin.key, logNote);
                     }
                 }
             });
@@ -340,6 +385,16 @@ public class CheckinDialogFragment extends DialogFragment {
                                     commentMsg.setText("");
                                 }
                             });
+
+                    String logNote = "";
+                    if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(checkin.uid)) {
+                        logNote = LOG_NOTE_IS_SELF_CHECKIN;
+                    } else if (collectedCheckinKey != null && collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
+                        logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                    } else {
+                        logNote = LOG_NOTE_IS_OTHER_CHECKIN;
+                    }
+                    firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COMMENT, checkin.key, logNote);
                 }
             });
 

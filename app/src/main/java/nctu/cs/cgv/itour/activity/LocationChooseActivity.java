@@ -75,6 +75,7 @@ import static nctu.cs.cgv.itour.Utility.imgPxToGps;
 import static nctu.cs.cgv.itour.Utility.moveFile;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.CheckinActivity.RESULT_CODE_CHECKIN_FINISH;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_ADD;
 
 public class LocationChooseActivity extends AppCompatActivity {
 
@@ -633,6 +634,9 @@ public class LocationChooseActivity extends AppCompatActivity {
             photo = key + ".jpg";
             from.renameTo(to);
         }
+
+        //LOG
+        MainActivity.firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_ADD, key);
 
         // save checkin data to firebase database
         final String location = locationEdit.getText().toString().trim();

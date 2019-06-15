@@ -98,7 +98,7 @@ public class ListFragment extends Fragment {
                     public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                         Checkin checkin = checkinItemAdapter.getItem(position);
                         if (VERSION_OPTION == VERSION_ALL_FEATURE) {
-                            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key);
+                            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key, TAG);
                             checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
                         } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
                             SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(checkin.location);

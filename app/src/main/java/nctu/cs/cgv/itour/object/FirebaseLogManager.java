@@ -14,15 +14,34 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
 public class FirebaseLogManager {
 
-    private void appInteractionLog(String tag, String msg) {
+    public void log(String tag, String msg) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final String pushKey = databaseReference.child("app_interaction").child(mapTag).child(uid).push().getKey();
+        final String pushKey = databaseReference.child("log").child(mapTag).child(uid).push().getKey();
         final String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         FirebaseLogData firebaseLogData = new FirebaseLogData(uid, tag, msg, name);
         Map<String, Object> logValue = firebaseLogData.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/app_interaction/" + mapTag + "/" + uid + "/" + pushKey, logValue);
+        childUpdates.put("/log/" + mapTag + "/" + uid + "/" + pushKey, logValue);
+        FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
+                new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                        //likeMsg.setText("");
+                        Log.e("NIVRAM", "ERROR GG");
+                    }
+                });
+    }
+
+    public void log(String tag, String msg, String note) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final String pushKey = databaseReference.child("log").child(mapTag).child(uid).push().getKey();
+        final String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        FirebaseLogData firebaseLogData = new FirebaseLogData(uid, tag, msg, note, name);
+        Map<String, Object> logValue = firebaseLogData.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/log/" + mapTag + "/" + uid + "/" + pushKey, logValue);
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
                 new DatabaseReference.CompletionListener() {
                     @Override

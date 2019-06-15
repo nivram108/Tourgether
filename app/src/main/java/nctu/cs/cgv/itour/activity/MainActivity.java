@@ -61,6 +61,7 @@ import nctu.cs.cgv.itour.fragment.SettingsFragment;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
+import nctu.cs.cgv.itour.object.FirebaseLogManager;
 import nctu.cs.cgv.itour.object.Mesh;
 import nctu.cs.cgv.itour.object.MyAppGlideModule;
 import nctu.cs.cgv.itour.object.NotificationType;
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements
     private MapFragment mapFragment;
     private ListFragment listFragment;
     public PersonalFragment personalFragment;
+    public NewsFragment newsFragment;
     // use broadcast to receive gpsUpdate and fogUpdate
     private BroadcastReceiver messageReceiver;
     // device sensor manager
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements
     public static Map<String, Boolean> likeNotificationIsClickedMap;
     private Query likeNotificationIsClickedQuery;
     private ChildEventListener likeNotificationIsClickedListener;
-
+    public static FirebaseLogManager firebaseLogManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
@@ -184,6 +186,8 @@ public class MainActivity extends AppCompatActivity implements
 
 //        showCheckinDialog();
 
+        if (firebaseLogManager == null)
+            firebaseLogManager = new FirebaseLogManager();
         if (checkLaunchedByNotificationThread == null)
             checkLaunchedByNotificationThread = new HandlerThread("checkLaunchedByNotificationThread");
         if (checkLaunchedByNotificationThread.isAlive() == false)
@@ -599,11 +603,12 @@ public class MainActivity extends AppCompatActivity implements
         mapFragment = MapFragment.newInstance();
         listFragment = ListFragment.newInstance();
         personalFragment = PersonalFragment.newInstance();
+        newsFragment = NewsFragment.newInstance();
         fragmentList = new ArrayList<>();
         fragmentList.add(mapFragment);
         fragmentList.add(listFragment);
         fragmentList.add(personalFragment);
-        fragmentList.add(NewsFragment.newInstance());
+        fragmentList.add(newsFragment);
 //        fragmentList.add(TogoFragment.newInstance());
         fragmentList.add(SettingsFragment.newInstance());
 //        fragmentList.add(NotificationFragment.newInstance());
@@ -884,7 +889,7 @@ public class MainActivity extends AppCompatActivity implements
                         onLocateClick(notification_location);
                     }
                 } else {
-                    CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(notification_key);
+                    CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(notification_key, "NotificationClicked");
                     FragmentManager fragmentManager = this.getSupportFragmentManager();
                     checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
 //                    onLocateCheckinClick(notification_key);
@@ -1014,43 +1019,43 @@ public class MainActivity extends AppCompatActivity implements
     private Runnable listenNotificationClicked = new Runnable() {
         @Override
         public void run() {
-            while (activityIsVisible == true) {
-                if (checkinMap.size()!= 0) {
-                    SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
-                    if (sharedPreferences.getBoolean("launchedByTappingNotification", false) == true) {
-                        showCheckinDialog();
-                        return;
-                    }
-                }
-            }
+//            while (activityIsVisible == true) {
+//                if (checkinMap.size()!= 0) {
+//                    SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+//                    if (sharedPreferences.getBoolean("launchedByTappingNotification", false) == true) {
+//                        showCheckinDialog();
+//                        return;
+//                    }
+//                }
+//            }
 
         }
     };
     public void showCheckinDialog() {
-        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
-//        Log.d("NIVRAM", "show: " + sharedPreferences.getString("tappedNotificationCheckinId", "") + ", " +
-//                sharedPreferences.getBoolean("launchedByTappingNotification", false));
-        if (true) {
-            Log.d("NIVRAM" ,"LETS SHOW");
-            sharedPreferences.edit().putBoolean("launchedByTappingNotification", false).apply();
-            FragmentManager fragmentManager = this.getSupportFragmentManager();
-            List<Fragment> fragments = fragmentManager.getFragments();
-//            for (Fragment fragment : fragments) {
-//                if (fragment instanceof CheckinDialogFragment) {
-//                    CheckinDialogFragment checkinDialogFragment = (CheckinDialogFragment) fragment;
-////                    checkinDialogFragment.dismissAllowingStateLoss();
-//                }
-//            }
-//            if (checkinMap.size() == 0) {
-//                getCheckinFromFirebase(sharedPreferences.getString("tappedNotificationCheckinId", ""));
-//                Checkin checkin = notificationCheckin;
-////                queryCheckin();
-//            }
-            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.
-                    newInstance(sharedPreferences.getString("tappedNotificationCheckinId", ""));
-
-            checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
-        }
+//        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+////        Log.d("NIVRAM", "show: " + sharedPreferences.getString("tappedNotificationCheckinId", "") + ", " +
+////                sharedPreferences.getBoolean("launchedByTappingNotification", false));
+//        if (true) {
+//            Log.d("NIVRAM" ,"LETS SHOW");
+//            sharedPreferences.edit().putBoolean("launchedByTappingNotification", false).apply();
+//            FragmentManager fragmentManager = this.getSupportFragmentManager();
+//            List<Fragment> fragments = fragmentManager.getFragments();
+////            for (Fragment fragment : fragments) {
+////                if (fragment instanceof CheckinDialogFragment) {
+////                    CheckinDialogFragment checkinDialogFragment = (CheckinDialogFragment) fragment;
+//////                    checkinDialogFragment.dismissAllowingStateLoss();
+////                }
+////            }
+////            if (checkinMap.size() == 0) {
+////                getCheckinFromFirebase(sharedPreferences.getString("tappedNotificationCheckinId", ""));
+////                Checkin checkin = notificationCheckin;
+//////                queryCheckin();
+////            }
+////            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.
+////                    newInstance(sharedPreferences.getString("tappedNotificationCheckinId", ""));
+//
+////            checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
+//        }
     }
     public static String getSpotDescription(String spotName) {
         if (spotDescriptionMap == null || spotDescriptionMap.descriptionMap == null) {
@@ -1079,6 +1084,7 @@ public class MainActivity extends AppCompatActivity implements
                 try {
 //                    Log.d("NIVRAMMM", "VISITED save");
                     systemNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateCheckedNotification(NotificationType.TYPE_SYSTEM_NOTIFICATION, dataSnapshot.getKey());
                 } catch (Exception ignored) {
 
                 }
@@ -1127,6 +1133,7 @@ public class MainActivity extends AppCompatActivity implements
                 try {
 //                    Log.d("NIVRAMMM", "VISITED save");
                     commentNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateCheckedNotification(NotificationType.TYPE_COMMENT_NOTIFICATION, dataSnapshot.getKey());
                 } catch (Exception ignored) {
 
                 }
@@ -1173,8 +1180,9 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-//                    Log.d("NIVRAMMM", "VISITED save");
+                    Log.d("NIVRAMMM", "clicked : " + dataSnapshot.getKey());
                     likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateCheckedNotification(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
                 } catch (Exception ignored) {
 
                 }
@@ -1209,5 +1217,10 @@ public class MainActivity extends AppCompatActivity implements
 
             }
         });
+    }
+
+    void updateCheckedNotification(String tag, String pushKey) {
+        if (newsFragment == null || newsFragment.newsItemAdapter == null) return;
+        newsFragment.newsItemAdapter.updateIsChecked(tag, pushKey);
     }
 }

@@ -220,9 +220,13 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
             if (commentNotificationIsClickedMap.containsKey(notificationType.pushKey) && commentNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
-            if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
+            if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) {
+                Log.d("NIVRAMMM", "catch!");
+                notificationType.isChecked = true;
+            }
         }
         notificationTypes.add(index, notificationType);
+        notifyDataSetChanged();
         notifyItemInserted(index);
     }
 
@@ -287,9 +291,17 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         return false;
     }
 
+    public void setClicked(String notificationType, String pushKey) {
 
+    }
 
-    void updateIsChecked(String tag, String pushKey) {
-
+    public void updateIsChecked(String tag, String pushKey) {
+        for (NotificationType notificationType: notificationTypes) {
+            if (notificationType.type.equals(tag) && notificationType.pushKey.equals(pushKey)) {
+                notificationType.isChecked = true;
+                notifyDataSetChanged();
+                return;
+            }
+        }
     }
 }

@@ -37,7 +37,7 @@ import static nctu.cs.cgv.itour.activity.MainActivity.spotDescriptionMap;
 @SuppressLint("ValidFragment")
 public class CheckinListDialogFragment extends DialogFragment {
 
-    private static final String TAG = "CheckinDialogFragment";
+    private static final String TAG = "CheckinListDialogFragment";
 
     private ArrayList<Checkin> checkinList;
     public static CheckinListDialogFragment newInstance(CheckinNode checkinNode) {
@@ -76,7 +76,7 @@ public class CheckinListDialogFragment extends DialogFragment {
                 String key = checkinList.get(position).key;
                 String location = checkinList.get(position).location;
                 FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key);
+                CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key, TAG);
                 checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
             }
         });

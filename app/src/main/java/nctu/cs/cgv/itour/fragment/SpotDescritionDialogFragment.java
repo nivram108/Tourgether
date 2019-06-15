@@ -63,7 +63,7 @@ import static nctu.cs.cgv.itour.activity.MainActivity.getSpotDescription;
 
 public class SpotDescritionDialogFragment extends DialogFragment {
 
-    private static final String TAG = "SpotDescritionDialogFragment";
+    private static final String TAG = "SpotDescriptionDialogFragment";
     private Query postReference;
     private String spotName;
     private ListView swipeRefreshLayout;
@@ -136,7 +136,7 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                         @Override
                         public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                             Checkin checkin = checkinItemAdapter.getItem(position);
-                            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key);
+                            CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(checkin.key, TAG);
                             checkinDialogFragment.show(Objects.requireNonNull(getFragmentManager()), "fragment_checkin_dialog");
                         }
                     }

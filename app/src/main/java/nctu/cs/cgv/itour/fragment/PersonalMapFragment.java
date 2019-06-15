@@ -693,7 +693,7 @@ public class PersonalMapFragment extends Fragment {
 
     public void showCheckinDialog(String key) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key);
+        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key, TAG);
         checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
     }
 

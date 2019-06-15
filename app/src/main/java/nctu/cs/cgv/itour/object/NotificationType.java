@@ -34,16 +34,7 @@ public class NotificationType {
     }
     public void setChecked() {
         isChecked = true;
-        Map<String, Object> childUpdates = new HashMap<>();
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        childUpdates.put("/togo_list/" + mapTag + "/" + uid + "/" + pushKey, this.toMap());
-        FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
-                new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
-                        //commentMsg.setText("");
-                    }
-                });
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         databaseReference.child("users").child(uid).child("clicked_notification").child(this.type).child(mapTag).child(pushKey).setValue(true);
 

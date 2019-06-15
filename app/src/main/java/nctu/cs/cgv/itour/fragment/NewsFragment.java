@@ -50,7 +50,7 @@ public class NewsFragment extends Fragment {
 
     private static final String TAG = "NewsFragment";
     private ActionBar actionBar;
-    private NewsItemAdapter newsItemAdapter;
+    public NewsItemAdapter newsItemAdapter;
     public Map<String, SystemNotification> systemNotificationMap;
     public Map<String, CommentNotification> commentNotificationMap;
     public Map<String, LikeNotification> likeNotificationMap;
@@ -245,12 +245,7 @@ public class NewsFragment extends Fragment {
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 nctu.cs.cgv.itour.object.LikeNotification likeNotification = dataSnapshot.getValue(nctu.cs.cgv.itour.object.LikeNotification.class);
                 if (likeNotification == null ) return;
-                if (likeNotification.likedUid == null) {
-                    Log.e("GGGG", "GG!!!!");
-                    Log.e("GGGG", likeNotification.likedUid);
-                } else {
-                    Log.e("GGGG", FirebaseAuth.getInstance().getCurrentUser().getUid());
-                }
+
                 if (likeNotification.likedUid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                     likeNotificationMap.put(likeNotification.likedCheckinKey, likeNotification);
                     newsItemAdapter.add(likeNotification, dataSnapshot.getKey());
@@ -284,7 +279,7 @@ public class NewsFragment extends Fragment {
     }
     
     void showCheckinDialog(String key) {
-        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key);
+        CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key, TAG);
         checkinDialogFragment.show(getFragmentManager(), "fragment_checkin_dialog");
     }
     public void requestFocusNotificationIcon() {
