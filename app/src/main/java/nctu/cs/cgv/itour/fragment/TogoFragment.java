@@ -46,6 +46,7 @@ import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
@@ -144,7 +145,7 @@ public class TogoFragment extends Fragment{
         final AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.place_togo);
 
         if (spotList == null) {
-            spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
+            spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
         }
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());

@@ -24,13 +24,14 @@
             />
         <Button
             android:id="@+id/navigate_location"
-            android:paddingLeft="8dp"    android:paddingRight="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="立即導航"
+            android:layout_height="wrap_content"
+            android:text="在Google 地圖搜尋"
             android:textSize="16sp"
             android:textColor="@color/md_white_1000"
-            android:background="@drawable/navigate_location_button_background"
+            android:background="@drawable/search_location_button_background"
             android:layout_gravity="right"
             android:layout_marginRight="24dp"/>
         <Space

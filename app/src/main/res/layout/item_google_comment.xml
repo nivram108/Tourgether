@@ -24,7 +24,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/btn_like"
-        android:src="@drawable/start_16" />
+        android:padding="2dp"
+        android:src="@drawable/icon_star_16" />
     <TextView
         android:id="@+id/tv_google_msg"
         android:layout_width="match_parent"

@@ -42,6 +42,7 @@ import nctu.cs.cgv.itour.maplist.DownloadFileAsyncTask;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.logFlag;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -207,19 +208,19 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void startMainActivity() {
-        File mapFile = new File(dirPath + "/" + mapTag + "_distorted_map.png");
-        File meshFile = new File(dirPath + "/" + mapTag + "_mesh.txt");
-        File warpMeshFile = new File(dirPath + "/" + mapTag + "_warpMesh.txt");
-        File boundBoxFile = new File(dirPath + "/" + mapTag + "_bound_box.txt");
-        File edgeLengthFile = new File(dirPath + "/" + mapTag + "_edge_length.txt");
-        File spotListFile = new File(dirPath + "/" + mapTag + "_spot_list.txt");
+        File mapFile = new File(dirPath + "/" + sourceMapTag + "_distorted_map.png");
+        File meshFile = new File(dirPath + "/" + sourceMapTag + "_mesh.txt");
+        File warpMeshFile = new File(dirPath + "/" + sourceMapTag + "_warpMesh.txt");
+        File boundBoxFile = new File(dirPath + "/" + sourceMapTag + "_bound_box.txt");
+        File edgeLengthFile = new File(dirPath + "/" + sourceMapTag + "_edge_length.txt");
+        File spotListFile = new File(dirPath + "/" + sourceMapTag + "_spot_list.txt");
         if (mapFile.exists() && meshFile.exists() && warpMeshFile.exists() && boundBoxFile.exists() && edgeLengthFile.exists() && spotListFile.exists()) {
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             finish();
         } else {
-            new DownloadFileAsyncTask(this).execute(mapTag);
+            new DownloadFileAsyncTask(this).execute(sourceMapTag);
         }
     }
 

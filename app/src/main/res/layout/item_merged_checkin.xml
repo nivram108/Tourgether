@@ -11,13 +11,13 @@
 
     <TextView
         android:id="@+id/checkin_num"
-        android:layout_marginStart="48px"
-        android:layout_marginTop="12px"
+        android:layout_marginStart="40px"
+        android:layout_marginTop="16px"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="28px"
-        android:gravity="center"
-        android:text=" 1"
-        android:textColor="@color/md_white_1000" />
+        android:textSize="24px"
+        android:layout_gravity="center"
+        android:text=" 3"
+        android:textColor="@color/blue_flag" />
 
 </RelativeLayout>

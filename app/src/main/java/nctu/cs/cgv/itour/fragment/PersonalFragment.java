@@ -30,7 +30,7 @@ public class PersonalFragment extends Fragment {
 
     private static final String TAG = "PersonalFragment";
     private ActionBar actionBar;
-    private MyViewPager viewPager;
+    public MyViewPager viewPager;
     private List<Fragment> fragmentList;
     public PersonalMapFragment personalMapFragment;
     public TogoFragment togoFragment;

@@ -68,6 +68,7 @@ import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.fileUploadURL;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.realMesh;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
@@ -75,7 +76,7 @@ import static nctu.cs.cgv.itour.Utility.imgPxToGps;
 import static nctu.cs.cgv.itour.Utility.moveFile;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.CheckinActivity.RESULT_CODE_CHECKIN_FINISH;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_ADD;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_ADD;
 
 public class LocationChooseActivity extends AppCompatActivity {
 
@@ -157,7 +158,7 @@ public class LocationChooseActivity extends AppCompatActivity {
         gpsMarker = findViewById(R.id.gps_marker);
 
         // set tourist map
-        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + mapTag + "_distorted_map.png");
+        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + sourceMapTag + "_distorted_map.png");
         touristMap = new ImageView(this);
         touristMap.setLayoutParams(new RelativeLayout.LayoutParams(touristMapBitmap.getWidth(), touristMapBitmap.getHeight()));
         touristMap.setScaleType(ImageView.ScaleType.MATRIX);
@@ -197,7 +198,7 @@ public class LocationChooseActivity extends AppCompatActivity {
         spotIconPivotX = (int) getResources().getDimension(R.dimen.spot_icon_width) / 2;
         spotIconPivotY = spToPx(this, 14) / 2;
         spotNodeList = new ArrayList<>();
-        spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
+        spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
         for (SpotNode spotNode : spotList.nodeMap.values()) {
             // allocate new spotNode instead using spotNode in nodeMap
             spotNodeList.add(new SpotNode(spotNode.x, spotNode.y, spotNode.lat, spotNode.lng, spotNode.name, spotNode.order));
@@ -221,6 +222,7 @@ public class LocationChooseActivity extends AppCompatActivity {
                 String autocompleteStr = adapter.getItem(position);
                 Node node = spotList.nodeMap.get(autocompleteStr);
                 translateToImgPx(node.x, node.y, false);
+                //TODO: LOG
             }
         });
 
@@ -538,6 +540,7 @@ public class LocationChooseActivity extends AppCompatActivity {
             }
         };
         translationHandler.postDelayed(translationInterpolation, 5);
+
     }
 
     private void rotateToNorth() {
@@ -636,7 +639,7 @@ public class LocationChooseActivity extends AppCompatActivity {
         }
 
         //LOG
-        MainActivity.firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_ADD, key);
+        MainActivity.firebaseLogManager.log(LOG_CHECKIN_ADD, key);
 
         // save checkin data to firebase database
         final String location = locationEdit.getText().toString().trim();

@@ -19,6 +19,9 @@ import nctu.cs.cgv.itour.activity.RegisterActivity;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
+
 public class SettingsFragment extends PreferenceFragmentCompat {
 
     private OnFogListener onFogListener;
@@ -72,8 +75,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 }
             });
         }
-
         Preference checkinSwitch = getPreferenceManager().findPreference("checkin");
+        Preference spotSwitch = getPreferenceManager().findPreference("spot");
+
+        if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
+
+            PreferenceCategory switchCategory = (PreferenceCategory) findPreference("switch");
+            switchCategory.removePreference(checkinSwitch);
+            switchCategory.removePreference(spotSwitch);
+        }
         checkinSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -82,7 +92,6 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         });
 
-        Preference spotSwitch = getPreferenceManager().findPreference("spot");
         spotSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -90,6 +99,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+
 
 //        Preference distanceIndicatorSwitch = getPreferenceManager().findPreference("distance_indicator");
 //        distanceIndicatorSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

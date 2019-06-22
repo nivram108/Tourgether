@@ -68,22 +68,24 @@ import static nctu.cs.cgv.itour.MyApplication.MAP_DISPLAY_COMMUNITY;
 import static nctu.cs.cgv.itour.MyApplication.MAX_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.MIN_ZOOM;
 import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
 import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.ZOOM_THRESHOLD;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.realMesh;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinIsVisited;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_NAVIGATE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_ANYWHERE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_CHECKIN;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_REPORT_TOGO;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_ANYWHERE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_NAVIGATE;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
@@ -123,6 +125,7 @@ public class PersonalMapFragment extends Fragment {
     private FloatingActionButton reportBtn;
     private FloatingActionButton gpsBtn;
     private FloatingActionButton addBtn;
+    private FloatingActionButton switchBtn;
     private Bitmap fogBitmap;
     private ActionBar actionBar;
     private View seperator;
@@ -242,6 +245,10 @@ public class PersonalMapFragment extends Fragment {
         reportBtn = view.findViewById(R.id.btn_report);
         gpsBtn = view.findViewById(R.id.btn_gps);
         addBtn = view.findViewById(R.id.btn_add);
+        switchBtn = view.findViewById(R.id.btn_switch_map);
+        if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
+            switchBtn.setVisibility(View.GONE);
+        }
         FrameLayout frameLayout = view.findViewById(R.id.prsonal_tourist_map);
 
         seperator = view.findViewById(R.id.personal_seperator);
@@ -251,7 +258,7 @@ public class PersonalMapFragment extends Fragment {
         actionBar.setSubtitle("社群地圖");
 
         // set tourist map
-        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + mapTag + "_distorted_map.png");
+        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + sourceMapTag + "_distorted_map.png");
         int touristMapWidth = touristMapBitmap.getWidth();
         int touristMapHeight = touristMapBitmap.getHeight();
         touristMap = new ImageView(context);
@@ -320,7 +327,12 @@ public class PersonalMapFragment extends Fragment {
                 startActivity(new Intent(context, CheckinActivity.class));
             }
         });
-
+        switchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchMap();
+            }
+        });
         reportBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -555,6 +567,7 @@ public class PersonalMapFragment extends Fragment {
             }
         }
 
+
         Matrix gpsMarkTransform = new Matrix();
         Matrix spotIconTransform = new Matrix();
 //        Matrix nodeIconTransform = new Matrix();
@@ -582,6 +595,16 @@ public class PersonalMapFragment extends Fragment {
         gpsMarkTransform.mapPoints(point);
         gpsMarker.setTranslationX(point[0]);
         gpsMarker.setTranslationY(point[1]);
+        for (CheckinNode checkinNode : togoNodeList) {
+//            //Log.d("NIVRAMM", "DRAW TOGO");
+            point[0] = checkinNode.x;
+            point[1] = checkinNode.y;
+            transformMat.mapPoints(point);
+            checkinIconTransform.mapPoints(point);
+            checkinNode.icon.setTranslationX(point[0]);
+            checkinNode.icon.setTranslationY(point[1]);
+        }
+
         if (spotSwitch) {
 
 //            } else {
@@ -652,15 +675,9 @@ public class PersonalMapFragment extends Fragment {
             }
         }
 
-        for (CheckinNode checkinNode : togoNodeList) {
-//            //Log.d("NIVRAMM", "DRAW TOGO");
-            point[0] = checkinNode.x;
-            point[1] = checkinNode.y;
-            transformMat.mapPoints(point);
-            checkinIconTransform.mapPoints(point);
-            checkinNode.icon.setTranslationX(point[0]);
-            checkinNode.icon.setTranslationY(point[1]);
-        }
+
+
+
     }
 
     private void setTogoNode(SpotNode spotNode, boolean isVisited) {
@@ -767,15 +784,15 @@ public class PersonalMapFragment extends Fragment {
 //            ((ImageView) checkinNode.icon).setImageDrawable(
 //                    ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
             ((ImageView) checkinNode.icon).setImageDrawable(
-                    ResourcesCompat.getDrawable(getResources(), R.drawable.ic_notifications_notify_24dp, null));
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.icon_posted_checkin_60, null));
         } else {
 //            //Log.d("ISVISITED", collectedCheckinIsVisited.containsKey(checkin.key) + ", " + collectedCheckinIsVisited.get(checkin.key));
             if (collectedCheckinIsVisited.containsKey(checkin.key) && collectedCheckinIsVisited.get(checkin.key)) {
                 ((ImageView) checkinNode.icon).setImageDrawable(
-                        ResourcesCompat.getDrawable(getResources(), R.drawable.ic_togo_list_24dp, null));
+                        ResourcesCompat.getDrawable(getResources(), R.drawable.icon_visited_60, null));
             }else  {
                 ((ImageView) checkinNode.icon).setImageDrawable(
-                        ResourcesCompat.getDrawable(getResources(), R.drawable.ic_location_on_ffbb33_24dp, null));
+                        ResourcesCompat.getDrawable(getResources(), R.drawable.icon_collected_checkin_60, null));
             }
 
         }
@@ -802,12 +819,13 @@ public class PersonalMapFragment extends Fragment {
 
         if (isVisited == false) {
             ((ImageView) checkinNode.icon).setImageDrawable(
-                    ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.icon_togo_60, null));
         } else {
             ((ImageView) checkinNode.icon).setImageDrawable(
-                    ResourcesCompat.getDrawable(getResources(), R.drawable.ic_togo_list_24dp, null));
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.icon_visited_60, null));
         }
-        rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
+        rootLayout.addView(checkinNode.icon);
+//        rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
         checkinNode.checkinList.add(checkin);
         togoNodeList.add(checkinNode);
 //        checkinNodeMap.put(checkin.key, checkinNode);
@@ -861,6 +879,7 @@ public class PersonalMapFragment extends Fragment {
                 }
             }
         };
+        if (translationHandler == null) translationHandler = new Handler();
         translationHandler.postDelayed(translationInterpolation, 5);
     }
 
@@ -891,6 +910,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     public void handleGpsUpdate(float lat, float lng) {
+        Log.d("GpsUpdateGG", lat + ", " + lng);
         lastLat = lat;
         lastLng = lng;
         if (getView() == null) {
@@ -1020,15 +1040,15 @@ public class PersonalMapFragment extends Fragment {
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         String latLng = lat + "," + lng;
         //Log.d("NIVRAM", "LATLNG: " + latLng);
-        Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
-        searchLocationBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String latLng = lat + "," + lng;
-                //Log.d("NIVRAM", "LATLNG: " + latLng);
-                searchLocation(latLng);
-            }
-        });
+//        Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
+//        searchLocationBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String latLng = lat + "," + lng;
+//                //Log.d("NIVRAM", "LATLNG: " + latLng);
+//                searchLocation(latLng);
+//            }
+//        });
 
         Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
         navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
@@ -1044,7 +1064,7 @@ public class PersonalMapFragment extends Fragment {
                 }
                 if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
-                navigateLocation(latLng, LOG_APP_INTERACTION_TOGO_NAVIGATE, spotName, logNote);
+                navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
             }
         });
 
@@ -1120,7 +1140,7 @@ public class PersonalMapFragment extends Fragment {
                 else if (checkin.uid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) logNote = LOG_NOTE_IS_SELF_CHECKIN;
                 else logNote = LOG_NOTE_IS_OTHER_CHECKIN;
 
-                navigateLocation(latLng, LOG_APP_INTERACTION_CHECKIN_NAVIGATE, checkin.key, logNote);
+                navigateLocation(latLng, LOG_CHECKIN_NAVIGATE, checkin.key, logNote);
             }
         });
 
@@ -1178,7 +1198,7 @@ public class PersonalMapFragment extends Fragment {
                 }
                 if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
-                navigateLocation(latLng, LOG_APP_INTERACTION_TOGO_NAVIGATE, spotName, logNote);
+                navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
             }
         });
 
@@ -1300,7 +1320,8 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportCollectedCheckinVisited(Checkin checkin) {
-        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_CHECKIN, checkin.key);
+        reportCompleteToast();
+        firebaseLogManager.log(LOG_REPORT_CHECKIN, checkin.key);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         databaseReference.child("users").child(uid).child("visited").child("collected_post").child(mapTag).child(checkin.key).setValue(true);
         collectedCheckinIsVisited.put(checkin.key, true);
@@ -1311,7 +1332,8 @@ public class PersonalMapFragment extends Fragment {
 
     void reportTogoVisited(String spotName) {
         setTogoVisited(spotName);
-        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_TOGO, spotName);
+        reportCompleteToast();
+        firebaseLogManager.log(LOG_REPORT_TOGO, spotName);
     }
 
     void setTogoVisited(String spotName) {
@@ -1421,6 +1443,7 @@ public class PersonalMapFragment extends Fragment {
                     reportAnywhere(locationName, motivation.getText().toString());
                     handled = true;
                 }
+                dialog.dismiss();
                 return handled;
             }
         });
@@ -1430,6 +1453,7 @@ public class PersonalMapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 reportAnywhere(locationName, motivation.getText().toString());
+                dialog.dismiss();
             }
         });
         Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
@@ -1446,6 +1470,19 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportAnywhere(String location, String motivation) {
-        firebaseLogManager.log(LOG_APP_INTERACTION_REPORT_ANYWHERE, location, motivation);
+        reportCompleteToast();
+        firebaseLogManager.log(LOG_REPORT_ANYWHERE, location, motivation);
+    }
+
+    void reportCompleteToast() {
+        Toast.makeText(getContext(), "謝謝回報!", Toast.LENGTH_SHORT).show();
+    }
+
+    void switchMap() {
+//        ((MainActivity)getActivity()).viewPager.setCurrentItem(0);
+        ((MainActivity)getActivity()).bottomBar.selectTabAtPosition(0, true);
+
+//        ((MainActivity)getActivity()).personalFragment.setUserVisibleHint(false);
+//        ((MainActivity)getActivity()).mapFragment.setUserVisibleHint(true);
     }
 }

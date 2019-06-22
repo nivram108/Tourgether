@@ -24,8 +24,8 @@ public class CheckinComment {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("comment", msg);
-        result.put("rate", uid);
+        result.put("msg", msg);
+        result.put("uid", uid);
         result.put("username", username);
         result.put("timestamp", timestamp);
         return result;

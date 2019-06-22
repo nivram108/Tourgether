@@ -57,11 +57,14 @@ import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COLLECT_ADD;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COLLECT_REMOVE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_COMMENT;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LIKE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_OPEN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_CLOSE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_COLLECT_ADD;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_COLLECT_REMOVE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_COMMENT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_LIKE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_LOCATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_OPEN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_UNLIKE;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_SELF_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
@@ -95,7 +98,7 @@ public class CheckinDialogFragment extends DialogFragment {
             postId = getArguments().getString("postId");
             fromPath = getArguments().getString("fromPath");
         }
-        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_OPEN, postId, fromPath);
+        firebaseLogManager.log(LOG_CHECKIN_OPEN, postId, fromPath);
     }
 
     @Override
@@ -223,10 +226,11 @@ public class CheckinDialogFragment extends DialogFragment {
                         } else {
                             logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                         }
-                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
+                        firebaseLogManager.log(LOG_CHECKIN_UNLIKE, checkin.key, logNote);
                     } else {
                         // set like
-                        sendLikeNotification(checkin);
+                        if (!checkin.uid.equals(uid))
+                            sendLikeNotification(checkin);
                         likeBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                                 R.drawable.ic_favorite_red_500_24dp, null));
                         String likeStr;
@@ -249,7 +253,7 @@ public class CheckinDialogFragment extends DialogFragment {
                         } else {
                             logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                         }
-                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
+                        firebaseLogManager.log(LOG_CHECKIN_LIKE, checkin.key, logNote);
                     }
                 }
             });
@@ -260,7 +264,7 @@ public class CheckinDialogFragment extends DialogFragment {
                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
                     if (collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                                R.drawable.ic_bookmark_border_black_24dp, null));
+                                R.drawable.icon_star_gray_32, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).removeValue();
                         collectedCheckinKey.remove(checkin.key);
                         actionLog("cancel save checkin", checkin.location, checkin.key);
@@ -268,10 +272,10 @@ public class CheckinDialogFragment extends DialogFragment {
                         String logNote = "";
                         if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
                         else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
-                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COLLECT_REMOVE, checkin.key, logNote);
+                        firebaseLogManager.log(LOG_CHECKIN_COLLECT_REMOVE, checkin.key, logNote);
                     } else {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                                R.drawable.ic_bookmark_blue_24dp, null));
+                                R.drawable.icon_star_32, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).setValue(true);
                         collectedCheckinKey.put(checkin.key, true);
                         actionLog("save checkin", checkin.location, checkin.key);
@@ -279,7 +283,7 @@ public class CheckinDialogFragment extends DialogFragment {
                         String logNote = "";
                         if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
                         else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
-                        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COLLECT_ADD, checkin.key, logNote);
+                        firebaseLogManager.log(LOG_CHECKIN_COLLECT_ADD, checkin.key, logNote);
                     }
                 }
             });
@@ -291,7 +295,7 @@ public class CheckinDialogFragment extends DialogFragment {
 
             if (collectedCheckinKey.containsKey(checkin.key) && collectedCheckinKey.get(checkin.key)) {
                 saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                        R.drawable.ic_bookmark_blue_24dp, null));
+                        R.drawable.icon_star_32, null));
             }
         }
 
@@ -307,7 +311,7 @@ public class CheckinDialogFragment extends DialogFragment {
                 } else {
                     logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                 }
-                firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_LIKE, checkin.key, logNote);
+                firebaseLogManager.log(LOG_CHECKIN_LOCATE, checkin.key, logNote);
                 Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("fragment_checkin_dialog");
                 Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
                 actionLog("locate checkin", checkin.location, checkin.key);
@@ -329,7 +333,7 @@ public class CheckinDialogFragment extends DialogFragment {
         commentList.scrollToPosition(checkinCommentItemAdapter.getItemCount() - 1);
 
         query = FirebaseDatabase.getInstance().getReference()
-                .child("checkin").child(mapTag).child(checkin.key).child("comment");
+                .child("checkin").child(mapTag).child(checkin.key).child("checkinComment");
         childEventListener = query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -374,7 +378,8 @@ public class CheckinDialogFragment extends DialogFragment {
                     String msg = commentMsg.getText().toString().trim();
                     if (msg.equals("")) return;
                     //send CommentNotification
-                    sendCommentNotification(checkin);
+                    if(!checkin.uid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
+                        sendCommentNotification(checkin);
                     
                     CheckinComment checkinComment = new CheckinComment(msg,
                             FirebaseAuth.getInstance().getCurrentUser().getUid(),
@@ -403,7 +408,7 @@ public class CheckinDialogFragment extends DialogFragment {
                     } else {
                         logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                     }
-                    firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_COMMENT, checkin.key, logNote);
+                    firebaseLogManager.log(LOG_CHECKIN_COMMENT, checkin.key, msg + "," + logNote);
                 }
             });
 
@@ -424,6 +429,7 @@ public class CheckinDialogFragment extends DialogFragment {
     public void onDestroyView() {
         super.onDestroyView();
         query.removeEventListener(childEventListener);
+        firebaseLogManager.log(LOG_CHECKIN_CLOSE, postId);
     }
     /**
      * Send a comment notification if add comment

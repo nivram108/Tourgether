@@ -61,6 +61,7 @@ import nctu.cs.cgv.itour.fragment.SettingsFragment;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.EdgeNode;
+import nctu.cs.cgv.itour.object.FirebaseLogData;
 import nctu.cs.cgv.itour.object.FirebaseLogManager;
 import nctu.cs.cgv.itour.object.Mesh;
 import nctu.cs.cgv.itour.object.MyAppGlideModule;
@@ -90,6 +91,7 @@ import static nctu.cs.cgv.itour.MyApplication.logFlag;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.realMesh;
 import static nctu.cs.cgv.itour.MyApplication.screenCaptureFlag;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.MyApplication.warpMesh;
 import static nctu.cs.cgv.itour.Utility.notifyCheckin;
@@ -113,11 +115,11 @@ public class MainActivity extends AppCompatActivity implements
     public static Map<String, Boolean> togoIsVisited;
     public static UserData userData;
     // view objects
-    private MyViewPager viewPager;
-    private BottomBar bottomBar;
+    public MyViewPager viewPager;
+    public BottomBar bottomBar;
     private List<Fragment> fragmentList;
     // MapFragment: communicate by calling fragment method
-    private MapFragment mapFragment;
+    public MapFragment mapFragment;
     private ListFragment listFragment;
     public PersonalFragment personalFragment;
     public NewsFragment newsFragment;
@@ -130,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements
     private Sensor magnetometer;
     private float[] gravity;
     private float[] geomagnetic;
+
 
     private Query checkinQuery;
     private ChildEventListener checkinListener;
@@ -175,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements
     private Query likeNotificationIsClickedQuery;
     private ChildEventListener likeNotificationIsClickedListener;
     public static FirebaseLogManager firebaseLogManager;
+
+    public static int logSummaryCount;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
@@ -182,12 +187,11 @@ public class MainActivity extends AppCompatActivity implements
         spotCategory = new SpotCategory();
         if(VERSION_OPTION == VERSION_ALL_FEATURE) setContentView(R.layout.activity_main);
         else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) setContentView(R.layout.activity_main_google_comment_version);
+
         checkPermission();
 
-//        showCheckinDialog();
-
         if (firebaseLogManager == null)
-            firebaseLogManager = new FirebaseLogManager();
+            firebaseLogManager = new FirebaseLogManager(this);
         if (checkLaunchedByNotificationThread == null)
             checkLaunchedByNotificationThread = new HandlerThread("checkLaunchedByNotificationThread");
         if (checkLaunchedByNotificationThread.isAlive() == false)
@@ -201,11 +205,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private void init() {
 
-        realMesh = new Mesh(new File(dirPath + "/" + mapTag + "_mesh.txt"));
-        realMesh.readBoundingBox(new File(dirPath + "/" + mapTag + "_bound_box.txt"));
-        warpMesh = new Mesh(new File(dirPath + "/" + mapTag + "_warpMesh.txt"));
-        spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
-        edgeNode = new EdgeNode(new File(dirPath + "/" + mapTag + "_edge_length.txt"));
+        realMesh = new Mesh(new File(dirPath + "/" + sourceMapTag + "_mesh.txt"));
+        realMesh.readBoundingBox(new File(dirPath + "/" + sourceMapTag + "_bound_box.txt"));
+        warpMesh = new Mesh(new File(dirPath + "/" + sourceMapTag + "_warpMesh.txt"));
+        spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
+        edgeNode = new EdgeNode(new File(dirPath + "/" + sourceMapTag + "_edge_length.txt"));
 
         checkinMap = new LinkedHashMap<>();
         collectedCheckinKey = new LinkedHashMap<>();
@@ -230,8 +234,7 @@ public class MainActivity extends AppCompatActivity implements
         startService(new Intent(this, SystemNotificationService.class));
 
         setSensors();
-        String string = Settings.Secure.getString(getContentResolver(),
-                "enabled_notification_listeners");
+
 //        if (!string.contains(NotificationListener.class.getName())) {
 //            startActivity(new Intent(
 //                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
@@ -247,22 +250,28 @@ public class MainActivity extends AppCompatActivity implements
             setLikeNotificationChannel();
         } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
             setViewGoogleCommentOnly();
+            setBroadcastReceiver();
         }
 
 
         if (logFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             queryUserUngo();
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            Log.d("NIVRAM", "EXCUSE ME WHAT THe FUCK");
+//            Log.d("NIVRAM", "EXCUSE ME WHAT THe FUCK");
 //            startService(new Intent(this, CommentNotificationService.class));
         }
         if (logFlag && screenCaptureFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             requestScreenCapture();
-        String s = Settings.Secure.getString(getContentResolver(),
-                "enabled_notification_listeners");
-        if (!string.contains(NotificationListener.class.getName())) {
-            startActivity(new Intent(
-                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));}
+        Log.d("VVVVVV", "RQ NL");
+        if(VERSION_OPTION == VERSION_ALL_FEATURE) {
+            String notificationListenerPermission = Settings.Secure.getString(getContentResolver(),
+                    "enabled_notification_listeners");
+            if (!notificationListenerPermission.contains(NotificationListener.class.getName())) {
+                startActivity(new Intent(
+                        "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));}
+        }
+
+
     }
 
     private void setNotificationManager() {
@@ -374,11 +383,12 @@ public class MainActivity extends AppCompatActivity implements
         checkinMap.clear();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         checkinQuery = databaseReference.child("checkin").child(mapTag);
-
         checkinListener = checkinQuery.addChildEventListener(new ChildEventListener() {
+            int counter = 0;
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
+                    counter = counter + 1;
                     Checkin checkin = dataSnapshot.getValue(Checkin.class);
                     checkin.key = dataSnapshot.getKey();
 
@@ -551,6 +561,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+
     public void queryTogoIsVisited() {
 //        togoCheckinIsVisited.clear();
 
@@ -599,6 +610,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+
+
+
     private void setViewAllFeatureVersion() {
         mapFragment = MapFragment.newInstance();
         listFragment = ListFragment.newInstance();
@@ -736,14 +750,22 @@ public class MainActivity extends AppCompatActivity implements
         messageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, final Intent intent) {
+                SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+                float lat = intent.getFloatExtra("lat", 0);
+                float lng = intent.getFloatExtra("lng", 0);
+                Log.d("LOCATIONGETTT", lat + ", " + lng);
+                sharedPreferences.edit().putFloat("lat", lat).apply();
+                sharedPreferences.edit().putFloat("lng", lng).apply();
+//                if(VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) return;
+
                 switch (intent.getAction()) {
                     case "gpsUpdate":
                         mapFragment.handleGpsUpdate(
-                                intent.getFloatExtra("lat", 0),
-                                intent.getFloatExtra("lng", 0));
+                                lat,
+                                lng);
                         personalFragment.personalMapFragment.handleGpsUpdate(
-                                intent.getFloatExtra("lat", 0),
-                                intent.getFloatExtra("lng", 0));
+                                lat,
+                                lng);
                         break;
                     case "fogUpdate":
                         notifySpot(intent.getFloatExtra("lat", 0), intent.getFloatExtra("lng", 0));
@@ -761,6 +783,7 @@ public class MainActivity extends AppCompatActivity implements
         intentFilter.addAction("fogUpdate");
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, intentFilter);
     }
+
 
     private void setSensors() {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -977,10 +1000,10 @@ public class MainActivity extends AppCompatActivity implements
         activityIsVisible = false;
     }
     private void checkPermission() {
+//        Log.d("PERMISSIONCHECK", "in Main");
         int storagePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         int gpsPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         int micPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
-
         if (gpsPermission + storagePermission + micPermission != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(
                     new String[]{
@@ -990,6 +1013,7 @@ public class MainActivity extends AppCompatActivity implements
                     PERMISSIONS_MULTIPLE_REQUEST);
 
         } else {
+
             init();
         }
     }
@@ -1219,6 +1243,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
     }
+
 
     void updateCheckedNotification(String tag, String pushKey) {
         if (newsFragment == null || newsFragment.newsItemAdapter == null) return;

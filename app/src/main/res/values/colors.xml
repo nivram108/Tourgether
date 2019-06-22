@@ -2,7 +2,10 @@
 <resources>
     <color name="gps_marker_color">#4285F4</color>
     <color name="blackOverlay">#8c8c8c</color>
-    <color name="mapBackground">#F0EDE5</color>
+    <color name="mapBackground">#E2D9D0</color>
+
+    <color name="blue_flag">#6583ff</color>
+    <color name="red_flag">#c83636</color>
 
     <color name="transparent">#00000000</color>
     <color name="semi_transparent">#CC000000</color>

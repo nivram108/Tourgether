@@ -61,8 +61,8 @@ import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
 import static nctu.cs.cgv.itour.activity.MainActivity.getSpotDescription;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_LOCATE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_OPEN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_OPEN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
 
@@ -92,7 +92,7 @@ public class SpotDescritionDialogFragment extends DialogFragment {
             spotName = getArguments().getString("spotName");
             logNote = getArguments().getString("logNote");
         }
-        firebaseLogManager.log(LOG_APP_INTERACTION_TOGO_OPEN, spotName, logNote);
+        firebaseLogManager.log(LOG_TOGO_OPEN, spotName, logNote);
         checkinItemAdapter = new CheckinItemAdapter(getActivity(), new ArrayList<Checkin>(), this);
 
     }
@@ -203,19 +203,24 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                 String logNote = "";
                 if (togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
-                firebaseLogManager.log(LOG_APP_INTERACTION_TOGO_LOCATE, spotName, logNote);
+                firebaseLogManager.log(LOG_TOGO_LOCATE, spotName, logNote);
 
-                PersonalMapFragment personalMapFragment = new PersonalMapFragment();
-                for (Fragment fragment: getFragmentManager().getFragments()) {
-                    if (fragment.getClass() == PersonalMapFragment.class) {
-                        personalMapFragment = (PersonalMapFragment) fragment;
-                    }
+                if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+
+                    PersonalFragment personalFragment =  ((MainActivity)getActivity()).personalFragment;
+                    personalFragment.switchTab(0);
+                    personalFragment.personalMapFragment.onLocateClick(spotNode.lat, spotNode.lng, spotNode.name);
+                    Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("SpotDescritionDialogFragment");
+                    Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
+                } else {
+                    ((MainActivity)getActivity()).bottomBar.selectTabAtPosition(0, true);
+                    PersonalFragment personalFragment =  ((MainActivity)getActivity()).personalFragment;
+                    personalFragment.viewPager.setCurrentItem(0);
+                    personalFragment.personalMapFragment.onLocateClick(spotNode.lat, spotNode.lng, spotNode.name);
+                    Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("SpotDescritionDialogFragment");
+                    Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
+
                 }
-                PersonalFragment personalFragment =  (PersonalFragment)getParentFragment();
-                personalFragment.switchTab(0);
-                personalMapFragment.onLocateClick(spotNode.lat, spotNode.lng, spotNode.name);
-                Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("SpotDescritionDialogFragment");
-                Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
             }
         });
 
@@ -230,11 +235,11 @@ public class SpotDescritionDialogFragment extends DialogFragment {
                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
                     if (togoItemAdapter.isTogo(spotName)) {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                                R.drawable.ic_bookmark_border_black_24dp, null));
+                                R.drawable.icon_star_gray_32, null));
                         togoItemAdapter.removeTogo(spotName, TAG);
                     } else {
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                                R.drawable.ic_bookmark_blue_24dp, null));
+                                R.drawable.icon_star_32, null));
                         togoItemAdapter.addTogo(new TogoPlannedData(spotName), TAG);
                     }
                 }
@@ -242,7 +247,7 @@ public class SpotDescritionDialogFragment extends DialogFragment {
 
             if (togoItemAdapter.isTogo(spotName)) {
                 saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                        R.drawable.ic_bookmark_blue_24dp, null));
+                        R.drawable.icon_star_32, null));
             }
         }
 

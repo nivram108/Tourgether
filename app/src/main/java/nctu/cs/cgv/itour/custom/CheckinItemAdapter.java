@@ -33,6 +33,7 @@ import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 
 /**
@@ -127,7 +128,7 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
 
     public void setSpotChecking() {
         checkins.clear();
-        if (spotList == null) spotList = new SpotList(new File(dirPath + "/" + mapTag + "_spot_list.txt"));
+        if (spotList == null) spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
 
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
@@ -135,9 +136,6 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
         if (spotList.fullNodeMap.containsKey("紅毛城")) {
             Log.d("紅毛城", "BINGO");
         } else {
-//            Log.d("紅毛城??", array.get(0) + " equals 紅毛城:" + array.get(0).equals("紅毛城"));
-//            Log.d("紅毛城!!", s + " equals 紅毛城:" + s.equals("紅毛城"));
-//            Log.d("紅毛城ＱＱ", s + " equals 紅毛城:" + s.equals(array.get(0)));
             Log.d("紅毛城??",  Integer.toString((int)array.get(0).charAt(0)) + ", " +
                     Integer.toString((int)array.get(0).charAt(1)) + ", " + Integer.toString((int)array.get(0).charAt(2)));
             Log.d("紅毛城??",  Integer.toString((int)s.charAt(0)) + ", " +

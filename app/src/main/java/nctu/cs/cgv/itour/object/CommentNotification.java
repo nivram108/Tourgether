@@ -39,9 +39,9 @@ public class CommentNotification {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("uid", commentUid);
-        result.put("tag", commentUserName);
-        result.put("msg", commentedUid);
+        result.put("commentUid", commentUid);
+        result.put("commentUserName", commentUserName);
+        result.put("commentedUid", commentedUid);
         result.put("commentedCheckinKey", commentedCheckinKey);
         result.put("commentedCheckinDescription", commentedCheckinDescription);
         result.put("timestamp", timestamp);

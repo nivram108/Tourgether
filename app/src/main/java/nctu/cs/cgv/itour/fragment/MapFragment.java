@@ -41,6 +41,8 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -68,6 +70,7 @@ import static nctu.cs.cgv.itour.MyApplication.ZOOM_THRESHOLD;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.realMesh;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
@@ -75,12 +78,15 @@ import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.activityIsVisible;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LIKE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_LOCATE;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_CHECKIN_NAVIGATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_LOCATE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_NAVIGATE;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_SEARCH_LOCATION;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
 
 public class MapFragment extends Fragment {
 
@@ -113,6 +119,8 @@ public class MapFragment extends Fragment {
     private LinearLayout gpsMarker;
     private FloatingActionButton gpsBtn;
     private FloatingActionButton addBtn;
+    private FloatingActionButton switchBtn;
+
     private Bitmap fogBitmap;
     private ActionBar actionBar;
     private View seperator;
@@ -220,13 +228,13 @@ public class MapFragment extends Fragment {
         addBtn = view.findViewById(R.id.btn_add);
         FrameLayout frameLayout = view.findViewById(R.id.touristmap);
         seperator = view.findViewById(R.id.seperator);
-
+        switchBtn = view.findViewById(R.id.btn_switch_personal_map);
         // set subtitle
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setSubtitle("Map");
 
         // set tourist map
-        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + mapTag + "_distorted_map.png");
+        Bitmap touristMapBitmap = BitmapFactory.decodeFile(dirPath + "/" + sourceMapTag + "_distorted_map.png");
         int touristMapWidth = touristMapBitmap.getWidth();
         int touristMapHeight = touristMapBitmap.getHeight();
         touristMap = new ImageView(context);
@@ -280,6 +288,8 @@ public class MapFragment extends Fragment {
                     rotateToNorth();
             }
         });
+
+
         if (uid.equals("")) {
             addBtn.setVisibility(View.GONE);
         }
@@ -296,6 +306,12 @@ public class MapFragment extends Fragment {
             }
         });
 
+        switchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switchMap();
+            }
+        });
         setTouchListener();
 
         setHasOptionsMenu(true);
@@ -337,8 +353,17 @@ public class MapFragment extends Fragment {
                 String autocompleteStr = adapter.getItem(position);
                 Node node = spotList.nodeMap.get(autocompleteStr);
                 translateToImgPx(node.x, node.y, false);
+                String logNote = "";
+                if(((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(autocompleteStr)) {
+                    logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                } else {
+                    logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                }
+                searchLocationDialog(Float.toString(node.x), Float.toString(node.y), LOG_TOGO_LOCATE, autocompleteStr, logNote);
+
                 searchView.clearFocus();
                 searchView.setText(autocompleteStr);
+                firebaseLogManager.log(LOG_SEARCH_LOCATION, autocompleteStr);
                 // send action log to server
                 actionLog("search: ", autocompleteStr, "");
             }
@@ -463,6 +488,7 @@ public class MapFragment extends Fragment {
     }
 
     private void reRender(boolean performMerge) {
+        Log.d("FOCUSMAP", "in");
 
         boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
 
@@ -653,10 +679,10 @@ public class MapFragment extends Fragment {
         boolean targetPopularFlag = !uid.equals("") && checkin.popularTargetUid.containsKey(uid) && checkin.popularTargetUid.get(uid);
         int checkinLikeNum = checkin.likeNum;
         if (checkin.like != null) checkinLikeNum += checkin.like.size();
-        if (allPopularFlag || targetPopularFlag || checkinLikeNum >= 5) {
+        if (allPopularFlag || targetPopularFlag || checkinLikeNum >= 10) {
             if (uid.equals(checkin.uid)) {
                 ((ImageView) checkinNodeView).setImageDrawable(
-                        ResourcesCompat.getDrawable(getResources(), R.drawable.self_hot_checkin_icon_60px, null));
+                        ResourcesCompat.getDrawable(getResources(), R.drawable.hot_checkin_icon_60px, null));
             } else {
                 ((ImageView) checkinNodeView).setImageDrawable(
                         ResourcesCompat.getDrawable(getResources(), R.drawable.hot_checkin_icon_60px, null));
@@ -664,6 +690,10 @@ public class MapFragment extends Fragment {
             ImageView clusterIcon = checkinClusterNodeView.findViewById(R.id.checkin_icon);
             clusterIcon.setImageDrawable(
                     ResourcesCompat.getDrawable(getResources(), R.drawable.hot_checkin_icon_96px, null));
+            TextView checkinsNumCircle = checkinClusterNodeView.findViewById(R.id.checkin_num);
+            ((TextView)(checkinClusterNodeView.findViewById(R.id.checkin_num))).setTextColor(getResources().getColor(R.color.red_flag));
+            ((TextView)(checkinNodeView.findViewById(R.id.checkin_num))).setTextColor(getResources().getColor(R.color.red_flag));
+
         }
 
         reRender();
@@ -688,7 +718,7 @@ public class MapFragment extends Fragment {
                 }
                 if (uid.equals(checkin.uid)) {
                     ((ImageView) checkinNode.icon).setImageDrawable(
-                            ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
+                            ResourcesCompat.getDrawable(getResources(), R.drawable.checkin_icon_60px, null));
                 }
                 return;
             }
@@ -707,7 +737,7 @@ public class MapFragment extends Fragment {
 
         if (uid.equals(checkin.uid)) {
             ((ImageView) checkinNode.icon).setImageDrawable(
-                    ResourcesCompat.getDrawable(getResources(), R.drawable.self_checkin_icon_60px, null));
+                    ResourcesCompat.getDrawable(getResources(), R.drawable.checkin_icon_60px, null));
         } else {
             ((ImageView) checkinNode.icon).setImageDrawable(
                     ResourcesCompat.getDrawable(getResources(), R.drawable.checkin_icon_60px, null));
@@ -762,6 +792,7 @@ public class MapFragment extends Fragment {
                     int checkinsNum = checkinClusterNode.checkinList.size();
                     checkinsNumCircle.setText(checkinsNum < 10 ?
                             " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
+//                    checkinsNumCircle.setTextColor(getResources().getColor(R.color.blue_flag));
                     checkinClusterNodeMap.put(checkin.key, checkinClusterNode);
                     return;
                 }
@@ -779,6 +810,7 @@ public class MapFragment extends Fragment {
             checkinNode.checkinList.add(checkin);
             TextView checkinsNumCircle = checkinNode.icon.findViewById(R.id.checkin_num);
             checkinsNumCircle.setText(" 1");
+//            checkinsNumCircle.setTextColor(getResources().getColor(R.color.blue_flag));
             rootLayout.addView(checkinNode.icon, rootLayout.indexOfChild(seperator));
             checkinClusterNodeList.add(checkinNode);
             checkinClusterNodeMap.put(checkin.key, checkinNode);
@@ -799,6 +831,7 @@ public class MapFragment extends Fragment {
                 spotNode.checkinNode.checkinList.add(checkin);
                 TextView checkinsNumCircle = spotNode.checkinNode.icon.findViewById(R.id.checkin_num);
                 checkinsNumCircle.setText(" 1");
+//                checkinsNumCircle.setTextColor(getResources().getColor(R.color.blue_flag));
                 rootLayout.addView(spotNode.checkinNode.icon, rootLayout.indexOfChild(seperator));
                 checkinClusterNodeList.add(spotNode.checkinNode);
                 checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
@@ -814,6 +847,7 @@ public class MapFragment extends Fragment {
                 int checkinsNum = spotNode.checkinNode.checkinList.size();
                 checkinsNumCircle.setText(checkinsNum < 10 ?
                         " " + String.valueOf(checkinsNum) : String.valueOf(checkinsNum));
+//                checkinsNumCircle.setTextColor(getResources().getColor(R.color.blue_flag));
                 checkinClusterNodeMap.put(checkin.key, spotNode.checkinNode);
 //                Log.d("NIVRAMMMM", "HERE 2");
             }
@@ -842,7 +876,7 @@ public class MapFragment extends Fragment {
         } else {
             logNote = LOG_NOTE_IS_OTHER_CHECKIN;
         }
-        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng, clickedCheckin.key, logNote);
+        searchLocationDialog(clickedCheckin.lat, clickedCheckin.lng, LOG_CHECKIN_LOCATE,clickedCheckin.key, logNote);
     }
 
     public void onClusterNodeClick(CheckinNode checkinNode) {
@@ -1049,21 +1083,21 @@ public class MapFragment extends Fragment {
         return uid;
     }
 
-    public void searchLocationDialog(final String lat, final String lng, final String logMsg, final String logNote) {
+    public void searchLocationDialog(final String lat, final String lng, final String logTag, final String logMsg, final String logNote) {
         final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.search_location_dialog);
         bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         String latLng = lat + "," + lng;
-        Log.d("NIVRAM", "LATLNG: " + latLng);
-        Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
-        searchLocationBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String latLng = lat + "," + lng;
-                Log.d("NIVRAM", "LATLNG: " + latLng);
-                searchLocation(latLng);
-            }
-        });
+//        Log.d("NIVRAM", "LATLNG: " + latLng);
+//        Button searchLocationBtn = bottomSheetDialog.findViewById(R.id.search_location);
+//        searchLocationBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                String latLng = lat + "," + lng;
+//                Log.d("NIVRAM", "LATLNG: " + latLng);
+//                searchLocation(latLng);
+//            }
+//        });
 
         Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
         navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
@@ -1071,7 +1105,7 @@ public class MapFragment extends Fragment {
             public void onClick(View v) {
                 String latLng = lat + "," + lng;
                 Log.d("NIVRAM", "LATLNG: " + latLng);
-                navigateLocation(latLng, logMsg, logNote);
+                navigateLocation(latLng, logTag, logMsg, logNote);
             }
         });
 
@@ -1094,12 +1128,27 @@ public class MapFragment extends Fragment {
         startActivity(mapIntent);
     }
 
-    public void navigateLocation(String locationName, String logMsg, String logNote) {
-        firebaseLogManager.log(LOG_APP_INTERACTION_CHECKIN_NAVIGATE, logMsg, logNote);
+    public void navigateLocation(String locationName, String logTag, String logMsg, String logNote) {
+        firebaseLogManager.log(logTag, logMsg, logNote);
+//        locationName = locationName.replace(' ', '+');
+//        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
+//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+//        mapIntent.setPackage("com.google.android.apps.maps");
+//        startActivity(mapIntent);
         locationName = locationName.replace(' ', '+');
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
+        Log.d("NIVRAM", "location : " + locationName);
+        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + locationName + "&mode=w");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
+    }
+
+    public void switchMap() {
+//        ((MainActivity)getActivity()).viewPager.setCurrentItem(2);
+        ((MainActivity)getActivity()).bottomBar.selectTabAtPosition(2, true);
+
+        ((MainActivity)getActivity()).personalFragment.viewPager.setCurrentItem(0);
+//        ((MainActivity)getActivity()).viewPager.set;
+
     }
 }

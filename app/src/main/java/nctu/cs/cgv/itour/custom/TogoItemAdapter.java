@@ -33,8 +33,8 @@ import nctu.cs.cgv.itour.object.TogoPlannedData;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
 import static nctu.cs.cgv.itour.activity.MainActivity.togoIsVisited;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_ADD;
-import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_APP_INTERACTION_TOGO_REMOVE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_ADD;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_REMOVE;
 
 public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHolder>{
     public List<TogoPlannedData> togoPlannedDataList;
@@ -133,7 +133,7 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
     }
 
     public void removeTogo(TogoPlannedData togoPlannedData, int position, String logNote) {
-        firebaseLogManager.log(LOG_APP_INTERACTION_TOGO_REMOVE, togoPlannedData.locationName, logNote);
+        firebaseLogManager.log(LOG_TOGO_REMOVE, togoPlannedData.locationName, logNote);
         togoPlannedDataList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, getItemCount());
@@ -153,7 +153,7 @@ public class TogoItemAdapter extends RecyclerView.Adapter<TogoItemAdapter.ViewHo
         togoPlannedDataList.clear();
     }
     public void addTogo(TogoPlannedData togoPlannedData, String logNote) {
-        firebaseLogManager.log(LOG_APP_INTERACTION_TOGO_ADD, togoPlannedData.locationName, logNote);
+        firebaseLogManager.log(LOG_TOGO_ADD, togoPlannedData.locationName, logNote);
         ((MainActivity) parentFragment.getActivity()).queryTogoIsVisited();
         if (togoIsVisited == null || togoPlannedData == null) Log.d("GGGG", "出大事");
         if (togoIsVisited.containsKey(togoPlannedData.locationName) && togoIsVisited.get(togoPlannedData.locationName)) togoPlannedData.isVisited = true;

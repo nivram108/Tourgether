@@ -46,25 +46,41 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="8dp"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:clipToPadding="false">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/btn_switch_map"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop = "16dp"
+            android:src="@drawable/switch_map"
+            app:backgroundTint="@color/gps_marker_color"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="8dp"
-        android:padding="16dp"
+        android:padding="8dp"
         android:orientation="horizontal"
         android:clipToPadding="false">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/btn_report"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:src="@drawable/ic_check_circle_red_400_24dp"
-                app:backgroundTint="@color/md_white_1000" />
+                android:src="@drawable/report"
+                app:backgroundTint="@color/md_red_900" />
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/btn_gps"

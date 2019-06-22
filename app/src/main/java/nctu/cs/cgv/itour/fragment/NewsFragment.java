@@ -32,6 +32,7 @@ import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.ItemClickSupport;
 import nctu.cs.cgv.itour.custom.NewsItemAdapter;
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.custom.TogoItemAdapter;
 import nctu.cs.cgv.itour.object.CommentNotification;
 import nctu.cs.cgv.itour.object.LikeNotification;
 import nctu.cs.cgv.itour.object.NotificationType;
@@ -40,6 +41,15 @@ import nctu.cs.cgv.itour.object.SystemNotification;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
+import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NEWS_CLICKED_COMMENT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NEWS_CLICKED_HOT_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NEWS_CLICKED_HOT_SPOT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NEWS_CLICKED_LIKE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
 
 
 /**
@@ -112,17 +122,34 @@ public class NewsFragment extends Fragment {
                         if (notificationType.type == NotificationType.TYPE_SYSTEM_NOTIFICATION) {
                             SystemNotification systemNotification = systemNotificationMap.get(notificationType.key);
                             if (systemNotification.uid.equals("")) {
+                                String logNote = "";
+                                TogoItemAdapter togoItemAdapter = ((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter;
+                                if(togoItemAdapter.isTogo(systemNotification.location)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                                else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                                firebaseLogManager.log(LOG_NEWS_CLICKED_HOT_SPOT, systemNotification.location, logNote);
                                 ((MainActivity)getActivity()).onLocateClick(systemNotification.lat, systemNotification.lng);
                                 SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(systemNotification.location, TAG);
                                 spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
+
+
                             } else {
+                                String logNote = "";
+                                if(collectedCheckinKey.containsKey(systemNotification.postId) && collectedCheckinKey.get(systemNotification.postId)) logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                                else logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                                firebaseLogManager.log(LOG_NEWS_CLICKED_HOT_CHECKIN, systemNotification.postId, logNote);
                                 showCheckinDialog(systemNotification.postId);
                             }
-                            //TODO: make log
                         } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
+                            String logNote = "";
+                            if(collectedCheckinKey.containsKey(notificationType.key) && collectedCheckinKey.get(notificationType.key)) logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                            else logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                            firebaseLogManager.log(LOG_NEWS_CLICKED_COMMENT, notificationType.key, logNote);
                             showCheckinDialog(notificationType.key);
-                            //TODO: make log
                         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
+                            String logNote = "";
+                            if(collectedCheckinKey.containsKey(notificationType.key) && collectedCheckinKey.get(notificationType.key)) logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                            else logNote = LOG_NOTE_IS_COLLECTED_CHECKIN;
+                            firebaseLogManager.log(LOG_NEWS_CLICKED_LIKE, notificationType.key, logNote);
                             showCheckinDialog(notificationType.key);
                         }
 
@@ -283,8 +310,8 @@ public class NewsFragment extends Fragment {
         checkinDialogFragment.show(getFragmentManager(), "fragment_checkin_dialog");
     }
     public void requestFocusNotificationIcon() {
-        BottomBar bottomBar = getActivity().findViewById(R.id.bottom_bar);
-        ((AppCompatImageView)bottomBar.findViewById(R.id.tab_news).findViewById(R.id.bb_bottom_bar_icon)).setImageResource(R.drawable.ic_notifications_notify_24dp);
+//        BottomBar bottomBar = getActivity().findViewById(R.id.bottom_bar);
+//        ((AppCompatImageView)bottomBar.findViewById(R.id.tab_news).findViewById(R.id.bb_bottom_bar_icon)).setImageResource(R.drawable.ic_notifications_notify_24dp);
 //
 //        if (notificationIcon.isFocused() == false) {
 //            notificationIcon.setFocusable(true);

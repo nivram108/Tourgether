@@ -14,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -35,6 +36,7 @@ import nctu.cs.cgv.itour.maplist.DownloadFileAsyncTask;
 import static nctu.cs.cgv.itour.MyApplication.dirPath;
 import static nctu.cs.cgv.itour.MyApplication.logFlag;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -155,18 +157,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void startMainActivity() {
-        File mapFile = new File(dirPath + "/" + mapTag + "_distorted_map.png");
-        File meshFile = new File(dirPath + "/" + mapTag + "_mesh.txt");
-        File warpMeshFile = new File(dirPath + "/" + mapTag + "_warpMesh.txt");
-        File boundBoxFile = new File(dirPath + "/" + mapTag + "_bound_box.txt");
-        File edgeLengthFile = new File(dirPath + "/" + mapTag + "_edge_length.txt");
-        File spotListFile = new File(dirPath + "/" + mapTag + "_spot_list.txt");
+        File mapFile = new File(dirPath + "/" + sourceMapTag + "_distorted_map.png");
+        File meshFile = new File(dirPath + "/" + sourceMapTag + "_mesh.txt");
+        File warpMeshFile = new File(dirPath + "/" + sourceMapTag + "_warpMesh.txt");
+        File boundBoxFile = new File(dirPath + "/" + sourceMapTag + "_bound_box.txt");
+        File edgeLengthFile = new File(dirPath + "/" + sourceMapTag + "_edge_length.txt");
+        File spotListFile = new File(dirPath + "/" + sourceMapTag + "_spot_list.txt");
         if (mapFile.exists() && meshFile.exists() && warpMeshFile.exists() && boundBoxFile.exists() && edgeLengthFile.exists() && spotListFile.exists()) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         } else {
-            new DownloadFileAsyncTask(this).execute(mapTag);
+            new DownloadFileAsyncTask(this).execute(sourceMapTag);
         }
     }
 
@@ -221,6 +223,7 @@ public class LoginActivity extends AppCompatActivity {
                     boolean micPermission = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
                     if (storagePermission && gpsPermission) {
+                        Log.d("VVVVVV", "Start Main");
                         startMainActivity();
                     } else {
                         showExplanation();

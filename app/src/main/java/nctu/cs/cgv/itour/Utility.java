@@ -41,6 +41,15 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.realMesh;
 import static nctu.cs.cgv.itour.MyApplication.warpMesh;
 import static nctu.cs.cgv.itour.activity.MainActivity.CHECKIN_NOTIFICATION_REQUEST;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_COMMENT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_HOT_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_HOT_SPOT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_LIKE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_REMOVE_COMMENT;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_REMOVE_LIKE;
 
 /**
  * Created by lobZter on 2017/6/21.
@@ -286,7 +295,16 @@ public class Utility {
         android.app.Notification builtNotification = notificationBuilder.build();
         builtNotification.flags |= android.app.Notification.FLAG_AUTO_CANCEL;
 
-        notificationManager.notify((int) (System.currentTimeMillis() / 1000), builtNotification);
+        String logTag = "";
+        String logMsg = "";
+        if (systemNotification.uid.equals("")) {
+            logTag = LOG_NOTIFICATION_HOT_SPOT;
+            logMsg = systemNotification.location;
+        } else {
+            logTag = LOG_NOTIFICATION_HOT_CHECKIN;
+            logMsg = systemNotification.postId;
+        }
+        notificationManager.notify(logTag + "," + logMsg,(int) (System.currentTimeMillis() / 1000), builtNotification);
     }
 
     public static void notifyComment(Context context,
@@ -345,7 +363,8 @@ public class Utility {
         android.app.Notification builtNotification = notificationBuilder.build();
         builtNotification.flags |= android.app.Notification.FLAG_AUTO_CANCEL;
 
-        notificationManager.notify(commentNotification.commentedCheckinKey,0, builtNotification);
+        String notificationTag = commentNotification.commentedCheckinKey + "," + LOG_NOTIFICATION_COMMENT;
+        notificationManager.notify(notificationTag,0, builtNotification);
 //        Log.d("NIVRAM", "set flag:" + sharedPreferences.getBoolean("launchedByTappingNotification", false));
     }
 
@@ -409,7 +428,9 @@ public class Utility {
         android.app.Notification builtNotification = notificationBuilder.build();
         builtNotification.flags |= android.app.Notification.FLAG_AUTO_CANCEL;
 
-        notificationManager.notify(likeNotification.likedCheckinKey,0, builtNotification);
+
+        String notificationTag = likeNotification.likedCheckinKey + "," + LOG_NOTIFICATION_LIKE;
+        notificationManager.notify(notificationTag,0, builtNotification);
 //        Log.d("NIVRAM", "set flag:" + sharedPreferences.getBoolean("launchedByTappingNotification", false));
     }
 }
