@@ -1203,6 +1203,7 @@ public class PersonalMapFragment extends Fragment {
         });
 
         final Button reportVisitedBtn = bottomSheetDialog.findViewById(R.id.report_visited);
+        if (((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(spotName) == false) reportVisitedBtn.setVisibility(View.GONE);
         reportVisitedBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1211,6 +1212,7 @@ public class PersonalMapFragment extends Fragment {
         });
 
         final Button removeTogoBtn = bottomSheetDialog.findViewById(R.id.remove_togo);
+        if (((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(spotName) == false) removeTogoBtn.setVisibility(View.GONE);
         removeTogoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1484,5 +1486,64 @@ public class PersonalMapFragment extends Fragment {
 
 //        ((MainActivity)getActivity()).personalFragment.setUserVisibleHint(false);
 //        ((MainActivity)getActivity()).mapFragment.setUserVisibleHint(true);
+    }
+
+    public void searchLocationGoogleCommentVersionDialog(final String lat, final String lng, final String logTag, final String spotName, final String logNote) {
+        final BottomSheetDialog bottomSheetDialog= new BottomSheetDialog(getActivity());
+        bottomSheetDialog.setContentView(R.layout.personal_map_icon_clicked_options_dialog);
+        bottomSheetDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        TextView userName = bottomSheetDialog.findViewById(R.id.user_name);
+        userName.setVisibility(View.GONE);
+        String latLng = lat + "," + lng;
+        //Log.d("NIVRAM", "LATLNG: " + latLng);
+        TextView spotNameTextView = bottomSheetDialog.findViewById(R.id.spot_name_tv);
+        spotNameTextView.setText(spotName);
+        Button showDescriptionBrn = bottomSheetDialog.findViewById(R.id.show_description);
+        showDescriptionBrn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SpotDescritionDialogFragment spotDescritionDialogFragment = SpotDescritionDialogFragment.newInstance(spotName, TAG);
+                spotDescritionDialogFragment.show(getFragmentManager(), "SpotDescritionDialogFragment");
+//                bottomSheetDialog.dismiss();
+            }
+        });
+
+        Button navigateLocationBtn = bottomSheetDialog.findViewById(R.id.navigate_location);
+        navigateLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String latLng = lat + "," + lng;
+                //Log.d("NIVRAM", "LATLNG: " + latLng);
+                String logNote = "";
+                List<Fragment> fragmentList = getFragmentManager().getFragments();
+                TogoFragment togoFragment = new TogoFragment();
+                for (Fragment fragment: fragmentList) {
+                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+                }
+                if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
+            }
+        });
+
+        final Button reportVisitedBtn = bottomSheetDialog.findViewById(R.id.report_visited);
+        if (((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(spotName) == false) reportVisitedBtn.setVisibility(View.GONE);
+        reportVisitedBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportTogoVisitedOptionClicked(spotName, bottomSheetDialog);
+            }
+        });
+
+        final Button removeTogoBtn = bottomSheetDialog.findViewById(R.id.remove_togo);
+        if (((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(spotName) == false) removeTogoBtn.setVisibility(View.GONE);
+        removeTogoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeTogoOptionClicked(spotName);
+                bottomSheetDialog.dismiss();
+            }
+        });
+        bottomSheetDialog.show();
     }
 }

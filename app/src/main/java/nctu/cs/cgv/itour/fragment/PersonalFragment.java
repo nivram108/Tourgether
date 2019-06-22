@@ -4,14 +4,18 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +23,22 @@ import java.util.Objects;
 
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.custom.ArrayAdapterSearchView;
 import nctu.cs.cgv.itour.custom.MyViewPager;
 import nctu.cs.cgv.itour.object.Checkin;
+import nctu.cs.cgv.itour.object.Node;
 
 import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
 import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
+import static nctu.cs.cgv.itour.MyApplication.spotList;
+import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
+import static nctu.cs.cgv.itour.activity.MainActivity.firebaseLogManager;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_SEARCH_LOCATION;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
 
 public class PersonalFragment extends Fragment {
 
@@ -60,6 +74,7 @@ public class PersonalFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_list, parent, false);
     }
 
@@ -158,6 +173,44 @@ public class PersonalFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d("SEARCH_MENU", "create");
+
+        if (VERSION_OPTION == VERSION_ALL_FEATURE) {
+            super.onCreateOptionsMenu(menu, inflater);
+        } else {
+            inflater.inflate(R.menu.menu_search, menu);
+            super.onCreateOptionsMenu(menu, inflater);
+            Log.d("SEARCH_MENU", "setup");
+            // set search view autocomplete
+            final ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.item_search, new ArrayList<>(spotList.getSpotsName()));
+            final ArrayAdapterSearchView searchView = (ArrayAdapterSearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
+            searchView.setAdapter(adapter);
+            searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String autocompleteStr = adapter.getItem(position);
+                    Node node = spotList.nodeMap.get(autocompleteStr);
+                    personalMapFragment.translateToImgPx(node.x, node.y, false);
+                    String logNote = "";
+                    if(((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(autocompleteStr)) {
+                        logNote = LOG_NOTE_IS_COLLECTED_TOGO;
+                    } else {
+                        logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
+                    }
+                    personalMapFragment.searchLocationGoogleCommentVersionDialog(Float.toString(node.x), Float.toString(node.y), LOG_TOGO_LOCATE, autocompleteStr, logNote);
+
+                    searchView.clearFocus();
+                    searchView.setText(autocompleteStr);
+                    firebaseLogManager.log(LOG_SEARCH_LOCATION, autocompleteStr);
+                    // send action log to server
+                    actionLog("search: ", autocompleteStr, "");
+                }
+            });
+        }
+
+    }
     public void switchTab(int position) {
         tabLayout.getTabAt(position).select();
     }
