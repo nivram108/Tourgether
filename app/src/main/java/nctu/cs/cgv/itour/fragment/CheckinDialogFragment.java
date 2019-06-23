@@ -302,7 +302,6 @@ public class CheckinDialogFragment extends DialogFragment {
         locateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity) Objects.requireNonNull(getActivity())).onLocateCheckinClick(checkin.key);
                 String logNote = "";
                 if (FirebaseAuth.getInstance().getCurrentUser().getUid().equals(checkin.uid)) {
                     logNote = LOG_NOTE_IS_SELF_CHECKIN;
@@ -312,6 +311,12 @@ public class CheckinDialogFragment extends DialogFragment {
                     logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                 }
                 firebaseLogManager.log(LOG_CHECKIN_LOCATE, checkin.key, logNote);
+                if (fromPath.equals("CollectedCheckinFragment") && logNote.equals(LOG_NOTE_IS_COLLECTED_CHECKIN)) {
+                    ((MainActivity)getActivity()).personalFragment.viewPager.setCurrentItem(0);
+                    ((MainActivity)getActivity()).personalFragment.personalMapFragment.onLocateCheckinClick(checkin);
+                } else {
+                    ((MainActivity) Objects.requireNonNull(getActivity())).onLocateCheckinClick(checkin.key);
+                }
                 Fragment fragment = Objects.requireNonNull(getFragmentManager()).findFragmentByTag("fragment_checkin_dialog");
                 Objects.requireNonNull(getFragmentManager()).beginTransaction().remove(fragment).commitAllowingStateLoss();
                 actionLog("locate checkin", checkin.location, checkin.key);

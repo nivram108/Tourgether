@@ -30,6 +30,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -45,6 +48,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -60,6 +64,7 @@ import nctu.cs.cgv.itour.custom.ReportManager;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
+import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.TogoPlannedData;
 
@@ -77,6 +82,7 @@ import static nctu.cs.cgv.itour.MyApplication.realMesh;
 import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
+import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinIsVisited;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
@@ -834,9 +840,15 @@ public class PersonalMapFragment extends Fragment {
     public void onLocateClick(String lat, String lng, String spotName) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
-        searchLocationDialog(lat, lng, spotName);
+//        searchLocationDialog(lat, lng, spotName);
+        showTogoMapIconClickedOptions(spotName, lat, lng);
     }
 
+    public void onLocateCheckinClick(Checkin checkin) {
+        float[] imgPx = Utility.gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+        translateToImgPx(imgPx[0], imgPx[1], false);
+        showCheckinMapIconClickedOptions(checkin);
+    }
 
     public void translateToImgPx(final float x, final float y, final boolean toCurrent) {
 
@@ -1339,13 +1351,15 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void setTogoVisited(String spotName) {
-        //TODO: set
-        List<Fragment> fragmentList = getFragmentManager().getFragments();
-        TogoFragment togoFragment = new TogoFragment();
-        for (Fragment fragment: fragmentList) {
-            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-        }
-        togoFragment.togoItemAdapter.setIsVisited(spotName, true);
+//        //TODO: set
+//        List<Fragment> fragmentList = getFragmentManager().getFragments();
+//        TogoFragment togoFragment = new TogoFragment();
+//        for (Fragment fragment: fragmentList) {
+//            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+//        }
+//
+
+        ((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.setIsVisited(spotName, true);
         reRender();
     }
 
@@ -1354,13 +1368,14 @@ public class PersonalMapFragment extends Fragment {
         dialog.setContentView(R.layout.report_anywhere_dialog);
         TextView textView = dialog.findViewById(R.id.report_message);
         textView.setText("請輸入造訪的景點");
-        final EditText visitedPlace = dialog.findViewById(R.id.visited_place);
-        visitedPlace.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+        final AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.visited_place);
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    reportAnywhere(visitedPlace.getText().toString(), dialog);
+                    reportAnywhere(autoCompleteTextView.getText().toString(), dialog);
 //                    dialog.dismiss();
                     handled = true;
                 }
@@ -1368,11 +1383,37 @@ public class PersonalMapFragment extends Fragment {
             }
         });
 
+        if (spotList == null) {
+            spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
+        }
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(spotList.getFullSpotsName());
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
+
+        autoCompleteTextView.setThreshold(0);
+        autoCompleteTextView.setAdapter(adapter);
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hideSoftKeyboard(getActivity());
+                autoCompleteTextView.setText(adapter.getItem(position));
+//                String autocompleteStr = adapter.getItem(position);
+            }
+        });
+
+        autoCompleteTextView.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                autoCompleteTextView.showDropDown();
+                return false;
+            }
+        });
+
         Button confirmationBtn = dialog.findViewById(R.id.btn_report_confirm);
         confirmationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reportAnywhere(visitedPlace.getText().toString(), dialog);
+                reportAnywhere(autoCompleteTextView.getText().toString(), dialog);
 //                dialog.dismiss();
             }
         });

@@ -75,6 +75,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
             <android.support.design.widget.FloatingActionButton
+                android:id="@+id/btn_report"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/report"
+                app:backgroundTint="@color/md_red_900" />
+            <android.support.design.widget.FloatingActionButton
                 android:id="@+id/btn_gps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

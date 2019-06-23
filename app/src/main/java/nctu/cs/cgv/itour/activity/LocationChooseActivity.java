@@ -220,7 +220,7 @@ public class LocationChooseActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 hideSoftKeyboard(LocationChooseActivity.this);
                 String autocompleteStr = adapter.getItem(position);
-                Node node = spotList.nodeMap.get(autocompleteStr);
+                Node node = spotList.fullNodeMap.get(autocompleteStr);
                 translateToImgPx(node.x, node.y, false);
                 //TODO: LOG
             }

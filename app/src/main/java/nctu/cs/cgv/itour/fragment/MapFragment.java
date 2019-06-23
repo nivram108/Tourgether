@@ -1,5 +1,6 @@
 package nctu.cs.cgv.itour.fragment;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,10 +30,14 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -43,6 +49,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -59,7 +66,9 @@ import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
 import nctu.cs.cgv.itour.object.Node;
+import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
+import nctu.cs.cgv.itour.object.TogoPlannedData;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static nctu.cs.cgv.itour.MyApplication.CLUSTER_THRESHOLD;
@@ -74,6 +83,7 @@ import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
+import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
 import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.activityIsVisible;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
@@ -85,6 +95,8 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOG
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_ANYWHERE;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_SEARCH_LOCATION;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
 
@@ -102,6 +114,7 @@ public class MapFragment extends Fragment {
     private int mapCenterY = 0;
     private int checkinIconWidth;
     private int checkinIconHeight;
+    private float lastLat, lastLng;
     private int gpsMarkerPivotX;
     private int gpsMarkerPivotY;
     private int checkinIconPivotX;
@@ -119,6 +132,7 @@ public class MapFragment extends Fragment {
     private LinearLayout gpsMarker;
     private FloatingActionButton gpsBtn;
     private FloatingActionButton addBtn;
+    private FloatingActionButton reportBtn;
     private FloatingActionButton switchBtn;
 
     private Bitmap fogBitmap;
@@ -163,7 +177,8 @@ public class MapFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = getContext();
-
+        lastLat = 0;
+        lastLng = 0;
         // load preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(context));
 
@@ -226,6 +241,7 @@ public class MapFragment extends Fragment {
         gpsMarker = view.findViewById(R.id.gps_marker);
         gpsBtn = view.findViewById(R.id.btn_gps);
         addBtn = view.findViewById(R.id.btn_add);
+        reportBtn = view.findViewById(R.id.btn_report);
         FrameLayout frameLayout = view.findViewById(R.id.touristmap);
         seperator = view.findViewById(R.id.seperator);
         switchBtn = view.findViewById(R.id.btn_switch_personal_map);
@@ -310,6 +326,12 @@ public class MapFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 switchMap();
+            }
+        });
+        reportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportAnywhereClicked();
             }
         });
         setTouchListener();
@@ -974,6 +996,8 @@ public class MapFragment extends Fragment {
         }
 
         // GPS is within tourist map.
+        lastLat = lat;
+        lastLng = lng;
         if (lat >= realMesh.minLat && lat <= realMesh.maxLat && lng >= realMesh.minLon && lng <= realMesh.maxLon) {
 
             if (gpsMarker.getVisibility() != View.VISIBLE) {
@@ -1150,5 +1174,202 @@ public class MapFragment extends Fragment {
         ((MainActivity)getActivity()).personalFragment.viewPager.setCurrentItem(0);
 //        ((MainActivity)getActivity()).viewPager.set;
 
+    }
+
+    void reportAnywhereClicked() {
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.report_anywhere_dialog);
+        TextView textView = dialog.findViewById(R.id.report_message);
+        textView.setText("請輸入造訪的景點");
+
+        final AutoCompleteTextView autoCompleteTextView = dialog.findViewById(R.id.visited_place);
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    reportAnywhere(autoCompleteTextView.getText().toString(), dialog);
+//                    dialog.dismiss();
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+
+        if (spotList == null) {
+            spotList = new SpotList(new File(dirPath + "/" + sourceMapTag + "_spot_list.txt"));
+        }
+        ArrayList<String> array = new ArrayList<>();
+        array.addAll(spotList.getFullSpotsName());
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
+
+        autoCompleteTextView.setThreshold(0);
+        autoCompleteTextView.setAdapter(adapter);
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                hideSoftKeyboard(getActivity());
+                autoCompleteTextView.setText(adapter.getItem(position));
+//                String autocompleteStr = adapter.getItem(position);
+            }
+        });
+
+        autoCompleteTextView.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event){
+                autoCompleteTextView.showDropDown();
+                return false;
+            }
+        });
+
+        Button confirmationBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confirmationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportAnywhere(autoCompleteTextView.getText().toString(), dialog);
+//                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+    }
+
+    void reportAnywhere(final String locationName, final Dialog parentDialog) {
+        TogoFragment togoFragment = ((MainActivity)getActivity()).personalFragment.togoFragment;
+        for (TogoPlannedData togoPlannedData:togoFragment.togoItemAdapter.togoPlannedDataList) {
+            if (togoPlannedData.locationName.equals(locationName)) {
+                reportTogoVisitedOptionClicked(locationName, parentDialog);
+                return;
+            }
+        }
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.confirmation_dialog);
+        TextView confirmation = dialog.findViewById(R.id.confirmation_message);
+        confirmation.setText("是否造訪了 " + locationName + " 呢?");
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confiramtionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportMotivation(locationName);
+                parentDialog.dismiss();
+                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    void reportMotivation(final String locationName) {
+        if (lastLat == 0 && lastLng == 0) {
+            Toast.makeText(getContext(), "無法取得你的位置", Toast.LENGTH_SHORT);
+            return;
+        }
+
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.report_anywhere_dialog);
+        TextView textView = dialog.findViewById(R.id.report_message);
+        textView.setText("促使你造訪這個景點的原因是:");
+        final EditText motivation = dialog.findViewById(R.id.visited_place);
+        motivation.setHint("造訪原因");
+        motivation.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    reportAnywhere(locationName, motivation.getText().toString());
+                    handled = true;
+                }
+                dialog.dismiss();
+                return handled;
+            }
+        });
+
+        Button confirmationBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confirmationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportAnywhere(locationName, motivation.getText().toString());
+                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+    }
+
+    void reportAnywhere(String location, String motivation) {
+        reportCompleteToast();
+        firebaseLogManager.log(LOG_REPORT_ANYWHERE, location, motivation);
+    }
+
+    void reportCompleteToast() {
+        Toast.makeText(getContext(), "謝謝回報!", Toast.LENGTH_SHORT).show();
+    }
+    void reportTogoVisitedOptionClicked(final String spotName, final Dialog parentDialog) {
+//        //Log.d("NIVRAMM", "SHOW DIALOG");
+        //TODO: show remove confirmation dialog
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.confirmation_dialog);
+        TextView confirmation = dialog.findViewById(R.id.confirmation_message);
+        confirmation.setText("是否造訪了 " + spotName + " 呢?");
+        Button confiramtionBtn = dialog.findViewById(R.id.btn_report_confirm);
+        confiramtionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reportTogoVisited(spotName);
+                parentDialog.dismiss();
+                dialog.dismiss();
+            }
+        });
+        Button cancelBtn = dialog.findViewById(R.id.btn_report_cancel);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    void reportTogoVisited(String spotName) {
+        setTogoVisited(spotName);
+        reportCompleteToast();
+        firebaseLogManager.log(LOG_REPORT_TOGO, spotName);
+    }
+    void setTogoVisited(String spotName) {
+//        //TODO: set
+//        List<Fragment> fragmentList = getFragmentManager().getFragments();
+//        TogoFragment togoFragment = new TogoFragment();
+//        for (Fragment fragment: fragmentList) {
+//            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
+//        }
+//
+
+        ((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.setIsVisited(spotName, true);
+        reRender();
     }
 }

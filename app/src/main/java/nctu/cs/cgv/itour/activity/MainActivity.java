@@ -200,7 +200,26 @@ public class MainActivity extends AppCompatActivity implements
             checkLaunchedByNotificationThreadHandler = new Handler(checkLaunchedByNotificationThread.getLooper());
         checkLaunchedByNotificationThreadHandler.post(listenNotificationClicked);
         activityIsVisible = true;
+        if (noticeCheckinFlag) {
+            noticeCheckinFlag = false;
+            try {
+                if (notification_key.equals("")) {
+                    if (notification_location.equals("")) {
+                        onLocateClick(notification_lat, notification_lng);
+                    } else {
+                        onLocateClick(notification_location);
+                    }
+                } else {
+                    CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(notification_key, "NotificationClicked");
+                    FragmentManager fragmentManager = this.getSupportFragmentManager();
+                    checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
+//                    onLocateCheckinClick(notification_key);
+                }
 
+            } catch (Exception ignore) {
+
+            }
+        }
     }
 
     private void init() {
