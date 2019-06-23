@@ -897,26 +897,37 @@ public class MainActivity extends AppCompatActivity implements
             notification_location = intent.getStringExtra("location");
             notification_key = intent.getStringExtra("key");
             noticeCheckinFlag = true;
+            Log.d("NEWINTENTTT", notification_key);
         }
-
-
     }
 
     @Override
     protected void onResume() {
 
         super.onResume();
-
+        Intent intent = getIntent();
+        if (intent.getBooleanExtra("checkinNotificationIntent", false)) {
+            intent.putExtra("checkinNotificationIntent", false);
+            Utility.actionLog("notice checkin", intent.getStringExtra("title"), intent.getStringExtra("key"));
+            Log.d("NOTIFICATIONN", "CLICK NOTIFICATION");
+            notification_lat = intent.getStringExtra("lat");
+            notification_lng = intent.getStringExtra("lng");
+            notification_location = intent.getStringExtra("location");
+            notification_key = intent.getStringExtra("key");
+            noticeCheckinFlag = true;
+            Log.d("NEWINTENTTT", notification_key);
+            Log.d("NEWINTENTTT", intent.getExtras().toString());
+        }
         SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
         Log.d("NIVRAM", "onResume, " + sharedPreferences.getBoolean("launchedByTappingNotification", false));
-        if (checkLaunchedByNotificationThread == null)
-            checkLaunchedByNotificationThread = new HandlerThread("checkLaunchedByNotificationThread");
-        if (checkLaunchedByNotificationThread.isAlive() == false)
-            checkLaunchedByNotificationThread.start();
-        if (checkLaunchedByNotificationThreadHandler == null)
-            checkLaunchedByNotificationThreadHandler = new Handler(checkLaunchedByNotificationThread.getLooper());
-        checkLaunchedByNotificationThreadHandler.post(listenNotificationClicked);
-        activityIsVisible = true;
+//        if (checkLaunchedByNotificationThread == null)
+//            checkLaunchedByNotificationThread = new HandlerThread("checkLaunchedByNotificationThread");
+//        if (checkLaunchedByNotificationThread.isAlive() == false)
+//            checkLaunchedByNotificationThread.start();
+//        if (checkLaunchedByNotificationThreadHandler == null)
+//            checkLaunchedByNotificationThreadHandler = new Handler(checkLaunchedByNotificationThread.getLooper());
+//        checkLaunchedByNotificationThreadHandler.post(listenNotificationClicked);
+//        activityIsVisible = true;
 
         if (logFlag && audioFeedbackFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             requestSystemOverlayPermission();
