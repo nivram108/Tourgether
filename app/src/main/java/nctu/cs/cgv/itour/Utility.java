@@ -337,7 +337,7 @@ public class Utility {
 //        notificationIntent.putExtra("location", commentNotification.location);
 //        notificationIntent.putExtra("title", commentNotification.title);
 //        notificationIntent.putExtra("comment", commentNotification.comment);
-        Log.d("NIVRAM", "BUILD COMMENT NOTI");
+//        Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -399,7 +399,7 @@ public class Utility {
 //        notificationIntent.putExtra("title", likeNotification.title);
 //        notificationIntent.putExtra("comment", likeNotification.comment);
 //        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.d("NIVRAM", "BUILD COMMENT NOTI");
+//        Log.d("NIVRAM", "BUILD COMMENT NOTI");
         // Set tap notification intent
 //        Intent intent = new Intent(context, MainActivity.class);
 //

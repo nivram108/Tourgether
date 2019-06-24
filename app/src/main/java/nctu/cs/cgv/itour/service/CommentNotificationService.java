@@ -123,7 +123,14 @@ public class CommentNotificationService extends Service {
 
             }
         });
-        return START_NOT_STICKY;
+//        return super.onStartCommand(intent, START_STICKY, startId);
+        return START_STICKY;
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        sendBroadcast(new Intent("commentNotificationService"));
     }
 
     @Override

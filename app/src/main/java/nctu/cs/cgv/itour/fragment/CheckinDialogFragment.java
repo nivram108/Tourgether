@@ -37,6 +37,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -47,6 +48,7 @@ import nctu.cs.cgv.itour.custom.CheckinCommentItemAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinComment;
 import nctu.cs.cgv.itour.object.CommentNotification;
+import nctu.cs.cgv.itour.object.FirebaseLogData;
 import nctu.cs.cgv.itour.object.LikeNotification;
 
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
@@ -75,7 +77,7 @@ public class CheckinDialogFragment extends DialogFragment {
 
     private static final String TAG = "CheckinDialogFragment";
     private Query postReference;
-    public static Checkin notificationCheckin;
+    public Checkin notificationCheckin;
 
     private String postId;
     private String fromPath;
@@ -85,6 +87,7 @@ public class CheckinDialogFragment extends DialogFragment {
     public static CheckinDialogFragment newInstance(String postId, String fromPath) {
         CheckinDialogFragment checkinDialogFragment = new CheckinDialogFragment();
         Bundle args = new Bundle();
+        Log.d("NotificationNewIntent", "new Instance" + postId);
         args.putString("postId", postId);
         args.putString("fromPath", fromPath);
         checkinDialogFragment.setArguments(args);
@@ -98,6 +101,7 @@ public class CheckinDialogFragment extends DialogFragment {
             postId = getArguments().getString("postId");
             fromPath = getArguments().getString("fromPath");
         }
+        Log.d("NotificationNewIntent", "onCreate" + postId);
         firebaseLogManager.log(LOG_CHECKIN_OPEN, postId, fromPath);
     }
 
@@ -109,19 +113,22 @@ public class CheckinDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.d(TAG, "onViewCreated :" + postId);
-        Log.d("NIVRAM", "postId:" + postId);
+//        Log.d(TAG, "onViewCreated :" + postId);
+//        Log.d("NIVRAM", "postId:" + postId);
+        Log.d("NotificationNewIntent", "onViewCreated" + postId);
         Checkin checkin = checkinMap.get(postId);
-        Log.d("NIVRAM", "checkinMap count:" + checkinMap.size());
+//        Log.d("NIVRAM", "checkinMap count:" + checkinMap.size());
         if (checkin != null) {
-            Log.d("NIVRAM", "checkin fine");
+//            Log.d("NIVRAM", "checkin fine");
         } else {
-            Log.d("FATTTT", "NULL!");
+//            Log.d("FATTTT", "NULL!");
 
             SharedPreferences sharedPreferences = getContext().getSharedPreferences("data", Context.MODE_PRIVATE);
 
-            getCheckinFromFirebase(sharedPreferences.getString("tappedNotificationCheckinId", ""));
+//            getCheckinFromFirebase(postId);
             checkin = notificationCheckin;
+            Log.d("NotificationNewIntent", "get data" + postId);
+
         }
 
 
@@ -433,7 +440,7 @@ public class CheckinDialogFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        query.removeEventListener(childEventListener);
+        if(query != null && childEventListener != null) query.removeEventListener(childEventListener);
         firebaseLogManager.log(LOG_CHECKIN_CLOSE, postId);
     }
     /**
@@ -497,13 +504,17 @@ public class CheckinDialogFragment extends DialogFragment {
                     }
                 });
     }
-    private void getCheckinFromFirebase(String id) {
+    public void getCheckinFromFirebase(String id, final FragmentManager fragmentManager, final String tag) {
         ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Get Post object and use the values to update the UI
                 notificationCheckin = dataSnapshot.getValue(Checkin.class);
-                Log.d("NIVRAM", "onDataChange, key:" + dataSnapshot.getKey());
+                notificationCheckin.key = dataSnapshot.getKey();
+                show(fragmentManager, tag);
+                Log.d("NotificationNewIntent", "notificationCheckin " + notificationCheckin.key);
+                Log.d("NotificationNewIntent", "dataSnapshot " + dataSnapshot.getKey());
+                Log.d("NotificationNewIntent", "notificationCheckin " + notificationCheckin.key);
                 // ...
             }
 
@@ -514,7 +525,7 @@ public class CheckinDialogFragment extends DialogFragment {
                 // ...
             }
         };
-        postReference = FirebaseDatabase.getInstance().getReference().child("checkin").child(mapTag);
+        postReference = FirebaseDatabase.getInstance().getReference().child("checkin").child(mapTag).child(id);
         postReference.addListenerForSingleValueEvent(postListener);
 
     }

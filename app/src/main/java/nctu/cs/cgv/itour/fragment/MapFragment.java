@@ -62,6 +62,7 @@ import nctu.cs.cgv.itour.Utility;
 import nctu.cs.cgv.itour.activity.CheckinActivity;
 import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.ArrayAdapterSearchView;
+import nctu.cs.cgv.itour.custom.AutoCompleteAdapter;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinNode;
@@ -366,14 +367,14 @@ public class MapFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
 
         // set search view autocomplete
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(context, R.layout.item_search, new ArrayList<>(spotList.getSpotsName()));
+        final AutoCompleteAdapter adapter = new AutoCompleteAdapter(context, R.layout.item_search, new ArrayList<>(spotList.getFullSpotsName()));
         final ArrayAdapterSearchView searchView = (ArrayAdapterSearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setAdapter(adapter);
         searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String autocompleteStr = adapter.getItem(position);
-                Node node = spotList.nodeMap.get(autocompleteStr);
+                Node node = spotList.fullNodeMap.get(autocompleteStr);
                 translateToImgPx(node.x, node.y, false);
                 String logNote = "";
                 if(((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(autocompleteStr)) {
@@ -381,7 +382,7 @@ public class MapFragment extends Fragment {
                 } else {
                     logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
                 }
-                searchLocationDialog(Float.toString(node.x), Float.toString(node.y), LOG_TOGO_LOCATE, autocompleteStr, logNote);
+                searchLocationDialog(spotList.fullNodeMap.get(autocompleteStr).lat, spotList.fullNodeMap.get(autocompleteStr).lng, LOG_TOGO_LOCATE, autocompleteStr, logNote);
 
                 searchView.clearFocus();
                 searchView.setText(autocompleteStr);
@@ -510,7 +511,7 @@ public class MapFragment extends Fragment {
     }
 
     private void reRender(boolean performMerge) {
-        Log.d("FOCUSMAP", "in");
+//        Log.d("FOCUSMAP", "in");
 
         boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
 
@@ -781,7 +782,7 @@ public class MapFragment extends Fragment {
             for (SpotNode spot : spotNodeList) {
                 float dist = Utility.isNearBy(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng),
                         Float.valueOf(spot.lat), Float.valueOf(spot.lng));
-                if (dist <= 100f && dist < minDist) {
+                if (dist <= CLUSTER_THRESHOLD && dist < minDist) {
                     location = spot.name;
                     minDist = dist;
                 }
@@ -1201,7 +1202,7 @@ public class MapFragment extends Fragment {
         }
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
+        final AutoCompleteAdapter adapter = new AutoCompleteAdapter(getActivity(), R.layout.item_search, array);
 
         autoCompleteTextView.setThreshold(0);
         autoCompleteTextView.setAdapter(adapter);
@@ -1237,6 +1238,7 @@ public class MapFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         dialog.show();
         Window window = dialog.getWindow();
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);

@@ -60,6 +60,7 @@ import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.Utility;
 import nctu.cs.cgv.itour.activity.CheckinActivity;
 import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.custom.AutoCompleteAdapter;
 import nctu.cs.cgv.itour.custom.ReportManager;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
@@ -535,11 +536,7 @@ public class PersonalMapFragment extends Fragment {
 
         boolean isMerged = performMerge && scale < ZOOM_THRESHOLD;
         if (getFragmentManager() == null) return;
-        List<Fragment> fragmentList = getFragmentManager().getFragments();
-        TogoFragment togoFragment = new TogoFragment();
-        for (Fragment fragment: fragmentList) {
-            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-        }
+        TogoFragment togoFragment = getTogoFragment();
 
         Log.d("NIVRAMM", "render size compare :" + togoFragment.togoItemAdapter.togoPlannedDataList.size() + ", " + togoNodeList.size());
         if (togoIsUpdated){
@@ -1069,11 +1066,7 @@ public class PersonalMapFragment extends Fragment {
                 String latLng = lat + "," + lng;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
                 String logNote = "";
-                List<Fragment> fragmentList = getFragmentManager().getFragments();
-                TogoFragment togoFragment = new TogoFragment();
-                for (Fragment fragment: fragmentList) {
-                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-                }
+                TogoFragment togoFragment = getTogoFragment();
                 if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
                 navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
@@ -1102,7 +1095,8 @@ public class PersonalMapFragment extends Fragment {
     public void navigateLocation(String locationName, String logTag, String logMsg, String logNote) {
         firebaseLogManager.log(logTag, logMsg, logNote);
         locationName = locationName.replace(' ', '+');
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + locationName);
+        //Log.d("NIVRAM", "location : " + locationName);
+        Uri gmmIntentUri = Uri.parse("geo:0,0?q=" + locationName + "&mode=w");
         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         mapIntent.setPackage("com.google.android.apps.maps");
         startActivity(mapIntent);
@@ -1203,11 +1197,7 @@ public class PersonalMapFragment extends Fragment {
                 String latLng = lat + "," + lng;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
                 String logNote = "";
-                List<Fragment> fragmentList = getFragmentManager().getFragments();
-                TogoFragment togoFragment = new TogoFragment();
-                for (Fragment fragment: fragmentList) {
-                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-                }
+                TogoFragment togoFragment = getTogoFragment();
                 if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
                 navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
@@ -1261,11 +1251,7 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void removeTogo(String spotName) {
-        List<Fragment> fragmentList = getFragmentManager().getFragments();
-        TogoFragment togoFragment = new TogoFragment();
-        for (Fragment fragment: fragmentList) {
-            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-        }
+        TogoFragment togoFragment = getTogoFragment();
         for (TogoPlannedData togoPlannedData: togoFragment.togoItemAdapter.togoPlannedDataList) {
             //Log.d("NIVRAM", togoPlannedData.locationName + "XDDDD");
         }
@@ -1351,13 +1337,6 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void setTogoVisited(String spotName) {
-//        //TODO: set
-//        List<Fragment> fragmentList = getFragmentManager().getFragments();
-//        TogoFragment togoFragment = new TogoFragment();
-//        for (Fragment fragment: fragmentList) {
-//            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-//        }
-//
 
         ((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.setIsVisited(spotName, true);
         reRender();
@@ -1388,7 +1367,7 @@ public class PersonalMapFragment extends Fragment {
         }
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
+        final AutoCompleteAdapter adapter = new AutoCompleteAdapter(getActivity(), R.layout.item_search, array);
 
         autoCompleteTextView.setThreshold(0);
         autoCompleteTextView.setAdapter(adapter);
@@ -1424,18 +1403,17 @@ public class PersonalMapFragment extends Fragment {
                 dialog.dismiss();
             }
         });
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         dialog.show();
+
         Window window = dialog.getWindow();
+
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
 
     }
 
     void reportAnywhere(final String locationName, final Dialog parentDialog) {
-        List<Fragment> fragmentList = getFragmentManager().getFragments();
-        TogoFragment togoFragment = new TogoFragment();
-        for (Fragment fragment: fragmentList) {
-            if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-        }
+        TogoFragment togoFragment = getTogoFragment();
         for (TogoPlannedData togoPlannedData:togoFragment.togoItemAdapter.togoPlannedDataList) {
             if (togoPlannedData.locationName.equals(locationName)) {
                 reportTogoVisitedOptionClicked(locationName, parentDialog);
@@ -1556,11 +1534,7 @@ public class PersonalMapFragment extends Fragment {
                 String latLng = lat + "," + lng;
                 //Log.d("NIVRAM", "LATLNG: " + latLng);
                 String logNote = "";
-                List<Fragment> fragmentList = getFragmentManager().getFragments();
-                TogoFragment togoFragment = new TogoFragment();
-                for (Fragment fragment: fragmentList) {
-                    if (fragment.getClass() == TogoFragment.class) togoFragment = (TogoFragment)fragment;
-                }
+                TogoFragment togoFragment = getTogoFragment();
                 if (togoFragment.togoItemAdapter.isTogo(spotName)) logNote = LOG_NOTE_IS_COLLECTED_TOGO;
                 else logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
                 navigateLocation(latLng, LOG_TOGO_NAVIGATE, spotName, logNote);
@@ -1586,5 +1560,9 @@ public class PersonalMapFragment extends Fragment {
             }
         });
         bottomSheetDialog.show();
+    }
+
+    TogoFragment getTogoFragment() {
+        return ((MainActivity)getActivity()).personalFragment.togoFragment;
     }
 }

@@ -81,7 +81,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
     @Override
     public void onBindViewHolder(NewsItemAdapter.ViewHolder viewHolder, int position) {
         NotificationType notificationType = notificationTypes.get(position);
-        Log.d("NIVRAM", "Show noti:(" + notificationType.type + ", " + notificationType.key + ")");
+//        Log.d("NIVRAM", "Show noti:(" + notificationType.type + ", " + notificationType.key + ")");
 
         if (notificationType.type == NotificationType.TYPE_SYSTEM_NOTIFICATION) {
             SystemNotification systemNotification = newsFragment.systemNotificationMap.get(notificationType.key);
@@ -114,7 +114,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
             viewHolder.view.setBackgroundResource(R.color.notification_not_checked);
         } else {
             viewHolder.view.setBackgroundResource(R.color.md_white_1000);
-            Log.d("NIVRAM", "SET TO TRUE");
+//            Log.d("NIVRAM", "SET TO TRUE");
 
         }
 
@@ -221,7 +221,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
             if (commentNotificationIsClickedMap.containsKey(notificationType.pushKey) && commentNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
             if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) {
-                Log.d("NIVRAMMM", "catch!");
+//                Log.d("NIVRAMMM", "catch!");
                 notificationType.isChecked = true;
             }
         }
@@ -271,7 +271,7 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         int index = 0, byteCount = 0;
 
         while(byteCount < length) {
-            Log.d("NIVRAM", "LOOP, " + byteCount);
+//            Log.d("NIVRAM", "LOOP, " + byteCount);
             if(s.substring(index, index + 1).getBytes().length > 1) {
                 // is chinese char
                 byteCount = byteCount + 2;

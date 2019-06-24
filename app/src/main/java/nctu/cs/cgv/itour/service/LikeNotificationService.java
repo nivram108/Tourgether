@@ -124,7 +124,14 @@ public class LikeNotificationService extends Service {
 
             }
         });
-        return START_NOT_STICKY;
+        return START_STICKY;
+    }
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        sendBroadcast(new Intent("likeNotificationService"));
     }
 
     @Override

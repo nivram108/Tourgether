@@ -249,8 +249,8 @@ public class MainActivity extends AppCompatActivity implements
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
-        startService(new Intent(this, NotificationListener.class));
         startService(new Intent(this, SystemNotificationService.class));
+        startService(new Intent(this, NotificationListener.class));
 
         setSensors();
 
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         if (logFlag && screenCaptureFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             requestScreenCapture();
-        Log.d("VVVVVV", "RQ NL");
+//        Log.d("VVVVVV", "RQ NL");
         if(VERSION_OPTION == VERSION_ALL_FEATURE) {
             String notificationListenerPermission = Settings.Secure.getString(getContentResolver(),
                     "enabled_notification_listeners");
@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements
                     personalFragment.notifyPostedCheckinChanged();
                     mapFragment.changeCheckin(checkin);
                     personalFragment.personalMapFragment.changeCheckin(checkin);
-                    Log.d("NIVRAM", "child change");
+//                    Log.d("NIVRAM", "child change");
                 } catch (Exception ignored) {
 
                 }
@@ -480,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements
 
             }
         });
-        Log.d("NIVRAM", "checkin:" + Integer.toString(checkinMap.size()));
+//        Log.d("NIVRAM", "checkin:" + Integer.toString(checkinMap.size()));
     }
 
     public void querySavedPostId() {
@@ -772,7 +772,7 @@ public class MainActivity extends AppCompatActivity implements
                 SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
                 float lat = intent.getFloatExtra("lat", 0);
                 float lng = intent.getFloatExtra("lng", 0);
-                Log.d("LOCATIONGETTT", lat + ", " + lng);
+//                Log.d("LOCATIONGETTT", lat + ", " + lng);
                 sharedPreferences.edit().putFloat("lat", lat).apply();
                 sharedPreferences.edit().putFloat("lng", lng).apply();
 //                if(VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) return;
@@ -791,6 +791,15 @@ public class MainActivity extends AppCompatActivity implements
 //                        mapFragment.handleFogUpdate(
 //                                intent.getFloatExtra("lat", 0),
 //                                intent.getFloatExtra("lng", 0));
+                        break;
+                    case "commentNotificationService":
+                        startService(new Intent(getBaseContext(), CommentNotificationService.class));
+                        break;
+                    case "likeNotificationService":
+                        startService(new Intent(getBaseContext(), LikeNotificationService.class));
+                        break;
+                    case "systemNotificationService":
+                        startService(new Intent(getBaseContext(), SystemNotificationService.class));
                         break;
                 }
             }
@@ -887,7 +896,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onNewIntent(Intent intent) {
-        Log.d("NOTIFICATIONN", "NEW INTENT");
+        Log.d("NotificationNewIntent", "NEW INTENT");
 
         if (intent.getBooleanExtra("checkinNotificationIntent", false)) {
             Utility.actionLog("notice checkin", intent.getStringExtra("title"), intent.getStringExtra("key"));
@@ -906,6 +915,7 @@ public class MainActivity extends AppCompatActivity implements
 
         super.onResume();
         Intent intent = getIntent();
+        if (intent.getExtras() != null) Log.d("NotificationNewIntent", intent.getExtras().toString());
         if (intent.getBooleanExtra("checkinNotificationIntent", false)) {
             intent.putExtra("checkinNotificationIntent", false);
             Utility.actionLog("notice checkin", intent.getStringExtra("title"), intent.getStringExtra("key"));
@@ -915,19 +925,8 @@ public class MainActivity extends AppCompatActivity implements
             notification_location = intent.getStringExtra("location");
             notification_key = intent.getStringExtra("key");
             noticeCheckinFlag = true;
-            Log.d("NEWINTENTTT", notification_key);
-            Log.d("NEWINTENTTT", intent.getExtras().toString());
+//            Log.d("NEWINTENTTT", notification_key);
         }
-        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
-        Log.d("NIVRAM", "onResume, " + sharedPreferences.getBoolean("launchedByTappingNotification", false));
-//        if (checkLaunchedByNotificationThread == null)
-//            checkLaunchedByNotificationThread = new HandlerThread("checkLaunchedByNotificationThread");
-//        if (checkLaunchedByNotificationThread.isAlive() == false)
-//            checkLaunchedByNotificationThread.start();
-//        if (checkLaunchedByNotificationThreadHandler == null)
-//            checkLaunchedByNotificationThreadHandler = new Handler(checkLaunchedByNotificationThread.getLooper());
-//        checkLaunchedByNotificationThreadHandler.post(listenNotificationClicked);
-//        activityIsVisible = true;
 
         if (logFlag && audioFeedbackFlag && FirebaseAuth.getInstance().getCurrentUser() != null)
             requestSystemOverlayPermission();
@@ -942,9 +941,11 @@ public class MainActivity extends AppCompatActivity implements
                         onLocateClick(notification_location);
                     }
                 } else {
+                    Log.d("NotificationNewIntent", notification_key);
                     CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(notification_key, "NotificationClicked");
                     FragmentManager fragmentManager = this.getSupportFragmentManager();
-                    checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
+                    checkinDialogFragment.getCheckinFromFirebase(notification_key, fragmentManager, "fragment_checkin_dialog");
+//                    checkinDialogFragment.show(fragmentManager, "fragment_checkin_dialog");
 //                    onLocateCheckinClick(notification_key);
                 }
 
@@ -1020,7 +1021,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d("NIVRAM", "onStart");
+//        Log.d("NIVRAM", "onStart");
 //        showCheckinDialog();
 
     }
@@ -1235,7 +1236,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 try {
-                    Log.d("NIVRAMMM", "clicked : " + dataSnapshot.getKey());
+//                    Log.d("NIVRAMMM", "clicked : " + dataSnapshot.getKey());
                     likeNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
                     updateCheckedNotification(NotificationType.TYPE_LIKE_NOTIFICATION, dataSnapshot.getKey());
                 } catch (Exception ignored) {

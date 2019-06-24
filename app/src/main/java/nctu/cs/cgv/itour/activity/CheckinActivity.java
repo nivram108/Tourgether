@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -312,6 +313,11 @@ public class CheckinActivity extends AppCompatActivity {
                     startActivityForResult(intent, REQUEST_CODE_CHECKIN_FINISH);
                 }
                 else {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+
+                    if(imm.isAcceptingText()) { // verify if the soft keyboard is open
+                        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                    }
                     Toast.makeText(getApplicationContext(), "請選擇類別", Toast.LENGTH_SHORT).show();
                 }
                 return true;

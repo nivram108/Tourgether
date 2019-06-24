@@ -134,17 +134,17 @@ public class CheckinItemAdapter extends RecyclerView.Adapter<CheckinItemAdapter.
         array.addAll(spotList.getFullSpotsName());
         String s = "紅毛城";
         if (spotList.fullNodeMap.containsKey("紅毛城")) {
-            Log.d("紅毛城", "BINGO");
+//            Log.d("紅毛城", "BINGO");
         } else {
-            Log.d("紅毛城??",  Integer.toString((int)array.get(0).charAt(0)) + ", " +
-                    Integer.toString((int)array.get(0).charAt(1)) + ", " + Integer.toString((int)array.get(0).charAt(2)));
-            Log.d("紅毛城??",  Integer.toString((int)s.charAt(0)) + ", " +
-                    Integer.toString((int)s.charAt(1)) + ", " + Integer.toString((int)s.charAt(2)));
+//            Log.d("紅毛城??",  Integer.toString((int)array.get(0).charAt(0)) + ", " +
+//                    Integer.toString((int)array.get(0).charAt(1)) + ", " + Integer.toString((int)array.get(0).charAt(2)));
+//            Log.d("紅毛城??",  Integer.toString((int)s.charAt(0)) + ", " +
+//                    Integer.toString((int)s.charAt(1)) + ", " + Integer.toString((int)s.charAt(2)));
 
         }
-        Log.d("GCV", "array size : " + array.size());
+//        Log.d("GCV", "array size : " + array.size());
         for (String spotName:array) {
-            Log.d("GCV", "load");
+//            Log.d("GCV", "load");
             Checkin checkin = new Checkin();
             checkin.setSpot(spotName);
             checkins.add(checkin);

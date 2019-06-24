@@ -57,7 +57,7 @@ public class GridPhotoAdapter extends ArrayAdapter<Checkin> {
                         .into(photo);
             }
         } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
-            Log.d("NIVRAM", "SET GRID GCV");
+//            Log.d("NIVRAM", "SET GRID GCV");
 
         }
 

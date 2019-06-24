@@ -223,7 +223,7 @@ public class LoginActivity extends AppCompatActivity {
                     boolean micPermission = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
                     if (storagePermission && gpsPermission) {
-                        Log.d("VVVVVV", "Start Main");
+//                        Log.d("VVVVVV", "Start Main");
                         startMainActivity();
                     } else {
                         showExplanation();

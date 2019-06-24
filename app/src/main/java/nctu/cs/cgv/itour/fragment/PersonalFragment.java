@@ -24,6 +24,7 @@ import java.util.Objects;
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.ArrayAdapterSearchView;
+import nctu.cs.cgv.itour.custom.AutoCompleteAdapter;
 import nctu.cs.cgv.itour.custom.MyViewPager;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.Node;
@@ -184,14 +185,14 @@ public class PersonalFragment extends Fragment {
             super.onCreateOptionsMenu(menu, inflater);
             Log.d("SEARCH_MENU", "setup");
             // set search view autocomplete
-            final ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), R.layout.item_search, new ArrayList<>(spotList.getSpotsName()));
+            final AutoCompleteAdapter adapter = new AutoCompleteAdapter(getContext(), R.layout.item_search, new ArrayList<>(spotList.getFullSpotsName()));
             final ArrayAdapterSearchView searchView = (ArrayAdapterSearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
             searchView.setAdapter(adapter);
             searchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     String autocompleteStr = adapter.getItem(position);
-                    Node node = spotList.nodeMap.get(autocompleteStr);
+                    Node node = spotList.fullNodeMap.get(autocompleteStr);
                     personalMapFragment.translateToImgPx(node.x, node.y, false);
                     String logNote = "";
                     if(((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.isTogo(autocompleteStr)) {
@@ -199,7 +200,7 @@ public class PersonalFragment extends Fragment {
                     } else {
                         logNote = LOG_NOTE_IS_NOT_COLLECTED_TOGO;
                     }
-                    personalMapFragment.searchLocationGoogleCommentVersionDialog(Float.toString(node.x), Float.toString(node.y), LOG_TOGO_LOCATE, autocompleteStr, logNote);
+                    personalMapFragment.searchLocationGoogleCommentVersionDialog(spotList.fullNodeMap.get(autocompleteStr).lat, spotList.fullNodeMap.get(autocompleteStr).lng, LOG_TOGO_LOCATE, autocompleteStr, logNote);
 
                     searchView.clearFocus();
                     searchView.setText(autocompleteStr);

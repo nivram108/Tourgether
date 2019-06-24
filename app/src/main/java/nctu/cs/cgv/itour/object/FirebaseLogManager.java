@@ -1,20 +1,14 @@
 package nctu.cs.cgv.itour.object;
-import android.app.Activity;
-import android.content.Intent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -25,6 +19,7 @@ import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_OPEN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_ANYWHERE;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_CHECKIN;
 
@@ -67,17 +62,20 @@ public class FirebaseLogManager {
             // SET NOTE
         }
         if (tag.equals(LOG_REPORT_CHECKIN) || tag.equals(LOG_REPORT_ANYWHERE)){
-            logSummary(firebaseLogData);
+            logPoi(firebaseLogData);
+        } else if (tag.equals(LOG_CHECKIN_OPEN)) {
+            addViewCheckinCount();
         }
+
     }
 
-    public void logSummary(FirebaseLogData firebaseLogData) {
+    public void logPoi(FirebaseLogData firebaseLogData) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final String pushKey = databaseReference.child("log_summary").child(mapTag).child(uid).child("collections").push().getKey();
+        final String pushKey = databaseReference.child("log_poi").child(mapTag).child(uid).child("collections").push().getKey();
         Map<String, Object> logValue = firebaseLogData.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/log_summary/" + mapTag + "/" + uid + "/collections/" + pushKey, logValue);
+        childUpdates.put("/log_poi/" + mapTag + "/" + uid + "/collections/" + pushKey, logValue);
         FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
                 new DatabaseReference.CompletionListener() {
                     @Override
@@ -87,6 +85,7 @@ public class FirebaseLogManager {
                     }
                 });
         addPoiCount();
+        initUserName();
     }
 
     public void queryLog() {
@@ -128,18 +127,70 @@ public class FirebaseLogManager {
         q.addListenerForSingleValueEvent(listener);
     }
 
+
     public void addPoiCount() {
         final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        Query q = databaseReference.child("poi_count").child(mapTag).child(uid).child("count");
+        Query q = databaseReference.child("log_summary").child(mapTag).child(uid).child("poi_count");
         ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 try {
                     if(dataSnapshot.getValue() == null) {
-                        databaseReference.child("poi_count").child(mapTag).child(uid).child("count").setValue(1);
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("poi_count").setValue(1);
                     } else {
-                        databaseReference.child("poi_count").child(mapTag).child(uid).child("count").
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("poi_count").
+                                setValue(Integer.valueOf(dataSnapshot.getValue().toString()) + 1);
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
+
+    public void initUserName() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("log_summary").child(mapTag).child(uid).child("name");
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if(dataSnapshot.getValue() == null) {
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("name").setValue(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
+
+    public void addViewCheckinCount() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("log_summary").child(mapTag).child(uid).child("view_checkin_count");
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if(dataSnapshot.getValue() == null) {
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("view_checkin_count").setValue(1);
+                    } else {
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("view_checkin_count").
                                 setValue(Integer.valueOf(dataSnapshot.getValue().toString()) + 1);
                     }
                 } catch (Exception ignored) {
