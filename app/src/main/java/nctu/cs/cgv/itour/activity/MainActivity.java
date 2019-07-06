@@ -73,6 +73,7 @@ import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
 import nctu.cs.cgv.itour.object.UserData;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
+import nctu.cs.cgv.itour.service.CollectNotificationService;
 import nctu.cs.cgv.itour.service.SystemNotificationService;
 import nctu.cs.cgv.itour.service.CommentNotificationService;
 import nctu.cs.cgv.itour.service.GpsLocationService;
@@ -154,10 +155,11 @@ public class MainActivity extends AppCompatActivity implements
     private String notification_lng;
     private String notification_location;
     private String notification_key;
-    private NotificationManager notificationManager, commentNotificationManager, likeNotificationManager;
+    private NotificationManager notificationManager, commentNotificationManager, collectNotificationManager, likeNotificationManager;
 
     private String notificationChannelId = "nearby notification";
     private String commentNotificationChannelId = "comment notification";
+    private String collectNotificationChannelId = "collect notification";
     private String likeNotificationChannelId = "like notification";
     private HandlerThread checkLaunchedByNotificationThread;
     private Handler checkLaunchedByNotificationThreadHandler;
@@ -173,6 +175,10 @@ public class MainActivity extends AppCompatActivity implements
     public static Map<String, Boolean> commentNotificationIsClickedMap;
     private Query commentNotificationIsClickedQuery;
     private ChildEventListener commentNotificationIsClickedListener;
+
+    public static Map<String, Boolean> collectNotificationIsClickedMap;
+    private Query collectNotificationIsClickedQuery;
+    private ChildEventListener collectNotificationIsClickedListener;
 
     public static Map<String, Boolean> likeNotificationIsClickedMap;
     private Query likeNotificationIsClickedQuery;
@@ -238,16 +244,21 @@ public class MainActivity extends AppCompatActivity implements
             systemNotificationIsClickedMap = new LinkedHashMap<>();
             querySystemNotificationIsClicked();
         }
+        if (collectNotificationIsClickedMap == null)  {
+            collectNotificationIsClickedMap = new LinkedHashMap<>();
+            queryCollectNotificationIsClicked();
+        }
         if (likeNotificationIsClickedMap == null)  {
             likeNotificationIsClickedMap = new LinkedHashMap<>();
-            queryCommentNotificationIsClicked();
+            queryLikeNotificationIsClicked();
         }
         if (commentNotificationIsClickedMap == null)  {
             commentNotificationIsClickedMap = new LinkedHashMap<>();
-            queryLikeNotificationIsClicked();
+            queryCommentNotificationIsClicked();
         }
         startService(new Intent(this, GpsLocationService.class));
         startService(new Intent(this, CommentNotificationService.class));
+        startService(new Intent(this, CollectNotificationService.class));
         startService(new Intent(this, LikeNotificationService.class));
         startService(new Intent(this, SystemNotificationService.class));
         startService(new Intent(this, NotificationListener.class));
@@ -266,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements
             setCheckinPreference();
             setNotificationManager();
             setCommentNotificationChannel();
+            setCollectNotificationChannel();
             setLikeNotificationChannel();
         } else if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
             setViewGoogleCommentOnly();
@@ -320,7 +332,19 @@ public class MainActivity extends AppCompatActivity implements
             commentNotificationManager.createNotificationChannel(channel);
         }
     }
-
+    private void setCollectNotificationChannel() {
+        collectNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    collectNotificationChannelId,
+                    "新的留言",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            channel.enableLights(true);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 50, 100, 100});
+            collectNotificationManager.createNotificationChannel(channel);
+        }
+    }
     private void setLikeNotificationChannel() {
         likeNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -795,6 +819,9 @@ public class MainActivity extends AppCompatActivity implements
                     case "commentNotificationService":
                         startService(new Intent(getBaseContext(), CommentNotificationService.class));
                         break;
+                    case "collectNotificationService":
+                        startService(new Intent(getBaseContext(), CollectNotificationService.class));
+                        break;
                     case "likeNotificationService":
                         startService(new Intent(getBaseContext(), LikeNotificationService.class));
                         break;
@@ -1226,6 +1253,55 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+
+    public void queryCollectNotificationIsClicked() {
+//        collectedCheckinIsVisited.clear();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        collectNotificationIsClickedQuery = databaseReference.child("users").child(uid).child("clicked_notification").child(NotificationType.TYPE_COLLECT_NOTIFICATION).child(mapTag);
+
+        collectNotificationIsClickedListener = collectNotificationIsClickedQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "VISITED save");
+                    collectNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                    updateCheckedNotification(NotificationType.TYPE_COLLECT_NOTIFICATION, dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                try {
+//                    Log.d("NIVRAMMM", "q save");
+                    collectNotificationIsClickedMap.put(dataSnapshot.getKey(), (Boolean) dataSnapshot.getValue());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                try {
+                    collectNotificationIsClickedMap.remove(dataSnapshot.getKey());
+                } catch (Exception ignored) {
+
+                }
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
     public void queryLikeNotificationIsClicked() {
 //        collectedCheckinIsVisited.clear();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();

@@ -15,6 +15,7 @@ public class NotificationType {
     public static final String TYPE_SYSTEM_NOTIFICATION = "systemNotification";
     public static final String TYPE_COMMENT_NOTIFICATION = "commentNotification";
     public static final String TYPE_LIKE_NOTIFICATION = "likeNotification";
+    public static final String TYPE_COLLECT_NOTIFICATION = "collectNotification";
 
     public String type;
     public String key;

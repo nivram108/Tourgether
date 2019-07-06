@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -153,6 +154,7 @@ public class PersonalMapFragment extends Fragment {
     private Map<String, CheckinNode> togoNodeMap;
     private List<CheckinNode> togoNodeList;
 
+    public CheckinNode focusNode;
 
     public Map<String, SpotNode> spotNodeMap;
     private List<SpotNode> spotNodeList;
@@ -246,6 +248,10 @@ public class PersonalMapFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        if (focusNode == null) {
+            focusNode = new CheckinNode(0, 0, 0, 0);
+            focusNode.icon = new ImageView(context);
+        }
         mapDisplayType = MAP_DISPLAY_COMMUNITY;
         rootLayout = view.findViewById(R.id.personal_map_layout);
         gpsMarker = view.findViewById(R.id.personal_gps_marker);
@@ -603,7 +609,7 @@ public class PersonalMapFragment extends Fragment {
             point[0] = checkinNode.x;
             point[1] = checkinNode.y;
             transformMat.mapPoints(point);
-            checkinIconTransform.mapPoints(point);
+//            checkinIconTransform.mapPoints(point);
             checkinNode.icon.setTranslationX(point[0]);
             checkinNode.icon.setTranslationY(point[1]);
         }
@@ -663,7 +669,7 @@ public class PersonalMapFragment extends Fragment {
                 point[0] = checkinNode.x;
                 point[1] = checkinNode.y;
                 transformMat.mapPoints(point);
-                checkinIconTransform.mapPoints(point);
+//                checkinIconTransform.mapPoints(point);
                 checkinNode.icon.setTranslationX(point[0]);
                 checkinNode.icon.setTranslationY(point[1]);
             }
@@ -672,14 +678,23 @@ public class PersonalMapFragment extends Fragment {
                 point[0] = checkinClusterNode.x;
                 point[1] = checkinClusterNode.y;
                 transformMat.mapPoints(point);
-                mergedCheckinIconTransform.mapPoints(point);
+//                mergedCheckinIconTransform.mapPoints(point);
                 checkinClusterNode.icon.setTranslationX(point[0]);
                 checkinClusterNode.icon.setTranslationY(point[1]);
             }
         }
 
 
+        if (true) {
+            point[0] = focusNode.x;
+            point[1] = focusNode.y;
+            transformMat.mapPoints(point);
+//            checkinIconTransform.mapPoints(point);
+            focusNode.icon.setTranslationX(point[0]);
+            focusNode.icon.setTranslationY(point[1]);
+//            Log.d("Focussss", )
 
+        }
 
     }
 
@@ -773,7 +788,11 @@ public class PersonalMapFragment extends Fragment {
     private void addCheckinIcon(final Checkin checkin, float x, float y, String type) {
 
         // create new node
-        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+        Drawable d = getResources().getDrawable(R.drawable.checkin_icon_60px);
+        float w = d.getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+        float h = d.getIntrinsicHeight() / getResources().getDisplayMetrics().density;
+        CheckinNode checkinNode = new CheckinNode(x - (w / 2), y - h, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+//        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
         checkinNode.icon = new ImageView(context);
         checkinNode.icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -809,7 +828,13 @@ public class PersonalMapFragment extends Fragment {
 
     private void addTogoIcon(final Checkin checkin, float x, float y, final String spotName, boolean isVisited) {
         // create new node
-        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+
+        Drawable d = getResources().getDrawable(R.drawable.checkin_icon_60px);
+        float w = d.getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+        float h = d.getIntrinsicHeight() / getResources().getDisplayMetrics().density;
+        CheckinNode checkinNode = new CheckinNode(x - (w / 2), y - h, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+
+//        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
         checkinNode.icon = new ImageView(context);
         checkinNode.icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -838,12 +863,14 @@ public class PersonalMapFragment extends Fragment {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
 //        searchLocationDialog(lat, lng, spotName);
+        showFocus(Float.valueOf(lat), Float.valueOf(lng));
         showTogoMapIconClickedOptions(spotName, lat, lng);
     }
 
     public void onLocateCheckinClick(Checkin checkin) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
+        showFocus(Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
         showCheckinMapIconClickedOptions(checkin);
     }
 
@@ -1564,5 +1591,37 @@ public class PersonalMapFragment extends Fragment {
 
     TogoFragment getTogoFragment() {
         return ((MainActivity)getActivity()).personalFragment.togoFragment;
+    }
+
+    public void showFocus(float lat, float lng) {
+        if(focusNode!= null) focusNode.icon.setVisibility(View.GONE);
+
+        float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
+        View v = new ImageView(context);
+        ((ImageView)v).setImageDrawable(
+                ResourcesCompat.getDrawable(getResources(), R.drawable.icon_focus, null));
+        float focusWidth = getResources().getDrawable(R.drawable.icon_focus).getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+        float focusHeight = getResources().getDrawable(R.drawable.icon_focus).getIntrinsicHeight() / getResources().getDisplayMetrics().density;
+
+        float checkinWidth = getResources().getDrawable(R.drawable.checkin_icon_60px).getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+
+        float scale = focusWidth / checkinWidth;
+        focusWidth /= scale;
+        focusHeight /= scale;
+
+        Log.d("Focusss", "red : " + imgPx[0] + ", " + imgPx[1] + ", (" + lat + ", " + lng + ")");
+
+//        focusNode = new CheckinNode(imgPx[0], imgPx[1],lat, lng);
+        focusNode = new CheckinNode(imgPx[0] - (focusWidth / 2), imgPx[1] - (focusHeight / 2),lat, lng);
+        focusNode.icon = v;
+//        ((ImageView)focusNode.icon).setImageDrawable(
+//                ResourcesCompat.getDrawable(getResources(), R.drawable.ic_location_on_red_600_48dp, null));
+        focusNode.icon.setLayoutParams(new RelativeLayout.LayoutParams((int)(focusWidth), (int)(focusHeight)));
+        focusNode.icon.setVisibility(View.VISIBLE);
+        rootLayout.addView(focusNode.icon, rootLayout.indexOfChild(seperator));
+
+//        rootLayout.addView(focusNode.icon);
+
+        Log.d("Focusss", "set");
     }
 }

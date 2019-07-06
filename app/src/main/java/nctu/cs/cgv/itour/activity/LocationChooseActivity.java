@@ -54,6 +54,7 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import nctu.cs.cgv.itour.R;
+import nctu.cs.cgv.itour.custom.AutoCompleteAdapter;
 import nctu.cs.cgv.itour.custom.RotationGestureDetector;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.Node;
@@ -212,7 +213,7 @@ public class LocationChooseActivity extends AppCompatActivity {
         // set location autocomplete
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.item_search, array);
+        final AutoCompleteAdapter adapter = new AutoCompleteAdapter(this, R.layout.item_search, array);
         locationEdit.setThreshold(0);
         locationEdit.setAdapter(adapter);
         locationEdit.setOnItemClickListener(new AdapterView.OnItemClickListener() {

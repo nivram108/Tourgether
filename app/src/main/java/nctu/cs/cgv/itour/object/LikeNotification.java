@@ -5,10 +5,6 @@ import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by lobZter on 2017/12/25.
- */
-
 public class LikeNotification {
 
 

@@ -28,6 +28,7 @@ import java.util.Map;
 
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.fragment.NewsFragment;
+import nctu.cs.cgv.itour.object.CollectNotification;
 import nctu.cs.cgv.itour.object.CommentNotification;
 import nctu.cs.cgv.itour.object.GlideApp;
 import nctu.cs.cgv.itour.object.LikeNotification;
@@ -36,6 +37,7 @@ import nctu.cs.cgv.itour.object.SystemNotification;
 import static nctu.cs.cgv.itour.activity.MainActivity.systemNotificationIsClickedMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.commentNotificationIsClickedMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.likeNotificationIsClickedMap;
+import static nctu.cs.cgv.itour.activity.MainActivity.collectNotificationIsClickedMap;
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 
@@ -98,16 +100,23 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
             viewHolder.title.setText(getStringWithLength(
                     commentNotification.commentUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "回應了你的貼文。");
             viewHolder.msg.setText("");
-        setCheckinPhoto(viewHolder, commentNotification.commentedCheckinKey + ".jpg");
+            setCheckinPhoto(viewHolder, commentNotification.commentedCheckinKey + ".jpg");
 
-        } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
+        } else if (notificationType.type == NotificationType.TYPE_COLLECT_NOTIFICATION) {
+            CollectNotification collectNotification = newsFragment.collectNotificationMap.get(notificationType.key);
+            viewHolder.title.setText(getStringWithLength(
+                    collectNotification.collectUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "收藏了你的貼文。");
+            viewHolder.msg.setText("");
+            setCheckinPhoto(viewHolder, collectNotification.collectedCheckinKey + ".jpg");
+
+        }else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
             LikeNotification likeNotification = newsFragment.likeNotificationMap.get(notificationType.key);
             viewHolder.title.setText(getStringWithLength(
                     likeNotification.likeUserName, DISPLAY_TITLE_NAME_LENGTH_MAX) + "說你的貼文讚:");
 
             viewHolder.msg.setText("「" + getStringWithLength(
                     likeNotification.likedCheckinDescription, DISPLAY_MSG_LENGTH_MAX) + "」");
-        setCheckinPhoto(viewHolder, likeNotification.likedCheckinKey + ".jpg");
+            setCheckinPhoto(viewHolder, likeNotification.likedCheckinKey + ".jpg");
         }
 
         if (notificationType.isChecked == false) {
@@ -194,6 +203,21 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    public void add(CollectNotification collectNotification, String pushKey) {
+
+        NotificationType notificationType = new NotificationType(NotificationType.TYPE_COLLECT_NOTIFICATION, collectNotification.collectedCheckinKey, pushKey);
+        int index = getKeyPosition(notificationType);
+
+        if (index != -1) {
+            // contain notification, remove
+            notificationTypes.remove(index);
+        }
+
+        notificationType.setNotChecked();
+        insert(notificationType, 0);
+        notifyDataSetChanged();
+    }
+
     public void add(LikeNotification likeNotification, String pushKey) {
 
         NotificationType notificationType = new NotificationType(NotificationType.TYPE_LIKE_NOTIFICATION, likeNotification.likedCheckinKey, pushKey);
@@ -219,11 +243,10 @@ public class NewsItemAdapter extends RecyclerView.Adapter<NewsItemAdapter.ViewHo
             if (systemNotificationIsClickedMap.containsKey(notificationType.pushKey) && systemNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
         } else if (notificationType.type == NotificationType.TYPE_COMMENT_NOTIFICATION) {
             if (commentNotificationIsClickedMap.containsKey(notificationType.pushKey) && commentNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
+        }else if (notificationType.type == NotificationType.TYPE_COLLECT_NOTIFICATION) {
+            if (collectNotificationIsClickedMap.containsKey(notificationType.pushKey) && collectNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
         } else if (notificationType.type == NotificationType.TYPE_LIKE_NOTIFICATION) {
-            if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) {
-//                Log.d("NIVRAMMM", "catch!");
-                notificationType.isChecked = true;
-            }
+            if (likeNotificationIsClickedMap.containsKey(notificationType.pushKey) && likeNotificationIsClickedMap.get(notificationType.pushKey)) notificationType.isChecked = true;
         }
         notificationTypes.add(index, notificationType);
         notifyDataSetChanged();

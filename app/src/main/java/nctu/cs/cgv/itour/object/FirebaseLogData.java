@@ -32,6 +32,7 @@ public class FirebaseLogData {
     public static final String LOG_NEWS_CLICKED_HOT_SPOT	= "News Clicked Hot Spot";
     public static final String LOG_NEWS_CLICKED_LIKE 		= "News Clicked Like";
     public static final String LOG_NEWS_CLICKED_COMMENT		= "News Clicked Comment";
+    public static final String LOG_NEWS_CLICKED_COLLECT		= "News Clicked Collect";
     public static final String LOG_NOTIFICATION_CLICKED_HOT_CHECKIN = "Notification Clicked Hot Checkin";
     public static final String LOG_NOTIFICATION_CLICKED_HOT_SPOT	= "Notification Clicked Hot Spot";
     public static final String LOG_NOTIFICATION_CLICKED_LIKE 		= "Notification Clicked Like";

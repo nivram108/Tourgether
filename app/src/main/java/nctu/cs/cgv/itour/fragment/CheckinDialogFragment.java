@@ -47,10 +47,13 @@ import nctu.cs.cgv.itour.activity.MainActivity;
 import nctu.cs.cgv.itour.custom.CheckinCommentItemAdapter;
 import nctu.cs.cgv.itour.object.Checkin;
 import nctu.cs.cgv.itour.object.CheckinComment;
+import nctu.cs.cgv.itour.object.CollectNotification;
 import nctu.cs.cgv.itour.object.CommentNotification;
 import nctu.cs.cgv.itour.object.FirebaseLogData;
 import nctu.cs.cgv.itour.object.LikeNotification;
 
+import static nctu.cs.cgv.itour.MyApplication.VERSION_ALL_FEATURE;
+import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 import static nctu.cs.cgv.itour.MyApplication.fileDownloadURL;
 import static nctu.cs.cgv.itour.MyApplication.latitude;
 import static nctu.cs.cgv.itour.MyApplication.longitude;
@@ -281,6 +284,8 @@ public class CheckinDialogFragment extends DialogFragment {
                         else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
                         firebaseLogManager.log(LOG_CHECKIN_COLLECT_REMOVE, checkin.key, logNote);
                     } else {
+                        if (!checkin.uid.equals(uid))
+                            sendCollectNotification(checkin);
                         saveBtn.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                                 R.drawable.icon_star_32, null));
                         databaseReference.child("users").child(uid).child("saved").child(mapTag).child(checkin.key).setValue(true);
@@ -318,7 +323,7 @@ public class CheckinDialogFragment extends DialogFragment {
                     logNote = LOG_NOTE_IS_OTHER_CHECKIN;
                 }
                 firebaseLogManager.log(LOG_CHECKIN_LOCATE, checkin.key, logNote);
-                if (fromPath.equals("CollectedCheckinFragment") && logNote.equals(LOG_NOTE_IS_COLLECTED_CHECKIN)) {
+                if ((fromPath.equals("PersonalMapFragment") && VERSION_OPTION == VERSION_ALL_FEATURE) || (fromPath.equals("CollectedCheckinFragment") && logNote.equals(LOG_NOTE_IS_COLLECTED_CHECKIN))) {
                     ((MainActivity)getActivity()).personalFragment.viewPager.setCurrentItem(0);
                     ((MainActivity)getActivity()).personalFragment.personalMapFragment.onLocateCheckinClick(checkin);
                 } else {
@@ -472,7 +477,35 @@ public class CheckinDialogFragment extends DialogFragment {
                     }
                 });
     }
+    /**
+     * Send a collect notification if add collect
+     **/
+    private void sendCollectNotification(Checkin checkin) {
 
+        if (checkin.uid == FirebaseAuth.getInstance().getCurrentUser().getUid()) {
+            // user collect self checkin
+            return;
+        }
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String pushKey = databaseReference.child("collect_notification").child(mapTag).push().getKey();
+        final String collectUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final String collectUserName = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        final String collectedUid = checkin.uid;
+        final String collectedCheckinId = checkin.key;
+        final String collectedCheckinDescription = checkin.description;
+        long timestamp = System.currentTimeMillis() / 1000;
+        CollectNotification collectNotification = new CollectNotification(collectUid, collectUserName, collectedUid, collectedCheckinId, collectedCheckinDescription, timestamp);
+        Map<String, Object> collectNotificationValue = collectNotification.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/collect_notification/" + mapTag + "/" + pushKey, collectNotificationValue);
+        FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
+                new DatabaseReference.CompletionListener() {
+                    @Override                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                        //collectMsg.setText("");
+                        Log.e("NIVRAM", "ERROR GG");
+                    }
+                });
+    }
 
     /**
      * Send a like notification if add like

@@ -308,37 +308,9 @@ public class Utility {
     }
 
     public static void notifyComment(Context context,
-                                     nctu.cs.cgv.itour.object.CommentNotification commentNotification,
-                                     NotificationManager notificationManager,
-                                     String channelId) {
-//        Bitmap icon;
-//        if (!notification.photo.equals("")) {
-//            try {
-//                icon = Glide.with(getApplicationContext())
-//                        .asBitmap()
-//                        .load(fileDownloadURL + "?filename=" + notification.photo)
-//                        .submit()
-//                        .get();
-//            } catch (InterruptedException e) {
-//                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_launcher);
-//            } catch (ExecutionException e) {
-//                icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_launcher);
-//            }
-//        } else {
-//            icon = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_launcher);
-//        }
-//
-//        Intent notificationIntent = new Intent(context, MainActivity.class);
-//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//        notificationIntent.putExtra("commentNotificationIntent", true);
-//        notificationIntent.putExtra("lat", commentNotification.lat);
-//        notificationIntent.putExtra("lng", commentNotification.lng);
-//        notificationIntent.putExtra("key", commentNotification.postId);
-//        notificationIntent.putExtra("location", commentNotification.location);
-//        notificationIntent.putExtra("title", commentNotification.title);
-//        notificationIntent.putExtra("comment", commentNotification.comment);
-//        Log.d("NIVRAM", "BUILD COMMENT NOTI");
-        // Set tap notification intent
+                                      nctu.cs.cgv.itour.object.CommentNotification commentNotification,
+                                      NotificationManager notificationManager,
+                                      String channelId) {
         Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
         notificationIntent.putExtra("checkinNotificationIntent", true);
@@ -368,6 +340,38 @@ public class Utility {
 //        Log.d("NIVRAM", "set flag:" + sharedPreferences.getBoolean("launchedByTappingNotification", false));
     }
 
+    public static void notifyCollect(Context context,
+                                     nctu.cs.cgv.itour.object.CollectNotification collectNotification,
+                                     NotificationManager notificationManager,
+                                     String channelId) {
+        Intent notificationIntent = new Intent(context, MainActivity.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP| Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        notificationIntent.putExtra("checkinNotificationIntent", true);
+        notificationIntent.putExtra("key", collectNotification.collectedCheckinKey);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, notificationIntent, 0);
+        PendingIntent intent = PendingIntent.getActivity(context, CHECKIN_NOTIFICATION_REQUEST, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+        String collectUserName = collectNotification.collectUserName;
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context);
+        notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
+//        notificationBuilder.setLargeIcon(icon);
+        notificationBuilder.setVibrate(new long[]{0, 50, 100, 100});
+        notificationBuilder.setContentTitle(collectUserName + "收藏了你的打卡");
+        notificationBuilder.setContentText("點擊立刻查看");
+        notificationBuilder.setContentIntent(intent);
+        notificationBuilder.setChannelId(channelId);
+        notificationBuilder.setContentIntent(pendingIntent);
+        // remvoe notification after user taps it
+        notificationBuilder.setAutoCancel(true);
+
+        android.app.Notification builtNotification = notificationBuilder.build();
+        builtNotification.flags |= android.app.Notification.FLAG_AUTO_CANCEL;
+
+        String notificationTag = collectNotification.collectedCheckinKey + "," + LOG_NOTIFICATION_COMMENT;
+        notificationManager.notify(notificationTag,0, builtNotification);
+//        Log.d("NIVRAM", "set flag:" + sharedPreferences.getBoolean("launchedByTappingNotification", false));
+    }
     public static void notifyLike(Context context,
                                   nctu.cs.cgv.itour.object.LikeNotification likeNotification,
                                   NotificationManager notificationManager,

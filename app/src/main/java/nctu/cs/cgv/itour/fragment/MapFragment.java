@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -165,6 +168,7 @@ public class MapFragment extends Fragment {
     private boolean isOrientationCurrent = true;
     private boolean checkinSwitch = true;
     private boolean spotSwitch = true;
+    public CheckinNode focusNode;
 //    private boolean fogSwitch = false;
 //    private boolean edgeLengthSwitch = false;
 
@@ -237,6 +241,14 @@ public class MapFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+
+
+        if (focusNode == null) {
+            focusNode = new CheckinNode(0, 0, 0, 0);
+            focusNode.icon = new ImageView(context);
+        }
+
+        focusNode.icon.setVisibility(View.GONE);
 
         rootLayout = view.findViewById(R.id.parent_layout);
         gpsMarker = view.findViewById(R.id.gps_marker);
@@ -624,7 +636,7 @@ public class MapFragment extends Fragment {
                 point[0] = checkinNode.x;
                 point[1] = checkinNode.y;
                 transformMat.mapPoints(point);
-                checkinIconTransform.mapPoints(point);
+//                checkinIconTransform.mapPoints(point);
                 checkinNode.icon.setTranslationX(point[0]);
                 checkinNode.icon.setTranslationY(point[1]);
             }
@@ -638,6 +650,18 @@ public class MapFragment extends Fragment {
                 checkinClusterNode.icon.setTranslationY(point[1]);
             }
         }
+        if (true) {
+            point[0] = focusNode.x;
+            point[1] = focusNode.y;
+            transformMat.mapPoints(point);
+//            checkinIconTransform.mapPoints(point);
+            focusNode.icon.setTranslationX(point[0]);
+            focusNode.icon.setTranslationY(point[1]);
+//            Log.d("Focussss", )
+
+        }
+
+
         activityIsVisible = true;
     }
 
@@ -748,7 +772,12 @@ public class MapFragment extends Fragment {
         }
 
         // create new node
-        CheckinNode checkinNode = new CheckinNode(x, y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+        Drawable d = getResources().getDrawable(R.drawable.checkin_icon_60px);
+        float w = d.getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+        float h = d.getIntrinsicHeight() / getResources().getDisplayMetrics().density;
+        Log.d("Focusss", "blue : " + x + ", " + y + ", (" + checkin.lat + ", " + checkin.lng + ")");
+//        CheckinNode checkinNode = new CheckinNode(x , y, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
+        CheckinNode checkinNode = new CheckinNode(x - (w / 2), y - h, Float.valueOf(checkin.lat), Float.valueOf(checkin.lng));
         checkinNode.icon = new ImageView(context);
         checkinNode.icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -880,16 +909,19 @@ public class MapFragment extends Fragment {
     public void onLocateClick(String lat, String lng) {
         float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
         translateToImgPx(imgPx[0], imgPx[1], false);
+        showFocus(Float.valueOf(lat), Float.valueOf(lng));
     }
 
     public void onLocateClick(String location) {
         CheckinNode checkinClusterNode = spotNodeMap.get(location).checkinNode;
         onClusterNodeClick(checkinClusterNode);
+        showFocus(checkinClusterNode.lat, checkinClusterNode.lng);
     }
 
     public void onLocateCheckinClick(Checkin clickedCheckin) {
         CheckinNode checkinClusterNode = checkinClusterNodeMap.get(clickedCheckin.key);
         CheckinNode checkinNode = checkinNodeMap.get(clickedCheckin.key);
+        showFocus(Float.valueOf(clickedCheckin.lat), Float.valueOf(clickedCheckin.lng));
         onClusterNodeClick(checkinClusterNode, checkinNode.x, checkinNode.y);
         String logNote = "";
         if (uid.equals(clickedCheckin.uid)) {
@@ -1373,5 +1405,41 @@ public class MapFragment extends Fragment {
 
         ((MainActivity)getActivity()).personalFragment.togoFragment.togoItemAdapter.setIsVisited(spotName, true);
         reRender();
+    }
+
+    public void showFocus(float lat, float lng) {
+        if(focusNode!= null) focusNode.icon.setVisibility(View.GONE);
+
+        float[] imgPx = Utility.gpsToImgPx(Float.valueOf(lat), Float.valueOf(lng));
+        View v = new ImageView(context);
+        ((ImageView)v).setImageDrawable(
+                ResourcesCompat.getDrawable(getResources(), R.drawable.icon_focus, null));
+        float focusWidth = getResources().getDrawable(R.drawable.icon_focus).getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+        float focusHeight = getResources().getDrawable(R.drawable.icon_focus).getIntrinsicHeight() / getResources().getDisplayMetrics().density;
+
+        float checkinWidth = getResources().getDrawable(R.drawable.checkin_icon_60px).getIntrinsicWidth() / getResources().getDisplayMetrics().density;
+
+        float scale = focusWidth / checkinWidth;
+        focusWidth /= scale;
+        focusHeight /= scale;
+
+        Log.d("Focusss", "red : " + imgPx[0] + ", " + imgPx[1] + ", (" + lat + ", " + lng + ")");
+
+//        focusNode = new CheckinNode(imgPx[0], imgPx[1],lat, lng);
+        focusNode = new CheckinNode(imgPx[0] - (focusWidth / 2), imgPx[1] - (focusHeight / 2),lat, lng);
+        focusNode.icon = v;
+//        ((ImageView)focusNode.icon).setImageDrawable(
+//                ResourcesCompat.getDrawable(getResources(), R.drawable.ic_location_on_red_600_48dp, null));
+        focusNode.icon.setLayoutParams(new RelativeLayout.LayoutParams((int)(focusWidth), (int)(focusHeight)));
+        focusNode.icon.setVisibility(View.VISIBLE);
+        rootLayout.addView(focusNode.icon, rootLayout.indexOfChild(seperator));
+
+//        rootLayout.addView(focusNode.icon);
+
+        Log.d("Focusss", "set");
+    }
+
+    public void unshowFocus() {
+        focusNode.icon.setVisibility(View.GONE);
     }
 }

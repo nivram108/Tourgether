@@ -21,7 +21,7 @@ public class MyApplication extends Application {
     public static final String VERSION_ONLY_GOOGLE_COMMENT = "VERSION_ONLY_GOOGLE_COMMENT";
     public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
 //    public static final String VERSION_OPTION = VERSION_ONLY_GOOGLE_COMMENT;
-    public static final String mapTag = "before_pilot";
+    public static final String mapTag = "development0706";
 //    public static final String mapTag = "before_pilot_google";
 
     public static final String sourceMapTag = "development";
