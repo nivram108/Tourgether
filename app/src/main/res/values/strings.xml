@@ -92,6 +92,7 @@
     <string name="setting_category_account">帳號</string>
     <string name="setting_logout">登出</string>
     <string name="setting_register">註冊帳號</string>
+    <string name="setting_uid">使用者編號</string>
     <string name="setting_category_map">地圖</string>
     <string name="setting_fog">迷霧系統</string>
     <string name="setting_distance_indicator">距離比例</string>

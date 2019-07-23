@@ -34,7 +34,9 @@
         <Preference
             android:key="logout"
             android:title="@string/setting_logout" />
-
+        <Preference
+            android:key="uid"
+            android:title="@string/setting_uid" />
         <Preference
             android:key="register"
             android:title="@string/setting_register" />

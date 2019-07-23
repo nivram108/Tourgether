@@ -35,6 +35,7 @@ import java.util.Objects;
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.activity.LocationChooseActivity;
 import nctu.cs.cgv.itour.activity.MainActivity;
+import nctu.cs.cgv.itour.custom.AutoCompleteAdapter;
 import nctu.cs.cgv.itour.custom.ItemClickSupport;
 import nctu.cs.cgv.itour.custom.SwipeController;
 import nctu.cs.cgv.itour.custom.SwipeControllerActions;
@@ -149,8 +150,7 @@ public class TogoFragment extends Fragment{
         }
         ArrayList<String> array = new ArrayList<>();
         array.addAll(spotList.getFullSpotsName());
-        final ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.item_search, array);
-
+        final AutoCompleteAdapter adapter = new AutoCompleteAdapter(getActivity(), R.layout.item_search, array);
         autoCompleteTextView.setThreshold(0);
         autoCompleteTextView.setAdapter(adapter);
         autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -237,11 +237,6 @@ public class TogoFragment extends Fragment{
 
     public ArrayList<TogoPlannedData> setTogoList() {
         ArrayList<TogoPlannedData> togoPlannedData = new ArrayList<>();
-        togoPlannedData.add(new TogoPlannedData("三協成博物館"));
-        togoPlannedData.add(new TogoPlannedData("紅樓中餐廳"));
-        togoPlannedData.add(new TogoPlannedData("重建街戀愛巷"));
-        togoPlannedData.add(new TogoPlannedData("海風餐廳"));
-        togoPlannedData.add(new TogoPlannedData("真理大學禮拜堂"));
         return togoPlannedData;
     }
 

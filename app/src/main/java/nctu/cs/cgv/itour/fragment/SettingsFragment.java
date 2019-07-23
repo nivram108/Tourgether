@@ -2,6 +2,7 @@ package nctu.cs.cgv.itour.fragment;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceFragmentCompat;
+import android.util.Log;
 import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -16,9 +18,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import nctu.cs.cgv.itour.R;
 import nctu.cs.cgv.itour.activity.LoginActivity;
 import nctu.cs.cgv.itour.activity.RegisterActivity;
+import nctu.cs.cgv.itour.object.InitDataManager;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
 import nctu.cs.cgv.itour.service.ScreenShotService;
 
+import static android.content.Context.MODE_PRIVATE;
 import static nctu.cs.cgv.itour.MyApplication.VERSION_ONLY_GOOGLE_COMMENT;
 import static nctu.cs.cgv.itour.MyApplication.VERSION_OPTION;
 
@@ -45,6 +49,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         Preference btnSignOut = getPreferenceManager().findPreference("logout");
         Preference btnRegister = getPreferenceManager().findPreference("register");
+        Preference btnUid = getPreferenceManager().findPreference("uid");
+        Log.d("SETUSERID", "?????");
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             PreferenceCategory accountCategory = (PreferenceCategory) findPreference("category_account");
             accountCategory.removePreference(btnSignOut);
@@ -56,9 +62,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     return true;
                 }
             });
+            Log.d("SETUSERID", "!!!!!");
         } else {
             PreferenceCategory accountCategory = (PreferenceCategory) findPreference("category_account");
             accountCategory.removePreference(btnRegister);
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("data", MODE_PRIVATE);
+            String userId = sharedPreferences.getString("givenUserId", "");
+            btnUid.setSummary(userId);
+            Log.d("SETUSERID", " get userId :" + userId);
 
             btnSignOut.setSummary(FirebaseAuth.getInstance().getCurrentUser().getEmail().toString());
             btnSignOut.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

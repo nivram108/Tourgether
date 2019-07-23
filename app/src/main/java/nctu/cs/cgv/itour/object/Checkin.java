@@ -31,6 +31,7 @@ public class Checkin {
     public Map<String, Boolean> popularTargetUid;
     public Boolean fakeFlag;
     public int likeNum;
+    public int collectNum;
 
     public String key;
 
@@ -55,6 +56,7 @@ public class Checkin {
         this.popularTargetUid.put("all", false);
         this.fakeFlag = false;
         this.likeNum = 0;
+        this.collectNum = 0;
         this.key = spotName;
     }
     public Checkin(String lat,
@@ -82,6 +84,7 @@ public class Checkin {
         this.popularTargetUid.put("all", false);
         this.fakeFlag = false;
         this.likeNum = 0;
+        this.collectNum = 0;
     }
 
     public Checkin(Checkin checkin) {
@@ -100,6 +103,7 @@ public class Checkin {
         this.popularTargetUid.put("all",false);
         this.fakeFlag = false;
         this.likeNum = 0;
+        this.collectNum = 0;
     }
 
     @Exclude
@@ -118,6 +122,7 @@ public class Checkin {
         result.put("popularTargetUid", popularTargetUid);
         result.put("fakeFlag", fakeFlag);
         result.put("likeNum", likeNum);
+        result.put("collectNum", collectNum);
         return result;
     }
 }

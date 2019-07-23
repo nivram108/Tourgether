@@ -3,7 +3,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
-import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -17,8 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nctu.cs.cgv.itour.activity.MainActivity;
+
 import static android.content.Context.MODE_PRIVATE;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
+import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_ADD;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_OPEN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_ANYWHERE;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_CHECKIN;
@@ -28,6 +30,9 @@ public class FirebaseLogManager {
     public Context mContext;
     public FirebaseLogManager(Context context) {
         mContext = context;
+        initUserName();
+        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
     }
     public FirebaseLogManager() {
 
@@ -37,6 +42,8 @@ public class FirebaseLogManager {
     }
 
     public void log(String tag, String msg, String note) {
+        initUserId();
+
         SharedPreferences sharedPreferences = mContext.getSharedPreferences("data", MODE_PRIVATE);
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -60,11 +67,22 @@ public class FirebaseLogManager {
                 });
         if (tag.equals(LOG_REPORT_ANYWHERE)) {
             // SET NOTE
-        }
-        if (tag.equals(LOG_REPORT_CHECKIN) || tag.equals(LOG_REPORT_ANYWHERE)){
             logPoi(firebaseLogData);
-        } else if (tag.equals(LOG_CHECKIN_OPEN)) {
+        }
+        if (tag.equals(LOG_REPORT_ANYWHERE)){
+            logPoi(firebaseLogData);
+        } else if (tag.equals(LOG_REPORT_CHECKIN)){
+            String location = ((MainActivity)mContext).checkinMap.get(msg).location;
+            if (((MainActivity)mContext).personalFragment.togoFragment.togoItemAdapter.isTogo(location) == false) {
+                logPoi(firebaseLogData);
+            }
+        }
+        else if (tag.equals(LOG_CHECKIN_OPEN)) {
             addViewCheckinCount();
+            initUserName();
+        } else if (tag.equals(LOG_CHECKIN_ADD)) {
+            addAddCheckinCount();
+            isTogo(note);
         }
 
     }
@@ -178,7 +196,31 @@ public class FirebaseLogManager {
 
         q.addListenerForSingleValueEvent(listener);
     }
+    public void initUserId() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("log_summary").child(mapTag).child(uid).child("uid");
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if(dataSnapshot.getValue() == null) {
+                        SharedPreferences sharedPreferences = mContext.getSharedPreferences("data", MODE_PRIVATE);
+                        String userId = sharedPreferences.getString("givenUserId", "");
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("uid").setValue(userId);
+                    }
+                } catch (Exception ignored) {
 
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
     public void addViewCheckinCount() {
         final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -192,6 +234,69 @@ public class FirebaseLogManager {
                     } else {
                         databaseReference.child("log_summary").child(mapTag).child(uid).child("view_checkin_count").
                                 setValue(Integer.valueOf(dataSnapshot.getValue().toString()) + 1);
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
+
+    public void addAddCheckinCount() {
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("log_summary").child(mapTag).child(uid).child("add_checkin_count");
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if(dataSnapshot.getValue() == null) {
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("add_checkin_count").setValue(1);
+                    } else {
+                        databaseReference.child("log_summary").child(mapTag).child(uid).child("add_checkin_count").
+                                setValue(Integer.valueOf(dataSnapshot.getValue().toString()) + 1);
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
+
+    public void isTogo(final String location) {
+
+        Log.d("USERIDGET", "Start Querying");
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("togo_list").child(mapTag).child(uid);
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (true) {
+                        Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                        boolean isPoi = true;
+                        for(DataSnapshot child : children) {
+                            TogoPlannedData togoPlannedData = child.getValue(TogoPlannedData.class);
+                            if (togoPlannedData.locationName.equals(location)) {
+                                isPoi = false;
+                                break;
+                            }
+                        }
+                        if (isPoi) addPoiCount();
                     }
                 } catch (Exception ignored) {
 

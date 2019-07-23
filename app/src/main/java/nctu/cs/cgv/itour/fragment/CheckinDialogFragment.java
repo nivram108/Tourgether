@@ -138,6 +138,7 @@ public class CheckinDialogFragment extends DialogFragment {
         TextView username = view.findViewById(R.id.tv_username);
         TextView location = view.findViewById(R.id.tv_location);
         TextView like = view.findViewById(R.id.tv_like);
+        TextView collect = view.findViewById(R.id.tv_collect);
         TextView description = view.findViewById(R.id.tv_description);
         TextView distance = view.findViewById(R.id.tv_distance);
 
@@ -154,8 +155,14 @@ public class CheckinDialogFragment extends DialogFragment {
             if (checkin.like != null && checkin.like.size() > 0) {
                 likeNum += checkin.like.size();
             }
+
             String likeStr = likeNum > 0 ? String.valueOf(likeNum) + Objects.requireNonNull(getContext()).getString(R.string.checkin_card_like_num) : "";
             like.setText(likeStr);
+
+            int collectNum = checkin.collectNum;
+
+            String collectStr = collectNum > 0 ? String.valueOf(collectNum) + "人收藏" : "";
+            collect.setText(collectStr);
 
             setPhoto(view, checkin.photo);
             setActionBtn(view, checkin);
@@ -191,6 +198,7 @@ public class CheckinDialogFragment extends DialogFragment {
         final ImageView saveBtn = view.findViewById(R.id.btn_save);
         final LinearLayout locateBtn = view.findViewById(R.id.btn_locate);
         final TextView like = view.findViewById(R.id.tv_like);
+        final TextView collect = view.findViewById(R.id.tv_collect);
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             likeBtn.setOnClickListener(new View.OnClickListener() {
@@ -283,6 +291,9 @@ public class CheckinDialogFragment extends DialogFragment {
                         if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
                         else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
                         firebaseLogManager.log(LOG_CHECKIN_COLLECT_REMOVE, checkin.key, logNote);
+                        checkin.collectNum = checkin.collectNum > 1 ? checkin.collectNum - 1 : 0;
+                        databaseReference.child("checkin").child(mapTag).child(checkin.key).child("collectnum").setValue(checkin.collectNum);
+                        collect.setText(String.valueOf(checkin.collectNum) + "人收藏");
                     } else {
                         if (!checkin.uid.equals(uid))
                             sendCollectNotification(checkin);
@@ -296,6 +307,9 @@ public class CheckinDialogFragment extends DialogFragment {
                         if (uid.equals(checkin.uid)) logNote = LOG_NOTE_IS_SELF_CHECKIN;
                         else logNote = LOG_NOTE_IS_NOT_SELF_CHECKIN;
                         firebaseLogManager.log(LOG_CHECKIN_COLLECT_ADD, checkin.key, logNote);
+                        checkin.collectNum += 1;
+                        databaseReference.child("checkin").child(mapTag).child(checkin.key).child("collectnum").setValue(checkin.collectNum);
+                        collect.setText(String.valueOf(checkin.collectNum) + "人收藏");
                     }
                 }
             });

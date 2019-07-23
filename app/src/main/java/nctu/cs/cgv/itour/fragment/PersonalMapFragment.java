@@ -261,6 +261,7 @@ public class PersonalMapFragment extends Fragment {
         switchBtn = view.findViewById(R.id.btn_switch_map);
         if (VERSION_OPTION == VERSION_ONLY_GOOGLE_COMMENT) {
             switchBtn.setVisibility(View.GONE);
+            addBtn.setVisibility(View.GONE);
         }
         FrameLayout frameLayout = view.findViewById(R.id.prsonal_tourist_map);
 
@@ -1472,10 +1473,10 @@ public class PersonalMapFragment extends Fragment {
     }
 
     void reportMotivation(final String locationName) {
-        if (lastLat == 0 && lastLng == 0) {
-            Toast.makeText(getContext(), "無法取得你的位置", Toast.LENGTH_SHORT);
-            return;
-        }
+//        if (lastLat == 0 && lastLng == 0) {
+//            Toast.makeText(getContext(), "無法取得你的位置", Toast.LENGTH_SHORT);
+//            return;
+//        }
 
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.report_anywhere_dialog);

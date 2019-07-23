@@ -45,6 +45,7 @@ import com.roughike.bottombar.OnTabSelectListener;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,9 @@ import nctu.cs.cgv.itour.object.SpotDescriptionMap;
 import nctu.cs.cgv.itour.object.SystemNotification;
 import nctu.cs.cgv.itour.object.SpotList;
 import nctu.cs.cgv.itour.object.SpotNode;
+import nctu.cs.cgv.itour.object.TogoPlannedData;
 import nctu.cs.cgv.itour.object.UserData;
+import nctu.cs.cgv.itour.object.UserInitData;
 import nctu.cs.cgv.itour.service.AudioFeedbackService;
 import nctu.cs.cgv.itour.service.CollectNotificationService;
 import nctu.cs.cgv.itour.service.SystemNotificationService;
@@ -188,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements
     public static int logSummaryCount;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         if (myAppGlideModule == null) myAppGlideModule = new MyAppGlideModule();
         super.onCreate(savedInstanceState);
         spotCategory = new SpotCategory();
@@ -941,7 +945,23 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
 
         super.onResume();
+        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+        queryInitData();
+
+
         Intent intent = getIntent();
+//        boolean isCheckinSuccess = sharedPreferences.getBoolean("Checkin Success", false);
+//        if (isCheckinSuccess) {
+//            String location = sharedPreferences.getString("Checkin Success Location", "");
+//            if (location.equals("")) {
+//                location = "(沒有輸入地點)";
+//                if (personalFragment.togoFragment.togoItemAdapter.isTogo(location)) {
+//                    personalFragment.togoFragment.togoItemAdapter.setIsVisited(location, true);
+//                } else {
+//
+//                }
+//            }
+//        }
         if (intent.getExtras() != null) Log.d("NotificationNewIntent", intent.getExtras().toString());
         if (intent.getBooleanExtra("checkinNotificationIntent", false)) {
             intent.putExtra("checkinNotificationIntent", false);
@@ -1355,5 +1375,90 @@ public class MainActivity extends AppCompatActivity implements
     void updateCheckedNotification(String tag, String pushKey) {
         if (newsFragment == null || newsFragment.newsItemAdapter == null) return;
         newsFragment.newsItemAdapter.updateIsChecked(tag, pushKey);
+    }
+
+    public void queryInitData() {
+
+        Log.d("USERIDGET", "Start Querying");
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("users").child("initData");
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    if (true) {
+                        Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+                        for(DataSnapshot child : children) {
+                            UserInitData userInitData = child.getValue(UserInitData.class);
+                            if (userInitData.email.equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())) {
+                                String userId = child.getKey();
+                                String initTogoList = userInitData.togoList;
+                                SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+                                sharedPreferences.edit().putString("givenUserId", userId).apply();
+                                sharedPreferences.edit().putString("initTogoList", initTogoList).apply();
+                                sharedPreferences.edit().putBoolean("getInitData", true).apply();
+                                Log.d("initTogoList", initTogoList);
+                                initTogoData();
+                                break;
+                            }
+
+                        }
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+    }
+
+    public void initTogoData() {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        final String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Query q = databaseReference.child("togo_list").child(mapTag).child(uid);
+        ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    Log.d("FirebaseComplete", dataSnapshot.getKey().toString());
+                    if (dataSnapshot.getChildrenCount() == 0) {
+                        SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+                        String[] togoList = sharedPreferences.getString("initTogoList", "").split(",");
+                        Log.d("initTogoList", sharedPreferences.getString("initTogoList", ""));
+
+                        for (String togo: togoList) {
+                            if (togo == null || togo.equals("")) continue;
+                            TogoPlannedData togoPlannedData = new TogoPlannedData(togo);
+                            final String pushKey = togoPlannedData.locationName;
+                            Map<String, Object> childUpdates = new HashMap<>();
+                            childUpdates.put("/togo_list/" + mapTag + "/" + uid + "/" + pushKey, togoPlannedData.toMap());
+                            FirebaseDatabase.getInstance().getReference().updateChildren(childUpdates,
+                                    new DatabaseReference.CompletionListener() {
+                                        @Override
+                                        public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                                            //commentMsg.setText("");
+                                        }
+                                    });
+                        }
+                    }
+                } catch (Exception ignored) {
+
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        q.addListenerForSingleValueEvent(listener);
+
     }
 }

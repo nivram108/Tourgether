@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -639,8 +640,7 @@ public class LocationChooseActivity extends AppCompatActivity {
             from.renameTo(to);
         }
 
-        //LOG
-        MainActivity.firebaseLogManager.log(LOG_CHECKIN_ADD, key);
+
 
         // save checkin data to firebase database
         final String location = locationEdit.getText().toString().trim();
@@ -648,6 +648,8 @@ public class LocationChooseActivity extends AppCompatActivity {
         final String username = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         long timestamp = System.currentTimeMillis() / 1000;
 
+        //LOG
+        MainActivity.firebaseLogManager.log(LOG_CHECKIN_ADD, key, location);
         Checkin checkin = new Checkin(lat, lng, location, category, description, photo, uid, username, timestamp);
         Map<String, Object> checkinValues = checkin.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
@@ -683,6 +685,9 @@ public class LocationChooseActivity extends AppCompatActivity {
                                         moveFile(getCacheDir().toString(), photo, getExternalCacheDir().toString());
                                 }
                                 actionLog("post checkin", location, key);
+                                SharedPreferences sharedPreferences = getSharedPreferences("data", MODE_PRIVATE);
+                                sharedPreferences.edit().putBoolean("Checkin Success", true).apply();
+                                sharedPreferences.edit().putString("Checkin Success Location", location).apply();
                                 progressDialog.dismiss();
                                 setResult(RESULT_CODE_CHECKIN_FINISH);
                                 finish();
