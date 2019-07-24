@@ -151,6 +151,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         setDivider(null);
         actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+
+
     }
 
     @Override
@@ -159,6 +161,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         if (actionBar != null) {
             if (getUserVisibleHint()) {
                 actionBar.setSubtitle(getString(R.string.subtitle_setting));
+                Preference btnUid = getPreferenceManager().findPreference("uid");
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("data", MODE_PRIVATE);
+                String userId = sharedPreferences.getString("givenUserId", "");
+                btnUid.setSummary(userId);
             }
         }
     }

@@ -21,8 +21,8 @@ public class MyApplication extends Application {
     public static final String VERSION_ONLY_GOOGLE_COMMENT = "VERSION_ONLY_GOOGLE_COMMENT";
     public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
 //    public static final String VERSION_OPTION = VERSION_ONLY_GOOGLE_COMMENT;
-    public static final String mapTag = "development0721";
-//    public static final String mapTag = "development0721_google";
+    public static final String mapTag = "tamsui0728";
+//    public static final String mapTag = "tamsui0728google";
 
     public static final String sourceMapTag = "development";
 //    public static final String fileServerURL = "http://140.113.210.17:55555/data/json_maps";

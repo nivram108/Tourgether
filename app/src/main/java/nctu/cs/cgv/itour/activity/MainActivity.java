@@ -515,6 +515,7 @@ public class MainActivity extends AppCompatActivity implements
         collectedCheckinKey.clear();
 
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        if (FirebaseAuth.getInstance().getCurrentUser().getUid() == null) return;
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         collectedPostIdQuery = databaseReference.child("users").child(uid).child("saved").child(mapTag);
 
