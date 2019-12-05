@@ -80,6 +80,9 @@ import static nctu.cs.cgv.itour.Utility.spToPx;
 import static nctu.cs.cgv.itour.activity.CheckinActivity.RESULT_CODE_CHECKIN_FINISH;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_CHECKIN_ADD;
 
+/**
+ * After completing checkin content, mark the location for the checkin 
+ */
 public class LocationChooseActivity extends AppCompatActivity {
 
     private static final String TAG = "LocationChooseActivity";
@@ -719,4 +722,3 @@ public class LocationChooseActivity extends AppCompatActivity {
 
 
 }
-

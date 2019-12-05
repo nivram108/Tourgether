@@ -54,7 +54,9 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_REMOVE_L
 /**
  * Created by lobZter on 2017/6/21.
  */
-
+/**
+ * Implement serveral static functions that used repeatly
+ */
 public class Utility {
 
     private static final String TAG = "Utility";

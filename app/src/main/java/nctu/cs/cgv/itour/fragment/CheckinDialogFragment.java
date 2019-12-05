@@ -76,6 +76,12 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTIFICATION_CLICKED_LIKE;
 
+
+/**
+ * For community version:
+ *  Shows the targeting checkin content
+ *
+ */
 public class CheckinDialogFragment extends DialogFragment {
 
     private static final String TAG = "CheckinDialogFragment";
@@ -411,7 +417,7 @@ public class CheckinDialogFragment extends DialogFragment {
                     //send CommentNotification
                     if(!checkin.uid.equals(FirebaseAuth.getInstance().getCurrentUser().getUid()))
                         sendCommentNotification(checkin);
-                    
+
                     CheckinComment checkinComment = new CheckinComment(msg,
                             FirebaseAuth.getInstance().getCurrentUser().getUid(),
                             FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),

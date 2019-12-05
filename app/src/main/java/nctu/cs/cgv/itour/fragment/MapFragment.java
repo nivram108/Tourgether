@@ -104,6 +104,13 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_REPORT_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_SEARCH_LOCATION;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
 
+/**
+ * For community version:
+ *  Shows the map and all checkins of the community on the map with flag icon
+ *  If there are several checkins nearby, they will cluster into a large flag
+ * For googleComment version:
+ *  Shows the map and all spots
+ */
 public class MapFragment extends Fragment {
 
     private static final String TAG = "MapFragment";

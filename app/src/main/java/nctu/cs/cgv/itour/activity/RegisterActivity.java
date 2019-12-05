@@ -44,6 +44,10 @@ import static nctu.cs.cgv.itour.MyApplication.logFlag;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 
+
+/**
+ * Register a new account
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     private final int PERMISSIONS_MULTIPLE_REQUEST = 123;

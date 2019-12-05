@@ -55,9 +55,25 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED
 
 
 /**
- * Query SystemNotification, CommentNotification and LikeNotification and store in hashMap of each notification type.
+ * Query SystemNotification, CommentNotification and LikeNotification and store in  hashMap of each notification type.
  * While obtaining new data, add to hashMap in respectively and update displaying arrayList in NewsItemAdapter
  * */
+
+
+/**
+ * For community version:
+ *  Shows a list of news, including:
+ *      - Like, if the user's posts are liked by other users
+ *      - Collect, if the user's posts are collected by other users
+ *      - Comment, other users leave comment under the user's posts
+ *      - Hot Spot, if a spot is hot(many people post checkin and mark the spot)
+ *      - Hot Checkin, if a checkin is hot(many people like the checkin)
+ *
+ * Notice:
+ * The news in NewsFragment are different from notifications, news could be viewed as copies of notificaitons
+ * When there is a notification(like / collect / comment / hot spot / hot checkin),
+ * Tourgether will also record it and show in NewsFragment
+ */
 public class NewsFragment extends Fragment {
 
     private static final String TAG = "NewsFragment";
@@ -357,7 +373,7 @@ public class NewsFragment extends Fragment {
             }
         });
     }
-    
+
     void showCheckinDialog(String key) {
         CheckinDialogFragment checkinDialogFragment = CheckinDialogFragment.newInstance(key, TAG);
         checkinDialogFragment.show(getFragmentManager(), "fragment_checkin_dialog");

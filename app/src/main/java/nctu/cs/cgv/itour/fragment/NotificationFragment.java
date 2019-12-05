@@ -33,6 +33,9 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.dpToPx;
 
+/**
+ * Replaced by NewsFragment
+ */
 public class NotificationFragment extends Fragment {
 
     private static final String TAG = "NotificationFragment";

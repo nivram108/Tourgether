@@ -101,6 +101,28 @@ import static nctu.cs.cgv.itour.MyApplication.warpMesh;
 import static nctu.cs.cgv.itour.Utility.notifyCheckin;
 import static nctu.cs.cgv.itour.Utility.pushNews;
 
+/**
+ * The main activity, which contains several fragments depends on different version
+ * For community version, contains:
+ *  - MapFragment, show the map and all checkins of the community on the map with flag icon
+ *  - ListFragment, a list of all checkins of the community
+ *  - PersonalFragment, shows information related to the user, including
+ *      - PersonalMapFragment, shows the map and shows Togo, CollectedCheckin, PostedCheckin with different icons
+ *      - TogoFragment, a list of the points of interests the user plans to visit
+ *      - CollectedCheckinFragment, a list of checkings that the user collected/starred
+ *      - PostedCheckinFragment, a list of checkins that the user posted
+ *  - NewsFragment, shows notifications
+ *  - SettignsFragment
+ *
+ * For googleComment version, contains:
+ *  - MapFragment, show the map and all spots
+ *  - ListFragment, a list of spots
+ *  - PersonalFragment, shows information related to the user, including
+ *      - PersonalMapFragment, shows the map and shows Togo
+ *      - TogoFragment, a list of the points of interests the user plans to visit
+ *  - SettignsFragment
+
+ */
 public class MainActivity extends AppCompatActivity implements
 //        SettingsFragment.OnFogListener,
 //        SettingsFragment.OnDistanceIndicatorListener,

@@ -23,6 +23,10 @@ import nctu.cs.cgv.itour.object.Checkin;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 import static nctu.cs.cgv.itour.activity.MainActivity.collectedCheckinKey;
 
+/**
+ * For community version:
+ *  Shows the list of collected/starred checkins 
+ */
 public class CollectedCheckinFragment extends Fragment {
 
     private static final String TAG = "CollectedCheckinFragment";

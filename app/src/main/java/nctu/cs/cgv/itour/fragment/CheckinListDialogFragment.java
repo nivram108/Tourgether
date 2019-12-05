@@ -34,6 +34,10 @@ import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.spotList;
 import static nctu.cs.cgv.itour.activity.MainActivity.spotDescriptionMap;
 
+/**
+ * For community version:
+ *  Shows a list of checkin pictures if clicking a clustered checkin flag on MapFragment
+ */
 @SuppressLint("ValidFragment")
 public class CheckinListDialogFragment extends DialogFragment {
 

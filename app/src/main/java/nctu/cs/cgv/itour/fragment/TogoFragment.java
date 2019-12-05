@@ -53,6 +53,14 @@ import static nctu.cs.cgv.itour.Utility.dpToPx;
 import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
 import static nctu.cs.cgv.itour.activity.MainActivity.isSpot;
 
+
+/**
+ * For community version:
+ *  Shows a list of the points of interests the user plans to visit
+ *
+ * For googleComment version:
+ *  Shows a list of the points of interests the user plans to visit
+ */
 public class TogoFragment extends Fragment{
     private static final String TAG = "TogoFragment";
     public TogoItemAdapter togoItemAdapter;

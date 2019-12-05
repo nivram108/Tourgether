@@ -41,6 +41,19 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_SEARCH_LOCATION;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_LOCATE;
 
+
+/**
+ * For community version:
+ * PersonalFragment, shows information related to the user, including
+ *      - PersonalMapFragment, shows the map and shows Togo, CollectedCheckin, PostedCheckin with different icons
+ *      - TogoFragment, a list of the points of interests the user plans to visit
+ *      - CollectedCheckinFragment, a list of checkings that the user collected/starred
+ *      - PostedCheckinFragment, a list of checkins that the user posted
+ * For googleComment version:
+ * PersonalFragment, shows information related to the user, including
+ *      - PersonalMapFragment, shows the map and shows Togo
+ *      - TogoFragment, a list of the points of interests the user plans to visit
+ */
 public class PersonalFragment extends Fragment {
 
     private static final String TAG = "PersonalFragment";

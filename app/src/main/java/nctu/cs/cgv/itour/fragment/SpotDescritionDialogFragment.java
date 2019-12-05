@@ -66,6 +66,11 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_TOGO_OPEN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_COLLECTED_TOGO;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED_TOGO;
 
+
+/**
+ * For googleComment version:
+ *  Shows the targeting spot content
+ */
 public class SpotDescritionDialogFragment extends DialogFragment {
 
     private static final String TAG = "SpotDescriptionDialogFragment";

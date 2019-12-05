@@ -29,6 +29,11 @@ import static nctu.cs.cgv.itour.Utility.actionLog;
 import static nctu.cs.cgv.itour.Utility.gpsToImgPx;
 import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
 
+
+/**
+ * For community version:
+ * Shows a list of checkins that the user posted
+ */
 public class PostedCheckinFragment extends Fragment {
 
     private static final String TAG = "PostedCheckinFragment";

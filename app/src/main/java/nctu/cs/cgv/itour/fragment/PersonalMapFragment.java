@@ -100,6 +100,11 @@ import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_NOT_COLLECTED
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_OTHER_CHECKIN;
 import static nctu.cs.cgv.itour.object.FirebaseLogData.LOG_NOTE_IS_SELF_CHECKIN;
 
+
+/**
+ * For community version:
+ * Shows the map and shows Togo, CollectedCheckin, PostedCheckin with different icons
+ */
 public class PersonalMapFragment extends Fragment {
 
     private static final String TAG = "PersonalMapFragment";

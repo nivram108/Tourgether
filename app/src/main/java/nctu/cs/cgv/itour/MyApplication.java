@@ -12,16 +12,18 @@ import nctu.cs.cgv.itour.object.SpotList;
 /**
  * Created by lobZter on 2017/6/21.
  */
-
+/**
+ * Declare global constant variables, including mapTag, web server address, android application mode
+ */
 public class MyApplication extends Application {
 
     // version
     public static final String VERSION_ALL_FEATURE = "VERSION_ALL_FEATURE";
     public static final String VERSION_ONLY_SELF_CHECKIN = "VERSION_ONLY_SELF_CHECKIN";
     public static final String VERSION_ONLY_GOOGLE_COMMENT = "VERSION_ONLY_GOOGLE_COMMENT";
-    public static final String VERSION_OPTION = VERSION_ALL_FEATURE;
+    public static final String VERSION_OPTION = VERSION_ALL_FEATURE; // android application mode
 //    public static final String VERSION_OPTION = VERSION_ONLY_GOOGLE_COMMENT;
-    public static final String mapTag = "tamsui0728";
+    public static final String mapTag = "tamsui0728"; // mapTag, if mapTag is changing, mapTag in web server should also be changed
 //    public static final String mapTag = "tamsui0728google";
 
     public static final String sourceMapTag = "development";
@@ -29,8 +31,8 @@ public class MyApplication extends Application {
 //    public static final String APPServerURL = "http://140.113.210.17:55555";
 //    public static final String fileServerURL = "http://127.0.0.1:55555/data/json_maps";
 //    public static final String APPServerURL = "http://127.0.0.1:55555";
-    public static final String fileServerURL = "http://3.14.193.188:55555/data/json_maps";
-    public static final String APPServerURL = "http://3.14.193.188:55555";
+    public static final String fileServerURL = "http://3.14.193.188:55555/data/json_maps"; // web server address
+    public static final String APPServerURL = "http://3.14.193.188:55555"; // web server address
     public static final String fileUploadURL = APPServerURL + "/uploadPhoto";
     public static final String fileDownloadURL = APPServerURL + "/download";
     public static final String spotDescriptionImageURL = APPServerURL + "/spotImage";

@@ -47,6 +47,14 @@ import static nctu.cs.cgv.itour.activity.MainActivity.checkinMap;
  * Created by lobst3rd on 2017/8/18.
  */
 
+/**
+ * For community version:
+ *  Shows a list of all checkins of the community
+ *  Click any checkin to view checkin content with CheckinDialogFragment
+ * For googleComment version:
+ *  Shows a list of all spots
+ *  Click any spot to view spot content with SpotDescriptionDialogFragment
+ */
 public class ListFragment extends Fragment {
 
     private static final String TAG = "ListFragment";

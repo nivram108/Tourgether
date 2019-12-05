@@ -46,6 +46,9 @@ import nctu.cs.cgv.itour.object.SpotCategory;
 import static nctu.cs.cgv.itour.Utility.hideSoftKeyboard;
 import static nctu.cs.cgv.itour.Utility.moveFile;
 
+/**
+ * Post a new checkin and share to community
+ */
 public class CheckinActivity extends AppCompatActivity {
 
     private static final String TAG = "CheckinActivity";

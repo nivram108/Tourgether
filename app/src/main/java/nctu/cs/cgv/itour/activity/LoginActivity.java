@@ -38,6 +38,9 @@ import static nctu.cs.cgv.itour.MyApplication.logFlag;
 import static nctu.cs.cgv.itour.MyApplication.mapTag;
 import static nctu.cs.cgv.itour.MyApplication.sourceMapTag;
 
+/**
+ * Login user account
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private final int PERMISSIONS_MULTIPLE_REQUEST = 123;
